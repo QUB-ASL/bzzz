@@ -78,12 +78,16 @@ Design:
 
 ### 3.1. C/C++
 
-- We follow [this](https://lefticus.gitbooks.io/cpp-best-practices/content/03-Style.html) style guide and naming convention. 
-- Make sure you use descriptive variable names, that is, `angular_velocity_rad_s` instead of `w`. 
-- In addition to the above, global constants use the prefix `c_`, e.g., `c_controllerGain` or `c_estimatorGain`
-- Private members use the prefix `m_`
+Bzzz's C++ naming convention is as follows:
+
+- Make sure you use descriptive variable names, that is, `angular_velocity_rad_s` instead of `w`
+- Class and structure names are PascalCase (camel case with first letter uppercase); in most other cases we use snake case
+- Preprocessor directives are in "screaming snake case", e.g., `DEBUG_MODE` or `FRONT_LEFT_ESC_PIN`
+- Global constants use the prefix `c_`, e.g., `c_controller_gain`
+- Private class members use the prefix `m_`
 - Global variables use the prefix `g_`, e.g., `g_imu`
-- When it comes to getters and setters we use `foo()` (_not_ `getFoo()`) and `setFoo()`
+- When it comes to getters and setters we use `foo()` (_not_ `get_foo()`) and `set_foo()`
+- All other variables (e.g., local variables) are snake case
 
 ### 3.2. Python
 
@@ -96,6 +100,19 @@ Design:
 - Overall, adequate documentation should be provided to allow anyone to construct this quadcopter and contribute to the code
 - In C++, the code should be documented using [Doxygen](https://www.doxygen.nl/manual/docblocks.html)-style docstring
 - In Python, the code should be documented using [Sphinx](https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html) docstring
+
+Example of C++ documentation:
+
+```c++
+/**
+ * @brief computes control action
+ *
+ * @param state_x state of the system
+ *
+ * @return control voltage
+ */
+float control_action(float state_x);
+```
 
 ### 3.4. Testing and CI
 
