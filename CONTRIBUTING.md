@@ -42,8 +42,10 @@ Addresses #101
 - To create a new branch do 
 
 ```git
-git checkout -b feature/1-read-imu` dev
+git checkout -b feature/123-read-imu dev
 ```
+
+where the number `123` corresponds to the number of an open issue.
 
 - Every branch should be associated with a pull request (PR); after you crate a branch, create a PR
 - Pull requests must have an adequately detailed description
