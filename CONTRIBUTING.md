@@ -78,8 +78,12 @@ Design:
 
 ### 3.1. C/C++
 
-We follow [this](https://lefticus.gitbooks.io/cpp-best-practices/content/03-Style.html) style guide and naming convention. 
-Additionally, make sure you use descriptive variable names, that is, `angular_velocity_rad_s` instead of `w`.
+- We follow [this](https://lefticus.gitbooks.io/cpp-best-practices/content/03-Style.html) style guide and naming convention. 
+- Make sure you use descriptive variable names, that is, `angular_velocity_rad_s` instead of `w`. 
+- In addition to the above, global constants use the prefix `c_`, e.g., `c_controllerGain` or `c_estimatorGain`
+- Private members use the prefix `m_`
+- Global variables use the prefix `g_`, e.g., `g_imu`
+- When it comes to getters and setters we use `foo()` (_not_ `getFoo()`) and `setFoo()`
 
 ### 3.2. Python
 
