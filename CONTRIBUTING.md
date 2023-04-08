@@ -91,6 +91,8 @@ Bzzz's C++ naming convention is as follows:
 - When it comes to getters and setters we use `foo()` (_not_ `getFoo()`) and `setFoo(val)`
 - All other variables (e.g., local variables) are camel case
 
+**What goes in a header file:** Declare all public entities. Is a function/method/class/structure needed outside the scope of this file? If not, it does not belong in the header file. Do not put any implementations in the header file - put them in the code files instead. For example, is the controller gain needed to anyone else except for the controller? No, so put it in the `cpp` file.
+
 ### 3.2. Python
 
 - Just follow [PEP8](https://peps.python.org/pep-0008/)
