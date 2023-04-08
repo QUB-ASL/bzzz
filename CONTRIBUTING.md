@@ -82,14 +82,14 @@ Design:
 
 Bzzz's C++ naming convention is as follows:
 
-- Make sure you use descriptive variable names, that is, `angular_velocity_rad_s` instead of `w`
-- Class and structure names are PascalCase (camel case with first letter uppercase); in most other cases we use snake case
+- Make sure you use descriptive variable names, that is, `angularVelocity` instead of `w`
+- Class and structure names are PascalCase (camel case with first letter uppercase); in most other cases we use camel case as this is the standard in the community
 - Preprocessor directives are in "screaming snake case", e.g., `DEBUG_MODE` or `FRONT_LEFT_ESC_PIN`
-- Global constants use the prefix `c_`, e.g., `c_controller_gain`
-- Private class members use the prefix `m_`
-- Global variables use the prefix `g_`, e.g., `g_imu`
-- When it comes to getters and setters we use `foo()` (_not_ `get_foo()`) and `set_foo()`
-- All other variables (e.g., local variables) are snake case
+- Global constants use the prefix `c_`, e.g., `c_controllerGain`
+- Private class members use the prefix `m_`, e.g., `m_privateVariable`
+- Global variables use the prefix `g_`, e.g., `g_imuData`
+- When it comes to getters and setters we use `foo()` (_not_ `getFoo()`) and `setFoo(val)`
+- All other variables (e.g., local variables) are camel case
 
 ### 3.2. Python
 
