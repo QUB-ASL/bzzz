@@ -5,8 +5,10 @@ namespace bzzz
 
     /**
      * @brief setup of the IMU
+     *
+     * @return true iff the setup of the IMU is successful
      */
-    void setupImu(void);
+    bool setupImu(void);
 
     /**
      * @brief pre-flight calibration
@@ -19,5 +21,14 @@ namespace bzzz
      * @param q pointer to 4-array where to store the quaternion
      */
     void quaternion(float *q);
+
+    /**
+     * @brief checks for updated measurements from the IMU
+     *
+     * This function should be called before calling `quaternion`
+     *
+     * @return true if an updated measurement is available
+     */
+    bool updateImu(void);
 
 }
