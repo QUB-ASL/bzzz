@@ -1,13 +1,13 @@
 # Contributing guidelines
 
-_Version: 0.1.0_
+_Version: 0.1.1_
 
 
 ## 1. Working with git
 
 ### 1.1. General rules
 
-- The `main` branch is locked and noone can push to it directly
+- The `main` branch is locked and no-one can push to it directly
 - The main development branch is called `dev`
 - All development will take place in branches out of dev
 - Do not commit big files
@@ -130,3 +130,55 @@ float controlAction(float systemState);
 - To run the tests click on "test" in the top right corner of VS Code or run `pio test` in the PlatformIO client
 - Contrary to the rest of the code, the test functions are snake case (not camel case) and use the prefix `test_`
 
+
+## 4. ESP32-specific details
+
+### 4.1. Timer interrupts and volatile variables
+
+When an interrupt routine accesses a global variable (read/write), it should be declared using the `volatile` keyword. For example
+
+```c++
+hw_timer_t *ledTimer = nullptr;
+volatile bool ledStatus = false;
+
+/**
+ * Timer interrupt function
+ */
+void IRAM_ATTR onTimer()
+{
+  ledStatus = !ledStatus;
+}
+```
+
+If we omit the `volatile` keyword, the compiler may drop the variable `ledStatus`.
+
+### 4.2. Memory shared between ISR and `loop()`
+
+If a variable is shared between a timer interrupt and the loop, we need to account for the **critical sections** of the code.
+
+```c++
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+
+/**
+ * Timer interrupt function 
+ */
+void IRAM_ATTR onTimer()
+{
+  // guard the section where we need to read/write `ledStatus`
+  // using `timerMux`
+  taskENTER_CRITICAL_ISR(&timerMux);
+  ledStatus = !ledStatus;
+  taskEXIT_CRITICAL_ISR(&timerMux);
+}
+
+/**
+ * Loop function
+ */
+void loop()
+{
+  // enter and exit a critical section in the loop too
+  taskENTER_CRITICAL_ISR(&timerMux);
+  digitalWrite(LED_PIN, ledStatus);
+  taskEXIT_CRITICAL_ISR(&timerMux);
+}
+```
