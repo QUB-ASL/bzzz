@@ -53,10 +53,13 @@ where the number `123` corresponds to the number of an open issue.
 - No PR will be merged to `dev` unless it has been tested (evidence should be provided)
 - The branch `dev` will be merged into `main` before making a new release
 - All PRs must be reviewed before they can be merged
+- When a PR is ready for review, its author should invite one of the collaborators to review it
+- All collaborators should complete their reviews in a timely manner
+- Do not merge other people's PRs
 
 ### 1.5. Issues
 
-- If you have found a bug or you want to request a new feature, create an issue 
+- If you have found a bug, or you want to request a new feature, create an issue 
 - Make sure your bug report is accompanied by a _minimal reproducible example_ (MRE)
 
 
