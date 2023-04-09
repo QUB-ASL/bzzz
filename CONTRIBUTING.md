@@ -36,9 +36,9 @@ Addresses #101
 
 - Every branch should address a _specific_ issue or development goal
 - Branch names should with either of
-    - `feature/`
-    - `fix/`
-    - `dev/`
+    - `feature/` for new developments, including documentation
+    - `fix/` for bug fixes
+    - `hotfix/` for quick fixes (hotfixes should be _very_ small changes)
 - To create a new branch do 
 
 ```git
@@ -52,6 +52,7 @@ where the number `123` corresponds to the number of an open issue.
 - Avoid lengthy PRs with lots of changes
 - No PR will be merged to `dev` unless it has been tested (evidence should be provided)
 - The branch `dev` will be merged into `main` before making a new release
+- All PRs must be reviewed before they can be merged
 
 ### 1.5. Issues
 
@@ -90,6 +91,7 @@ Bzzz's C++ naming convention is as follows:
 - Global variables use the prefix `g_`, e.g., `g_imuData`
 - When it comes to getters and setters we use `foo()` (_not_ `getFoo()`) and `setFoo(val)`
 - All other variables (e.g., local variables) are camel case
+- The main namespace of the project is `bzzz`
 
 **What goes in a header file:** Declare all public entities. Is a function/method/class/structure needed outside the scope of this file? If not, it does not belong in the header file. Do not put any implementations in the header file - put them in the code files instead. For example, is the controller gain needed to anyone else except for the controller? No, so put it in the `cpp` file.
 
@@ -102,8 +104,8 @@ Bzzz's C++ naming convention is as follows:
 ### 3.3. Documentation and comments
 
 - Overall, adequate documentation should be provided to allow anyone to construct this quadcopter and contribute to the code
-- In C++, the code should be documented using [Doxygen](https://www.doxygen.nl/manual/docblocks.html)-style docstring
-- In Python, the code should be documented using [Sphinx](https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html) docstring
+- In C++, the code should be documented using [Doxygen](https://www.doxygen.nl/manual/docblocks.html)-style docstrings
+- In Python, the code should be documented using [Sphinx](https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html) docstrings
 
 Example of C++ documentation:
 
@@ -111,14 +113,17 @@ Example of C++ documentation:
 /**
  * @brief computes control action
  *
- * @param state_x state of the system
+ * @param systemState state of the system
  *
  * @return control voltage
  */
-float control_action(float state_x);
+float controlAction(float systemState);
 ```
 
 ### 3.4. Testing and CI
 
-Guidelines will follow
+- Testing is done using unity
+- Test source files are in `test/`; you can find examples there
+- To run the tests click on "test" in the top right corner of VS Code or run `pio test` in the PlatformIO client
+- Contrary to the rest of the code, the test functions are snake case (not camel case) and use the prefix `test_`
 
