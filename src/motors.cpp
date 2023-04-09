@@ -3,7 +3,7 @@
 
 namespace bzzz
 {
-    static bool g_armStatus = false;
+    static bool s_armStatus = false;
 
     void attachMotors(void){
         // todo
@@ -15,19 +15,19 @@ namespace bzzz
 
     void disarm(void)
     {
-        bzzz::g_armStatus = 0;
+        bzzz::s_armStatus = 0;
         // todo
     };
 
     void arm(void)
     {
-        bzzz::g_armStatus = 1;
+        bzzz::s_armStatus = 1;
         // todo
     };
 
     bool getArmStatus(void)
     {
-        return bzzz::g_armStatus;
+        return bzzz::s_armStatus;
     };
 
 }
