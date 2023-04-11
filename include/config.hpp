@@ -26,6 +26,10 @@
 
 #define U_TO_PWM 10
 
+#ifndef BZZZ_VERBOSITY
+#define BZZZ_VERBOSITY 3
+#endif
+
 // Various global utilities
 
 namespace bzzz
@@ -40,11 +44,6 @@ namespace bzzz
         Info = 2,
         Severe = 3
     };
-
-    /**
-     * Project-wide verbosity level
-     */
-    LogVerbosityLevel logLevel();
 
     /**
      * @brief print debug information to the serial
