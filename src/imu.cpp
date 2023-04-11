@@ -1,14 +1,14 @@
 #include "imu.hpp"
-#include "MPU9250.h"
 
 namespace bzzz
 {
-    static MPU9250 s_imu;
 
-    bool setupImu(void)
+    AHRS::AHRS(){};
+
+    bool AHRS::setup(void)
     {
         Wire.begin();
-        delay(2500);
+        delay(2000);
 
         MPU9250Setting setting;
         setting.accel_fs_sel = ACCEL_FS_SEL::A16G;
@@ -21,20 +21,55 @@ namespace bzzz
         setting.accel_fchoice = 0x01;
         setting.accel_dlpf_cfg = ACCEL_DLPF_CFG::DLPF_45HZ;
 
-        return s_imu.setup(IMU_ADDRESS, setting);
+        return m_imu.setup(IMU_ADDRESS, setting);
     }
 
-    void quaternion(float *q)
+    void AHRS::preflightCalibrate(bool calibrateMagnetometer /* =false */)
     {
-        q[0] = s_imu.getQuaternionW();
-        q[1] = s_imu.getQuaternionX();
-        q[2] = s_imu.getQuaternionY();
-        q[3] = s_imu.getQuaternionZ();
+        Serial.println("[AHRS] stay still; calibrating the accelerometer");
+        m_imu.calibrateAccelGyro();
+        if (calibrateMagnetometer)
+        {
+            Serial.println("[AHRS] rock and roll; calibrating the magnetometer");
+            m_imu.calibrateMag();
+        }
     }
 
-    bool updateImu(void)
+    void AHRS::quaternion(float *q)
     {
-        return s_imu.update();
+        q[0] = -m_imu.getQuaternionY();
+        q[1] = -m_imu.getQuaternionZ();
+        q[2] = m_imu.getQuaternionW();
+        q[3] = m_imu.getQuaternionX();
     }
+
+    bool AHRS::update()
+    {
+        return m_imu.update();
+    }
+
+#ifdef BZZZ_DEBUG
+    void AHRS::eulerAngles(float *euler)
+    {
+        float qw = -m_imu.getQuaternionY();
+        float qx = -m_imu.getQuaternionZ();
+        float qy = m_imu.getQuaternionW();
+        float qz = m_imu.getQuaternionX();
+
+        float sinr_cosp = 2 * (qw * qx + qy * qz);
+        float cosr_cosp = 1 - 2 * (qx * qx + qy * qy);
+        euler[2] = std::atan2(sinr_cosp, cosr_cosp);
+
+        // pitch (y-axis rotation)
+        float sinp = std::sqrt(1 + 2 * (qw * qy - qx * qz));
+        float cosp = std::sqrt(1 - 2 * (qw * qy - qx * qz));
+        euler[1] = 2 * std::atan2(sinp, cosp) - M_PI / 2;
+
+        // yaw (z-axis rotation)
+        float siny_cosp = 2 * (qw * qz + qx * qy);
+        float cosy_cosp = 1 - 2 * (qy * qy + qz * qz);
+        euler[0] = std::atan2(siny_cosp, cosy_cosp);
+    }
+#endif /* BZZZ_DEBUG */
 
 } // namespace bzzz
