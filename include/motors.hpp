@@ -4,13 +4,7 @@
 #define MOTORS_H
 
 namespace bzzz
-{
-
-    /**
-     *
-     */
-    void attachMotors(void);
-    
+{   
     /**
      *
      */
