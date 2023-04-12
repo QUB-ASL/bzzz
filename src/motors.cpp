@@ -1,6 +1,6 @@
 
 #include "motors.hpp"
-#include "ESC.h"
+#include "ESC.h" // RC_ESP library installed by Library Manager
 
 namespace bzzz
 {
