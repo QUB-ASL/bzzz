@@ -1,4 +1,6 @@
 
+# Headers 
+
 This directory is intended for project header files.
 
 A header file is a file containing C declarations and macro definitions
@@ -6,7 +8,8 @@ to be shared between several project source files. You request the use of a
 header file in your project source file (C, C++, etc) located in `src` folder
 by including it, with the C preprocessing directive `#include'.
 
-```src/main.c
+```c++
+// File: src/main.c
 
 #include "header.h"
 
