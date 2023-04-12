@@ -10,10 +10,11 @@ namespace bzzz
      *
      */
     void attachMotors(void);
+    
     /**
      *
      */
-    void writeSpeedToEsc(void);
+    void writeSpeedToEsc(int rotor_speed_front_left, int rotor_speed_front_right, int rotor_speed_back_left, int rotor_speed_back_right);
 
     /**
      *
