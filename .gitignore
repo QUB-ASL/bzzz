@@ -31,6 +31,9 @@ ehthumbs_vista.db
 
 # --- C/C++ ---
 
+# ESP32
+build/
+
 # Prerequisites
 *.d
 
