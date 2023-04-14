@@ -72,6 +72,7 @@ ESP32 files:
 - `src/` C++ source files (`.cpp`)
 - `test/` [unit tests](https://docs.platformio.org/en/latest/advanced/unit-testing/index.html)
 - `platform.ini` PlatformIO configuration file
+- `hardware/tests/` Various "manual" tests for our components (e.g., IMU/AHRS, motors, radio, etc)
 
 Raspberry Pi:
 - `raspberry/` any 
