@@ -3,6 +3,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+// Various defines such as PIN numbers and global constants
+
 /*
  * IMU config
  */
@@ -11,10 +13,10 @@
 /*
  * Motors config
  */
-#define FRONT_LEFT_ESC_PIN 2
-#define FRONT_RIGHT_ESC_PIN 3
-#define BACK_LEFT_ESC_PIN 4
-#define BACK_RIGHT_ESC_PIN 5
+#define FRONT_LEFT_ESC_PIN 32
+#define FRONT_RIGHT_ESC_PIN 33
+#define BACK_LEFT_ESC_PIN 25
+#define BACK_RIGHT_ESC_PIN 26
 
 #define ARM_ROTOR_SPEED 900
 #define ZERO_ROTOR_SPEED 1000
@@ -23,5 +25,36 @@
 #define ABSOLUTE_MAX_PWM 2000
 
 #define U_TO_PWM 10
+
+#ifndef BZZZ_VERBOSITY
+#define BZZZ_VERBOSITY 3
+#endif
+
+// Various global utilities
+
+namespace bzzz
+{
+
+    /**
+     * Possible verbosity levels
+     */
+    enum LogVerbosityLevel
+    {
+        Debug = 1,
+        Info = 2,
+        Severe = 3
+    };
+
+    /**
+     * @brief print debug information to the serial
+     *
+     * @param fmt string format
+     *
+     * @param ...
+     */
+    void logSerial(LogVerbosityLevel verbosity,
+                   const char *fmt, ...);
+
+}
 
 #endif
