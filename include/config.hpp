@@ -13,10 +13,10 @@
 /*
  * Motors config
  */
-#define FRONT_LEFT_ESC_PIN 2
-#define FRONT_RIGHT_ESC_PIN 3
-#define BACK_LEFT_ESC_PIN 4
-#define BACK_RIGHT_ESC_PIN 5
+#define FRONT_LEFT_ESC_PIN 32
+#define FRONT_RIGHT_ESC_PIN 33
+#define BACK_LEFT_ESC_PIN 25
+#define BACK_RIGHT_ESC_PIN 26
 
 #define ARM_ROTOR_SPEED 900
 #define ZERO_ROTOR_SPEED 1000
