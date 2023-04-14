@@ -34,7 +34,7 @@ namespace bzzz
         void preflightCalibrate(bool calibrateMagnetometer = false);
 
         /**
-         * @brief retrieved the quaternion
+         * @brief retrieves the quaternion
          *
          * The IMU is positioned upside down, so we need to perform
          * the linear transformation
@@ -60,7 +60,7 @@ namespace bzzz
 /*
  * While flying we will not need to access the Euler angles,
  * so the following is available only in debug mode.
- * This can be activated by passing the build flag -BZZZ_DEBUG
+ * This can be activated by passing the build flag -DBZZZ_DEBUG
  * in platformio.ini
  */
 #ifdef BZZZ_DEBUG
