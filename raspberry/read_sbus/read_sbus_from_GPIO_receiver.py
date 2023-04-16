@@ -3,8 +3,8 @@ import time
 import serial
 
 SBUS_PIN = 25 #pin where sbus wire is plugged in
-ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1)
-ser.reset_input_buffer()
+ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1) #serial connection between Pi and ESP32
+ser.reset_input_buffer()                               #serial.Serial(port, buad rate, timeout)
 
 reader = read_sbus_from_GPIO.SbusReader(SBUS_PIN)
 reader.begin_listen()
@@ -24,21 +24,15 @@ while True:
 
                 #returns list of length 16, so -1 from channel num to get index
                 channel_data = reader.translate_latest_packet()
-                #print(channel_data)
+                #print(channel_data) #Uncomment to Print data received on Pi from the RC receiver
 
-                #
-                #Do something with data here!
-                #ex:print(f'{channel_data[0]}')
-                #
-
-                
-                ser.write(f'{channel_data}'.encode())
-                ser.write(b"\n")
+                ser.write(f'{channel_data}'.encode()) #Send data from Pi to ESP32
+                ser.write(b"\n") #Starts a new line so ESP32 knows when to stop reading
                 
                 while ser.inWaiting() > 0:
                         try:
                                 line = ser.readline().  decode('ascii').rstrip()
-                                print(line)
+                                #print(line)
                         except UnicodeDecodeError as e:
                                 print(f"UnicodeDecodeError {e}, retrying....")
                 else:

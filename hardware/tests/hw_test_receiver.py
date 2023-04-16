@@ -1,7 +1,7 @@
 import read_sbus_from_GPIO
 import time
 
-SBUS_PIN = 4  # pin where sbus wire is plugged in
+SBUS_PIN = 25  # pin where sbus wire is plugged in
 
 reader = read_sbus_from_GPIO.SbusReader(SBUS_PIN)
 reader.begin_listen()
@@ -22,10 +22,7 @@ while True:
                 # returns list of length 16, so -1 from channel num to get index
                 channel_data = reader.translate_latest_packet()
 
-                #
-                # Do something with data here!
-                # ex:print(f'{channel_data[0]}')
-                #
+                print(channel_data) #Prints 16 channels of data from receiver
 
         except KeyboardInterrupt:
                 # cleanup cleanly after ctrl-c
@@ -35,9 +32,3 @@ while True:
                 # cleanup cleanly after error
                 reader.end_listen()
                 raise
-
-
-
-
-    
-
