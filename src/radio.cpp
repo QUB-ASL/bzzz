@@ -19,7 +19,11 @@ namespace bzzz
     
                 //cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
+                //Serial.print(channelData[i]);
+                //Serial.print(", ");
             }
+            //Serial.println(".");
+
         }
     }
 
@@ -73,7 +77,7 @@ namespace bzzz
     }
 
     float Radio::throttleReferencePercentage() {
-        return  (channelData[2] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
+        return  (float)(channelData[2] - RADIO_STICK_MIN)/ ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
     }
 
     bool Radio::armed()
