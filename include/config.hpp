@@ -11,6 +11,11 @@
 #define IMU_ADDRESS (0x68)
 
 /*
+ * Serial config
+ */
+#define SERIAL_BAUD_RATE 115200
+
+/*
  * Motors config
  */
 #define FRONT_LEFT_ESC_PIN 32

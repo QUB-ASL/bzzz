@@ -20,6 +20,7 @@ namespace bzzz
                 //cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
             }
+
         }
     }
 
@@ -54,7 +55,8 @@ namespace bzzz
 
 
     float Radio::mapRadioToAngle(float x){
-        return -PITCH_MAX_RAD + (x - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN)*2*PITCH_MAX_RAD;
+        return -PITCH_MAX_RAD + (float)(x - RADIO_STICK_MIN)
+            /((float)(RADIO_STICK_MAX - RADIO_STICK_MIN)*2*PITCH_MAX_RAD);
     }
 
     float Radio::pitchReferenceAngleRad(){ 
@@ -68,12 +70,12 @@ namespace bzzz
     float Radio::yawRateReferenceRadSec() 
     {
         return -RADIO_MAX_YAW_RATE_RAD_SEC + 
-            (channelData[0] - RADIO_STICK_MIN)
-                /(RADIO_STICK_MAX - RADIO_STICK_MIN)*2*RADIO_MAX_YAW_RATE_RAD_SEC;
+            (float)2. * RADIO_MAX_YAW_RATE_RAD_SEC * (channelData[0] - RADIO_STICK_MIN)
+                /((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
     }
 
     float Radio::throttleReferencePercentage() {
-        return  (channelData[2] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
+        return  (float)(channelData[2] - RADIO_STICK_MIN)/ ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
     }
 
     bool Radio::armed()
@@ -102,19 +104,19 @@ namespace bzzz
     }
 
     float Radio::trimmerVRAPercentage(){
-        return (channelData[5] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
+        return (float)(channelData[5] - RADIO_STICK_MIN)/((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
     }
 
     float Radio::trimmerVRCPercentage(){
-        return (channelData[6] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
+        return (float)(channelData[6] - RADIO_STICK_MIN)/((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
     }
 
     float Radio::trimmerVRBPercentage(){
-        return (channelData[7] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
+        return (float)(channelData[7] - RADIO_STICK_MIN)/((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
     }
 
     float Radio::trimmerVREPercentage(){
-        return (channelData[11] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
+        return (float)(channelData[11] - RADIO_STICK_MIN)/((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
     }
 
 }

@@ -18,7 +18,12 @@ namespace bzzz
     class Radio {
         
         private:
-            /**
+            
+
+            float mapRadioToAngle(float x);
+
+        public:
+        /**
              * Channel    Variable
              * 1          yaw rate
              * 2          pitch
@@ -34,10 +39,7 @@ namespace bzzz
              * 12         Trimmer VRE
              */
             int channelData[16];
-
-            float mapRadioToAngle(float x);
-
-        public:
+            
             Radio();
 
             /**
