@@ -8,7 +8,7 @@
 
 using namespace bzzz;
 
-TorqueSystem torqueSystem;
+MotorDriver torqueSystem;
 Radio radio;
 AHRS ahrs;
 Controller controller;

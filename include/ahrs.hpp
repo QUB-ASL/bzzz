@@ -1,6 +1,9 @@
 #include "config.hpp"
 #include "MPU9250.h"
 
+#ifndef AHRS_H
+#define AHRS_H
+
 namespace bzzz
 {
 
@@ -84,3 +87,5 @@ namespace bzzz
     }; /* end of AHRS class */
 
 } /* end of namespace bzzz */
+
+#endif /* AHRS_H */

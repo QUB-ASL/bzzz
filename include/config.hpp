@@ -77,4 +77,4 @@ namespace bzzz
 
 }
 
-#endif
+#endif /* GLOBALS_H */

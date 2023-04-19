@@ -37,8 +37,6 @@ namespace bzzz
          */
         int channelData[16];
 
-        // float mapRadioToAngle(float x);
-
     public:
         Radio();
 
@@ -68,40 +66,49 @@ namespace bzzz
          * @brief pitch reference from RC in rad
          */
         float pitchReferenceAngleRad();
+
         /**
          * @brief roll reference from RC in rad
          */
         float rollReferenceAngleRad();
+
         /**
          * @brief throttle reference as a percentage (0-1)
          */
         float throttleReferencePercentage();
+
         /**
          * @brief yaw rate in rad/s
          *
          * The max yaw rate (abs) is 45deg/s
          */
         float yawRateReferenceRadSec();
+
         /**
          * @brief whether the arm switch is on
          */
         bool armed();
+
         /**
          * @brief whether the kill switch is on
          */
         bool kill();
+
         /**
          * @brief value of switch C (low/mid/high)
          */
         ThreeWaySwitch switchC();
+
         /**
          * @brief value of switch D
          */
         bool switchD();
+
         /**
          * @brief value of trimmer VRA (0-1)
          */
         float trimmerVRAPercentage();
+
         /**
          * @brief value of trimmer VRB (0-1)
          */
@@ -110,6 +117,7 @@ namespace bzzz
          * @brief value of trimmer VRC (0-1)
          */
         float trimmerVRCPercentage();
+
         /**
          * @brief value of trimmer VRE (0-1)
          */
@@ -119,4 +127,4 @@ namespace bzzz
 
 }
 
-#endif
+#endif /* RADIO_H */

@@ -7,7 +7,7 @@
 namespace bzzz
 {
 
-    class TorqueSystem
+    class MotorDriver
     {
 
     private:
@@ -21,7 +21,7 @@ namespace bzzz
         /**
          * Construct a new torque system
          */
-        TorqueSystem();
+        MotorDriver();
 
         /**
          * @brief Write the correct speed to correct motor(ESC_PIN)
@@ -54,8 +54,9 @@ namespace bzzz
          * @return true if motors are armed
          */
         bool getArmStatus(void);
+
     }; /* end of class TorqueSystem */
 
 } /* end of namespace bzzz */
 
-#endif
+#endif /* MOTORS_H */
