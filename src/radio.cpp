@@ -2,23 +2,23 @@
 
 namespace bzzz
 {   
-    int data[16];
+    int channelData[16]; // A 16 int array to store the 16 channels of data sent from the Pi (receiver) via serial 
 
     void readPiData(void)
     {
-        String dataFromClient;
+        String allDataFromPi;
         
         if (Serial.available() > 0) 
         {
-            dataFromClient = Serial.readStringUntil('\n');
+            allDataFromPi = Serial.readStringUntil('\n'); //all 16 channels read by ESP32 
 
             for (int i = 0; i < 16; i++) 
             {
                 // take the substring from the start to the first occurence of a comma, convert it to int and save it in the array
-                data[i] = dataFromClient.substring(1, dataFromClient.indexOf(",")).toInt();
+                channelData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
 
                 //cut the data string after the first occurence of a comma
-                dataFromClient = dataFromClient.substring(dataFromClient.indexOf(",") + 1);
+                allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
             }
         }
     }
@@ -26,20 +26,19 @@ namespace bzzz
     void readRadioData(int &radioThrottle, int &radioRoll, int &radioPitch, int &radioYaw, int &radioSwitchC,
     int &radioVRA, int &radioVRC, int &radioVRB, int &radioArm, int &radioKill, int &radioSwitchD, int &radioVRE) 
     {
-        readPiData();
         // reformat receiver values to match radio (RadioLink AT10)
-        radioThrottle = data[2];
-        radioRoll = data[3];
-        radioPitch = data[1];
-        radioYaw = data[0];
-        radioSwitchC = data[4];
-        radioVRA = data[5];
-        radioVRC = data[6];
-        radioVRB = data[7];
-        radioArm = data[8]; // radioSwitchB
-        radioKill = data[9]; // radioSwitchA
-        radioSwitchD = data[10];
-        radioVRE = data[11];
+        radioThrottle = channelData[2];
+        radioRoll = channelData[3];
+        radioPitch = channelData[1];
+        radioYaw = channelData[0];
+        radioSwitchC = channelData[4];
+        radioVRA = channelData[5];
+        radioVRC = channelData[6];
+        radioVRB = channelData[7];
+        radioArm = channelData[8]; // radioSwitchB
+        radioKill = channelData[9]; // radioSwitchA
+        radioSwitchD = channelData[10];
+        radioVRE = channelData[11];
     }
 
 }
