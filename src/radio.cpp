@@ -2,24 +2,9 @@
 
 namespace bzzz
 {   
-    /**
-     * Channel    Variable
-     * 1          yaw rate
-     * 2          pitch
-     * 3          throttle
-     * 4          roll
-     * 5          Switch C
-     * 6          Trimmer VRA 
-     * 7          Trimmer VRC
-     * 8          Trimmer VRB
-     * 9          Switch B (for arming)
-     * 10         Switch A (kill)
-     * 11         Switch D
-     * 12         Trimmer VRE
-     */
-    static int channelData[16];
+    Radio::Radio(){};
 
-    void readPiData(void)
+    void Radio::readPiData(void)
     {
         String allDataFromPi;
         
@@ -38,7 +23,7 @@ namespace bzzz
         }
     }
 
-    void readRadioData(
+    void Radio::readRadioData(
         int &radioThrottle, 
         int &radioRoll, 
         int &radioPitch, 
@@ -68,40 +53,40 @@ namespace bzzz
     }
 
 
-    static float mapRadioToAngle(float x){
+    float Radio::mapRadioToAngle(float x){
         return -PITCH_MAX_RAD + (x - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN)*2*PITCH_MAX_RAD;
     }
 
-    float pitchReferenceAngleRad(){ 
+    float Radio::pitchReferenceAngleRad(){ 
         return mapRadioToAngle(channelData[1]);
     }
 
-    float rollReferenceAngleRad(){ 
+    float Radio::rollReferenceAngleRad(){ 
         return mapRadioToAngle(channelData[3]);
     }
 
-    float yawRateReferenceRadSec() 
+    float Radio::yawRateReferenceRadSec() 
     {
         return -RADIO_MAX_YAW_RATE_RAD_SEC + 
             (channelData[0] - RADIO_STICK_MIN)
                 /(RADIO_STICK_MAX - RADIO_STICK_MIN)*2*RADIO_MAX_YAW_RATE_RAD_SEC;
     }
 
-    float throttleReferencePercentage() {
+    float Radio::throttleReferencePercentage() {
         return  (channelData[2] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
     }
 
-    bool armed()
+    bool Radio::armed()
     {
         return channelData[8] >= 1500;
     }
 
-    bool kill()
+    bool Radio::kill()
     {
         return channelData[9] <= 500;
     }
 
-    ThreeWaySwitch switchC()
+    ThreeWaySwitch Radio::switchC()
     {
         int switchValue = channelData[4];
         if (switchValue <= 450) {
@@ -112,23 +97,23 @@ namespace bzzz
         return ThreeWaySwitch::UP;
     }
 
-    bool switchD(){
+    bool Radio::switchD(){
         return channelData[4];
     }
 
-    float trimmerVRAPercentage(){
+    float Radio::trimmerVRAPercentage(){
         return (channelData[5] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
     }
 
-    float trimmerVRCPercentage(){
+    float Radio::trimmerVRCPercentage(){
         return (channelData[6] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
     }
 
-    float trimmerVRBPercentage(){
+    float Radio::trimmerVRBPercentage(){
         return (channelData[7] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
     }
 
-    float trimmerVREPercentage(){
+    float Radio::trimmerVREPercentage(){
         return (channelData[11] - RADIO_STICK_MIN)/(RADIO_STICK_MAX - RADIO_STICK_MIN);
     }
 
