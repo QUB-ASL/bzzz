@@ -43,6 +43,12 @@ namespace bzzz
         q[3] = m_imu.getQuaternionX();
     }
 
+    void AHRS::angularVelocity(float* w){
+        w[0] = m_imu.getGyroX();
+        w[1] = m_imu.getGyroY();
+        w[2] = m_imu.getGyroZ();
+    }
+
     bool AHRS::update()
     {
         return m_imu.update();

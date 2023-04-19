@@ -48,6 +48,8 @@ namespace bzzz
          */
         void quaternion(float *q);
 
+        void angularVelocity(float* w);
+
         /**
          * @brief checks for updated measurements from the IMU
          *

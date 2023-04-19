@@ -15,6 +15,9 @@
  */
 #define SERIAL_BAUD_RATE 115200
 
+/** Sampling time */
+#define SAMPLING_TIME (1/125)
+
 /*
  * Motors config
  */
