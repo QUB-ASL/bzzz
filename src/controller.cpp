@@ -34,4 +34,4 @@ namespace bzzz
     }
 #endif /* BZZZ_DEBUG */
 
-}
+} /* end of namespace bzzz */

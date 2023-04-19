@@ -16,7 +16,7 @@
 #define SERIAL_BAUD_RATE 115200
 
 /** Sampling time */
-#define SAMPLING_TIME (1/125)
+#define SAMPLING_TIME (1 / 125)
 
 /*
  * Motors config
@@ -34,10 +34,13 @@
 
 /* Maximum pitch value corresponding to the top position of the stick (30deg = 0.52rad) */
 #define PITCH_MAX_RAD 0.5235987755982988
+
 /* Value from the radio when the stick is at the lowest position */
 #define RADIO_STICK_MIN 300
+
 /* Value from the radio when the stick is at the highest position */
 #define RADIO_STICK_MAX 1700
+
 /* Maximum yaw rate (rad/s) 45 deg/s = 0.785 rad/s */
 #define RADIO_MAX_YAW_RATE_RAD_SEC 0.7853981633974483
 

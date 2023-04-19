@@ -48,7 +48,13 @@ namespace bzzz
          */
         void quaternion(float *q);
 
-        void angularVelocity(float* w);
+        /**
+         * @brief angular velocity in rad/s
+         *
+         * @param w angular velocity vector (3-array)
+         *
+         */
+        void angularVelocity(float *w);
 
         /**
          * @brief checks for updated measurements from the IMU
@@ -77,4 +83,4 @@ namespace bzzz
 
     }; /* end of AHRS class */
 
-}
+} /* end of namespace bzzz */
