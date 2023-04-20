@@ -44,7 +44,7 @@
 /* Maximum yaw rate (rad/s) 45 deg/s = 0.785 rad/s */
 #define RADIO_MAX_YAW_RATE_RAD_SEC 0.7853981633974483
 
-#define U_TO_PWM 10
+#define U_TO_PWM 8
 
 #ifndef BZZZ_VERBOSITY
 #define BZZZ_VERBOSITY 3

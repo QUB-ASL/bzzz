@@ -36,6 +36,8 @@ namespace bzzz
          */
         void preflightCalibrate(bool calibrateMagnetometer = false);
 
+        void calibrateMagnetometer(float biasX, float biasY, float biasZ,
+                                    float scaleX, float scaleY, float scaleZ);
         /**
          * @brief retrieves the quaternion
          *
