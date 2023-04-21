@@ -16,7 +16,7 @@
 #define SERIAL_BAUD_RATE 115200
 
 /** Sampling time */
-#define SAMPLING_TIME (1 / 125)
+#define SAMPLING_TIME (0.008)
 
 /*
  * Motors config
@@ -41,8 +41,8 @@
 /* Value from the radio when the stick is at the highest position */
 #define RADIO_STICK_MAX 1700
 
-/* Maximum yaw rate (rad/s) 45 deg/s = 0.785 rad/s */
-#define RADIO_MAX_YAW_RATE_RAD_SEC 0.7853981633974483
+/* Maximum yaw rate (rad/s) 10 deg/s = 0.1745 rad/s */
+#define RADIO_MAX_YAW_RATE_RAD_SEC 0.1745
 
 #define U_TO_PWM 8
 
