@@ -25,7 +25,8 @@ namespace bzzz
     }
 
     void AHRS::calibrateMagnetometer(float biasX, float biasY, float biasZ,
-                                    float scaleX, float scaleY, float scaleZ) {
+                                     float scaleX, float scaleY, float scaleZ)
+    {
         m_imu.setMagBias(biasX, biasY, biasZ);
         m_imu.setMagScale(scaleX, scaleY, scaleZ);
     }
@@ -38,19 +39,10 @@ namespace bzzz
         {
             Serial.println("[AHRS] rock and roll; calibrating the magnetometer");
             m_imu.calibrateMag();
-            Serial.print("Mag Biases: ");
-            Serial.print(m_imu.getMagBiasX());
-            Serial.print(", ");
-            Serial.print(m_imu.getMagBiasY());
-            Serial.print(", ");
-            Serial.println(m_imu.getMagBiasZ());
-
-            Serial.println("Mag scaling: ");
-            Serial.print(m_imu.getMagScaleX());
-            Serial.print(", ");
-            Serial.print(m_imu.getMagScaleY());
-            Serial.print(", ");
-            Serial.println(m_imu.getMagScaleZ());
+            bzzz::logSerial(bzzz::LogVerbosityLevel::Info, "Magnetometer biases: [%.3f, %.3f, %.3f]",
+                            m_imu.getMagBiasX(), m_imu.getMagBiasY(), m_imu.getMagBiasZ());
+            bzzz::logSerial(bzzz::LogVerbosityLevel::Info, "Magnetometer scaling: [%.3f, %.3f, %.3f]",
+                            m_imu.getMagScaleX(), m_imu.getMagScaleY(), m_imu.getMagScaleZ());
         }
     }
 
@@ -62,7 +54,8 @@ namespace bzzz
         q[3] = m_imu.getQuaternionX();
     }
 
-    void AHRS::angularVelocity(float* w){
+    void AHRS::angularVelocity(float *w)
+    {
         w[0] = m_imu.getGyroX();
         w[1] = m_imu.getGyroY();
         w[2] = m_imu.getGyroZ();
