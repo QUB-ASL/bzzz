@@ -49,9 +49,9 @@ namespace bzzz
     void AHRS::quaternion(float *q)
     {
         q[0] = -m_imu.getQuaternionY();
-        q[1] = -m_imu.getQuaternionZ();
+        q[1] = m_imu.getQuaternionZ();
         q[2] = m_imu.getQuaternionW();
-        q[3] = m_imu.getQuaternionX();
+        q[3] = -m_imu.getQuaternionX();
     }
 
     void AHRS::angularVelocity(float *w)
