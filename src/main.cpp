@@ -59,7 +59,7 @@ void initAttitude()
   // make sure the estimator has converged
   // discard initial measurements
   logSerial(LogVerbosityLevel::Info, "[AHRS] getting ready; discaring measurements");
-  discardImuMeasurements();
+  discardImuMeasurements(10000);
 
   for (int i = 0; i < numInitQUat; i++)
   {
@@ -74,7 +74,8 @@ void initAttitude()
   averageQuaternion3D[2] /= (float)numInitQUat;
 
   float normSqAverageQuaternion3D =
-      sq(averageQuaternion3D[0]) - sq(averageQuaternion3D[1]) - sq(averageQuaternion3D[2]);
+      sq(averageQuaternion3D[0]) + sq(averageQuaternion3D[1]) + sq(averageQuaternion3D[2]);
+
   initialQuaternion[0] = sqrt(1. - normSqAverageQuaternion3D);
   initialQuaternion[1] = averageQuaternion3D[0];
   initialQuaternion[2] = averageQuaternion3D[1];
