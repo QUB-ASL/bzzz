@@ -125,7 +125,7 @@ void loop()
   ahrs.quaternion(quaternionImuData);
   ahrs.angularVelocity(angularVelocity);
 
-  // deactivating the yaw update just to test the rest of the functionality...
+  // !!!deactivate for testing!!!
   yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
 
   // TODO Try to update the function radio.rollReferenceAngleRad() and add a minus
