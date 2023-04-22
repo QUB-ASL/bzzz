@@ -57,8 +57,8 @@ namespace bzzz
     void AHRS::angularVelocity(float *w)
     {
         w[0] = m_imu.getGyroX();
-        w[1] = m_imu.getGyroY();
-        w[2] = m_imu.getGyroZ();
+        w[1] = -m_imu.getGyroY();
+        w[2] = -m_imu.getGyroZ();
     }
 
     bool AHRS::update()
@@ -70,9 +70,9 @@ namespace bzzz
     void AHRS::eulerAngles(float *euler)
     {
         float qw = -m_imu.getQuaternionY();
-        float qx = -m_imu.getQuaternionZ();
+        float qx = m_imu.getQuaternionZ();
         float qy = m_imu.getQuaternionW();
-        float qz = m_imu.getQuaternionX();
+        float qz = -m_imu.getQuaternionX();
 
         float sinr_cosp = 2 * (qw * qx + qy * qz);
         float cosr_cosp = 1 - 2 * (qx * qx + qy * qy);

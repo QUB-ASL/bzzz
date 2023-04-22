@@ -14,6 +14,7 @@ AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
 float yawReferenceRad = 0.0;
+float initialAngularVelocity[3] = {0.0};
 
 /**
  * Setup the motor driver (and warm up the engine, by spinning the
@@ -44,6 +45,35 @@ void discardImuMeasurements(size_t numMeasurements = 5000)
   {
     ahrs.update();
   }
+}
+
+/**
+ * Determine the initial angular velocity readings of the IMU. 
+ * This value is subtracted from the angular velocity readings of the IMU
+ * to get the correct angular velocity. 
+ * All angular velocities should be zero (at the start) when quadrotor is still.
+ */
+void initAngularVelocity()
+{
+  float AngularVelocityTemp[3] = {0};
+  float AngularVelocityAverage[3] = {0};
+  int numInitAngularVelocity = 10;
+
+  for (int i = 0; i < numInitAngularVelocity; i++)
+  {
+    ahrs.update();
+    ahrs.angularVelocity(AngularVelocityTemp);
+    AngularVelocityAverage[0] += AngularVelocityTemp[0];
+    AngularVelocityAverage[1] += AngularVelocityTemp[1];
+    AngularVelocityAverage[2] += AngularVelocityTemp[2];
+  }
+  AngularVelocityAverage[0] /= (float)numInitAngularVelocity;
+  AngularVelocityAverage[1] /= (float)numInitAngularVelocity;
+  AngularVelocityAverage[2] /= (float)numInitAngularVelocity;
+
+  initialAngularVelocity[0] = AngularVelocityAverage[0];
+  initialAngularVelocity[1] = AngularVelocityAverage[1];
+  initialAngularVelocity[2] = AngularVelocityAverage[2];
 }
 
 /**
@@ -88,8 +118,8 @@ void setupAHRS()
 {
   ahrs.setup();
   ahrs.preflightCalibrate(false);
-  // TODO create #define's with these parameters
-  ahrs.calibrateMagnetometer(222.566, 41.087, -60.268, 1.050, 0.936, 1.022);
+  ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z, 
+                             MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X);
 }
 
 /**
@@ -100,6 +130,7 @@ void setup()
   Serial.begin(SERIAL_BAUD_RATE);
   setupAHRS();
   initAttitude();
+  initAngularVelocity();
   setupMotors();
 }
 
@@ -107,17 +138,18 @@ void loop()
 {
   float quaternionImuData[4];
   float angularVelocity[3];
+  float angularVelocityCorrected[3];
   float controls[3];
 
   // Note:
-  // Forward pitch, right roll and heading towards west must be positive
+  // Forward pitch, left roll and heading towards west must be positive
 
   controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * 70.,
-      -radio.trimmerVRBPercentage() * 5.);
+      -radio.trimmerVRAPercentage() * 80.,
+      -radio.trimmerVRBPercentage() * 10.);
   controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * 0.05,
-      -radio.trimmerVREPercentage() * 0.01);
+      -radio.trimmerVRCPercentage() * 0.2,
+      -radio.trimmerVREPercentage() * 0.1);
 
   ahrs.update();
   radio.readPiData();
@@ -125,8 +157,13 @@ void loop()
   ahrs.quaternion(quaternionImuData);
   ahrs.angularVelocity(angularVelocity);
 
+  // Determine correct angularVelocity
+  angularVelocityCorrected[0] = angularVelocity[0] - initialAngularVelocity[0];
+  angularVelocityCorrected[1] = angularVelocity[1] - initialAngularVelocity[1];
+  angularVelocityCorrected[2] = angularVelocity[2] - initialAngularVelocity[2];
+
   // !!!deactivate for testing!!!
-  yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
+  //yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
 
   // TODO Try to update the function radio.rollReferenceAngleRad() and add a minus
   Quaternion referenceQuaternion(
@@ -140,8 +177,9 @@ void loop()
 
   controller.controlAction(attitudeError, angularVelocity, controls);
 
-  // TODO Remove hard-coded numbers from here
-  float throttleFromRadio = radio.throttleReferencePercentage() * 1000 + 1000;
+  float throttleFromRadio = radio.throttleReferencePercentage() 
+                            * (ABSOLUTE_MAX_PWM - ABSOLUTE_MIN_PWM) 
+                            + ABSOLUTE_MIN_PWM;
 
   // TODO create a method (in Controller) like
   // void controller.motorSignals(
@@ -159,7 +197,9 @@ void loop()
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
 
   // To print do:
-  // logSerial(LogVerbosityLevel::Info,
-  //           "%.3f\t %.3f\t %.3f\t %.3f",
-  //           relativeQuaternion[0], relativeQuaternion[1], relativeQuaternion[2], relativeQuaternion[3]);
+  //logSerial(LogVerbosityLevel::Info,
+  //          "%.3f\t %.3f\t %.3f\t %.3f\t %.3f\t %.3f", 
+  //          angularVelocity[0], angularVelocityCorrected[0],
+  //          angularVelocity[1], angularVelocityCorrected[1],
+  //          angularVelocity[2], angularVelocityCorrected[2]);
 }
