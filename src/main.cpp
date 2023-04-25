@@ -145,10 +145,10 @@ void loop()
   // Forward pitch, left roll and heading towards west must be positive
 
   controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * 80.,
+      -radio.trimmerVRAPercentage() * 40.,
       -radio.trimmerVRBPercentage() * 10.);
   controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * 0.2,
+      -radio.trimmerVRCPercentage() * 0.1,
       -radio.trimmerVREPercentage() * 0.1);
 
   ahrs.update();
@@ -175,7 +175,7 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  controller.controlAction(attitudeError, angularVelocity, controls);
+  controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
   float throttleFromRadio = radio.throttleReferencePercentage() 
                             * (ABSOLUTE_MAX_PWM - ABSOLUTE_MIN_PWM) 
