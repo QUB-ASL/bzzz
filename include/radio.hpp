@@ -95,6 +95,11 @@ namespace bzzz
         bool kill();
 
         /**
+         * @brief Check to see if Kill switch is still on
+         */
+        float readKillSwitch();
+
+        /**
          * @brief value of switch C (low/mid/high)
          */
         ThreeWaySwitch switchC();

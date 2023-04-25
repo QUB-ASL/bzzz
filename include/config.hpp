@@ -43,8 +43,8 @@
 #define ABSOLUTE_MIN_PWM 1000
 #define ABSOLUTE_MAX_PWM 2000
 
-/* Maximum pitch value corresponding to the top position of the stick (30deg = 0.52rad) */
-#define PITCH_MAX_RAD 0.5235987755982988
+/* Maximum pitch value corresponding to the top position of the stick (45deg = 0.785rad) */
+#define PITCH_MAX_RAD 0.785398
 
 /* Value from the radio when the stick is at the lowest position */
 #define RADIO_STICK_MIN 300

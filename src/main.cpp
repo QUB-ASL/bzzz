@@ -23,16 +23,9 @@ float initialAngularVelocity[3] = {0.0};
 void setupMotors()
 {
   delay(1500);
+  motorDriver.attachEscToPwmPin();
   motorDriver.arm();
   delay(1000);
-
-  // the following loop turns on the motor slowly, so get ready
-  for (int commonMotorSpeed = 840; commonMotorSpeed < 1190; commonMotorSpeed++)
-  {
-    motorDriver.writeSpeedToEsc(
-        commonMotorSpeed, commonMotorSpeed, commonMotorSpeed, commonMotorSpeed);
-    delay(10);
-  }
 }
 
 /**
@@ -131,6 +124,12 @@ void setup()
   setupAHRS();
   initAttitude();
   initAngularVelocity();
+  radio.readPiData();
+  delay(2000);
+      while (!radio.armed())
+      {
+          radio.readPiData();
+      }
   setupMotors();
 }
 
@@ -141,11 +140,21 @@ void loop()
   float angularVelocityCorrected[3];
   float controls[3];
 
+    if (radio.kill()) 
+    {
+      //Disarm motors then check if if kill switch is on or off
+      motorDriver.disarm();
+      while(radio.kill())
+      {
+        radio.readKillSwitch();
+      }
+    }
+
   // Note:
   // Forward pitch, left roll and heading towards west must be positive
 
   controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * 40.,
+      -radio.trimmerVRAPercentage() * 50.,
       -radio.trimmerVRBPercentage() * 10.);
   controller.setAngularVelocityGains(
       -radio.trimmerVRCPercentage() * 0.1,
@@ -189,6 +198,8 @@ void loop()
   //       float* motorSignals);
 
   // control actions to the motors
+  // THINK SOMETHING NOT QUITE RIGHT WITH motorFL.
+  // THE QUATERNION GAIN SEEMS TO EFFECT IT MORE THAN THE OTHER MOTORS
   float motorFL = throttleFromRadio + U_TO_PWM * (controls[0] + controls[1] + controls[2]);
   float motorFR = throttleFromRadio + U_TO_PWM * (-controls[0] + controls[1] - controls[2]);
   float motorBL = throttleFromRadio + U_TO_PWM * (controls[0] - controls[1] - controls[2]);

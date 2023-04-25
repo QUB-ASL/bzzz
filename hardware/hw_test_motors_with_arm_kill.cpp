@@ -10,6 +10,12 @@ void setup()
 {
   Serial.begin(115200);
   delay(1000);
+  radio.readPiData();
+  delay(100);
+  while (!radio.armed())
+   {
+        radio.readPiData();
+   }
   torqueSystem.attachEscToPwmPin();
   torqueSystem.arm();
   delay(3000); // Wait a while
@@ -17,17 +23,33 @@ void setup()
 
 void loop()
 {
+  if (radio.kill()) 
+  {
+      //Disarm motors then check if if kill switch is on or off
+      torqueSystem.disarm();
+      while(radio.kill())
+      {
+        radio.readKillSwitch();
+      }
+  }
+  radio.readPiData();
   torqueSystem.writeSpeedToEsc(1150, 1150, 1150, 1150); // sets the ESC speed
-  delay(1000);                     // Wait for a while 
-  torqueSystem.disarm();                   // Stop the ESC altogether
-  delay(1000); 
 }
 
 /*
-* //HARDWARE TEST FOR MOTORS CONTROLLED BY THROTTLE
+* HARDWARE TEST FOR MOTORS CONTROLLED BY THROTTLE
 *
 *void loop()
 *{
+*    if (radio.kill()) 
+*    {
+*      //Disarm motors then check if if kill switch is on or off
+*      torqueSystem.disarm();
+*      while(radio.kill())
+*      {
+*        radio.readKillSwitch();
+*      }
+*    }
 *  radio.readPiData();
 *  float throttlePrcntg = radio.throttleReferencePercentage();
 *  int throttleToMotors = int (throttlePrcntg * (ABSOLUTE_MAX_PWM-ABSOLUTE_MIN_PWM) + ABSOLUTE_MIN_PWM);
