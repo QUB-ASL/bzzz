@@ -26,11 +26,7 @@ namespace bzzz
 
     void beginSerial(int baud)
     {
-        #ifdef USE_UART2_FOR_RADIO
-            SERIAL_RADIO.begin(baud, SERIAL_8N1, RXD2, TXD2);
-        #else
-            SERIAL_RADIO.begin(baud);
-        #endif
+        SERIAL_RADIO.begin(baud, SERIAL_8N1, RXD2, TXD2);
     }
 
     void Radio::readRadioData(

@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <HardwareSerial.h>
 
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -13,17 +14,11 @@
 /*
  * Serial config
  */
-// uncomment the below line to use a seperate UART port for radio communication
-// this frees UART0 and the USB port for programming
-#define USE_UART2_FOR_RADIO  // UART2 is readily useable, UART1 requires more configuration as it shares pins with SPI
-#ifdef USE_UART2_FOR_RADIO
-    #include <HardwareSerial.h>
-    #define RXD2 16 //RXX2 pin
-    #define TXD2 17 //TX2 pin
-    #define SERIAL_RADIO Serial2
-#else
-    #define SERIAL_RADIO Serial
-#endif
+// Usign UART2 for radio. This frees UART0 and the USB port for programming
+// UART2 is readily useable, UART1 requires more configuration as it shares pins with SPI
+#define RXD2 16 //RX pin
+#define TXD2 17 //TX pin
+#define SERIAL_RADIO Serial2
 
 #define SERIAL_BAUD_RATE 115200
 
