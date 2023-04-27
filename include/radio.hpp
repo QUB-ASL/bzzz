@@ -44,6 +44,7 @@ namespace bzzz
 
             /**
              * @brief Begin Serial com
+             * @param baud baud rate
             */
            void beginSerial(int baud);
 
