@@ -8,9 +8,9 @@ namespace bzzz
     {
         String allDataFromPi;
         
-        if (Serial.available() > 0) 
+        if (SERIAL_RADIO.available() > 0) 
         {
-            allDataFromPi = Serial.readStringUntil('\n');
+            allDataFromPi = SERIAL_RADIO.readStringUntil('\n');
 
             for (int i = 0; i < 16; i++) 
             {
@@ -22,6 +22,15 @@ namespace bzzz
             }
 
         }
+    }
+
+    void beginSerial(int baud)
+    {
+        #ifdef USE_UART2_FOR_RADIO
+            SERIAL_RADIO.begin(baud, SERIAL_8N1, RXD2, TXD2);
+        #else
+            SERIAL_RADIO.begin(baud);
+        #endif
     }
 
     void Radio::readRadioData(

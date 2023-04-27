@@ -16,6 +16,7 @@ long int val; // variable to read the value from the analog pin
 void setup()
 {
   Serial.begin(115200);
+  radio.beginSerial(115200);
   delay(1000);
   torqueSystem.arm();
   delay(1000); // Wait a while

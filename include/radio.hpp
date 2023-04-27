@@ -43,6 +43,11 @@ namespace bzzz
             Radio();
 
             /**
+             * @brief Begin Serial com
+            */
+           void beginSerial(int baud);
+
+            /**
              * @brief Read the receiver data sent from Pi
              */
             void readPiData(void);
