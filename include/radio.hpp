@@ -44,24 +44,7 @@ namespace bzzz
          * @brief Read the receiver data sent from Pi
          */
         void readPiData(void);
-
-        /**
-         * @brief reformat receiver values
-         */
-        void readRadioData(
-            int &radioThrottle,
-            int &radioRoll,
-            int &radioPitch,
-            int &radioYawRate,
-            int &radioSwitchC,
-            int &radioVRA,
-            int &radioVRC,
-            int &radioVRB,
-            int &radioArm,
-            int &radioKill,
-            int &radioSwitchD,
-            int &radioVRE);
-
+        
         /**
          * @brief pitch reference from RC in rad
          */
@@ -127,6 +110,12 @@ namespace bzzz
          * @brief value of trimmer VRE (0-1)
          */
         float trimmerVREPercentage();
+
+        /**
+         * @brief Begin Serial com
+         * @param baud baud rate
+        */
+        void beginSerial(int baud);
 
     }; /* end of class Radio */
 

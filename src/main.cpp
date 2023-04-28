@@ -120,7 +120,7 @@ void setupAHRS()
  */
 void setup()
 {
-  Serial.begin(SERIAL_BAUD_RATE);
+  radio.beginSerial(115200);
   setupAHRS();
   initAttitude();
   initAngularVelocity();

@@ -30,10 +30,10 @@ namespace bzzz
     void Radio::readPiData(void)
     {
         String allDataFromPi;
-
-        if (Serial.available() > 0)
+        
+        if (SERIAL_RADIO.available() > 0) 
         {
-            allDataFromPi = Serial.readStringUntil('\n');
+            allDataFromPi = SERIAL_RADIO.readStringUntil('\n');
 
             for (int i = 0; i < 16; i++)
             {
@@ -47,34 +47,11 @@ namespace bzzz
         }
     }
 
-    void Radio::readRadioData(
-        int &radioThrottle,
-        int &radioRoll,
-        int &radioPitch,
-        int &radioYawRate,
-        int &radioSwitchC,
-        int &radioVRA,
-        int &radioVRC,
-        int &radioVRB,
-        int &radioArm,
-        int &radioKill,
-        int &radioSwitchD,
-        int &radioVRE)
+    void Radio::beginSerial(int baud)
     {
-        // reformat receiver values  to match radio (RadioLink AT10)
-        radioThrottle = channelData[2];
-        radioRoll = channelData[3];
-        radioPitch = channelData[1];
-        radioYawRate = channelData[0];
-        radioSwitchC = channelData[4];
-        radioVRA = channelData[5];
-        radioVRC = channelData[6];
-        radioVRB = channelData[7];
-        radioArm = channelData[8];  // radioSwitchB
-        radioKill = channelData[9]; // radioSwitchA
-        radioSwitchD = channelData[10];
-        radioVRE = channelData[11];
+        SERIAL_RADIO.begin(baud, SERIAL_8N1, RXD2, TXD2);
     }
+
 
     float Radio::pitchReferenceAngleRad()
     {

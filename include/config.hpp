@@ -13,6 +13,12 @@
 /*
  * Serial config
  */
+// Usign UART2 for radio. This frees UART0 and the USB port for programming
+// UART2 is readily useable, UART1 requires more configuration as it shares pins with SPI
+#define RXD2 16 //RX pin
+#define TXD2 17 //TX pin
+#define SERIAL_RADIO Serial2
+
 #define SERIAL_BAUD_RATE 115200
 
 /** Sampling time */
@@ -44,7 +50,7 @@
 #define ABSOLUTE_MAX_PWM 2000
 
 /* Maximum pitch value corresponding to the top position of the stick (45deg = 0.785rad) */
-#define PITCH_MAX_RAD 0.785398
+#define PITCH_MAX_RAD 0.7853981
 
 /* Value from the radio when the stick is at the lowest position */
 #define RADIO_STICK_MIN 300
