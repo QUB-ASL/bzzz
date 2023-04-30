@@ -27,7 +27,7 @@ namespace bzzz
         return (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
     }
 
-    void Radio::readPiData(void)
+    bool Radio::readPiData(void)
     {
         String allDataFromPi;
 
@@ -45,7 +45,9 @@ namespace bzzz
                 // cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
             }
+            return true;
         }
+        return false;
     }
 
     float Radio::pitchReferenceAngleRad()

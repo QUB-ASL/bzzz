@@ -125,7 +125,12 @@ void setup()
   setupAHRS();
   initAttitude();
   initAngularVelocity();
-  radio.readPiData();
+  // The first time we read data from the radio, wait to make sure a
+  // connection has been established
+  while (!radio.readPiData())
+  {
+    // just wait to receive data from the radio
+  }
   delay(2000);
   while (!radio.armed())
   {
@@ -134,13 +139,8 @@ void setup()
   setupMotors();
 }
 
-void loop()
+void handleKill()
 {
-  float quaternionImuData[4];
-  float angularVelocity[3];
-  float angularVelocityCorrected[3];
-  float controls[3];
-
   if (radio.kill())
   {
     // Disarm motors then check if if kill switch is on or off
@@ -150,16 +150,27 @@ void loop()
       radio.readKillSwitch();
     }
   }
+}
 
-  // Note:
-  // Forward pitch, left roll and heading towards west must be positive
-
+void updateGainsFromRC()
+{
   controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * 50.,
-      -radio.trimmerVRBPercentage() * 10.);
+      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN,
+      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN);
   controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * 0.1,
-      -radio.trimmerVREPercentage() * 0.01);
+      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN,
+      -radio.trimmerVREPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+}
+
+void loop()
+{
+  float quaternionImuData[4];
+  float angularVelocity[3];
+  float angularVelocityCorrected[3];
+  float controls[3];
+
+  handleKill();
+  updateGainsFromRC();
 
   ahrs.update();
   radio.readPiData();
@@ -176,8 +187,9 @@ void loop()
   // TODO Next, we should fix this
   // NOTE: It is very important that when the stick is at the middle,
   //       the raw rate is exactly zero
-  yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
+  // yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
 
+  // Read reference quaternion from RC
   Quaternion referenceQuaternion(
       yawReferenceRad,
       radio.pitchReferenceAngleRad(),
@@ -187,22 +199,15 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  controller.controlAction(attitudeError, angularVelocityCorrected, controls);
-
   float throttleFromRadio = radio.throttleReferencePercentage() * (ABSOLUTE_MAX_PWM - ABSOLUTE_MIN_PWM) + ABSOLUTE_MIN_PWM;
 
-  // TODO create a method (in Controller) like
-  // void controller.motorSignals(
-  //       float throttleReference,
-  //       Quaternion& attitudeError,
-  //       const float* angularVelocity,
-  //       float* motorSignals);
-
   // control actions to the motors
-  float motorFL = throttleFromRadio + U_TO_PWM * (controls[0] + controls[1] + controls[2]);
-  float motorFR = throttleFromRadio + U_TO_PWM * (-controls[0] + controls[1] - controls[2]);
-  float motorBL = throttleFromRadio + U_TO_PWM * (controls[0] - controls[1] - controls[2]);
-  float motorBR = throttleFromRadio + U_TO_PWM * (-controls[0] - controls[1] + controls[2]);
+  int motorFL, motorFR, motorBL, motorBR;
+
+  controller.motorPwmSignals(attitudeError,
+                             angularVelocityCorrected,
+                             throttleFromRadio,
+                             motorFL, motorFR, motorBL, motorBR);
 
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
 

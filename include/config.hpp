@@ -5,12 +5,12 @@
 
 // Various defines such as PIN numbers and global constants
 
-/*
+/**
  * IMU config
  */
 #define IMU_ADDRESS (0x68)
 
-/*
+/**
  * Serial config
  */
 #define SERIAL_BAUD_RATE 115200
@@ -43,17 +43,29 @@
 #define ABSOLUTE_MIN_PWM 1000
 #define ABSOLUTE_MAX_PWM 2000
 
-/* Maximum pitch value corresponding to the top position of the stick (45deg = 0.785rad) */
+/** Maximum pitch value corresponding to the top position of the stick (45deg = 0.785rad) */
 #define PITCH_MAX_RAD 0.785398
 
-/* Value from the radio when the stick is at the lowest position */
+/** Value from the radio when the stick is at the lowest position */
 #define RADIO_STICK_MIN 300
 
-/* Value from the radio when the stick is at the highest position */
+/** Value from the radio when the stick is at the highest position */
 #define RADIO_STICK_MAX 1700
 
-/* Maximum yaw rate (rad/s) 10 deg/s = 0.1745 rad/s */
+/** Maximum yaw rate (rad/s) 10 deg/s = 0.1745 rad/s */
 #define RADIO_MAX_YAW_RATE_RAD_SEC 0.1745
+
+/** Trimmer A on RC - maximum quaternion XY gain */
+#define RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN 50.
+
+/** Trimmer B on RC - maximum quaternion Z gain */
+#define RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN 10.
+
+/** Trimmer C on RC - maximum omega xy gain */
+#define RADIO_TRIMMER_MAX_OMEGA_XY_GAIN 0.1
+
+/** Trimmer E on RC - maximum omega z gain */
+#define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 0.01
 
 /**
  * Control action to PWM scaling factor

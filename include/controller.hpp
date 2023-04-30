@@ -58,6 +58,30 @@ the RC.
             Quaternion &attitudeError,
             const float *angularVelocity,
             float *control);
+
+        /**
+         * @brief PWM signals to the four motors
+         *
+         * @param attitudeError attitude error quaternion
+         * @param angularVelocity angular velocity (from IMU)
+         * @param throttle throttle signal (between 1000 and 2000)
+         * @param motorFL
+         * @param motorFR
+         * @param motorBL
+         * @param motorBR
+         * @param controlToPwmScaling (optional) scaling parameter
+         *
+         */
+        void motorPwmSignals(
+            Quaternion &attitudeError,
+            const float *angularVelocity,
+            float throttle,
+            int &motorFL,
+            int &motorFR,
+            int &motorBL,
+            int &motorBR,
+            float controlToPwmScaling = U_TO_PWM);
+
     }; /* end of class Controller */
 
 } /* end of namespace bzzz */

@@ -42,8 +42,10 @@ namespace bzzz
 
         /**
          * @brief Read the receiver data sent from Pi
+         *
+         * @return true iff new data have been received
          */
-        void readPiData(void);
+        bool readPiData(void);
 
         /**
          * @brief pitch reference from RC in rad

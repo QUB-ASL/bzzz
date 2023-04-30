@@ -18,6 +18,24 @@ namespace bzzz
         }
     }
 
+    void Controller::motorPwmSignals(
+        Quaternion &attitudeError,
+        const float *angularVelocity,
+        float throttle,
+        int &motorFL,
+        int &motorFR,
+        int &motorBL,
+        int &motorBR,
+        float controlToPwmScaling)
+    {
+        float controls[3];
+        controlAction(attitudeError, angularVelocity, controls);
+        motorFL = throttle + controlToPwmScaling * (controls[0] + controls[1] + controls[2]);
+        motorFR = throttle + controlToPwmScaling * (-controls[0] + controls[1] - controls[2]);
+        motorBL = throttle + controlToPwmScaling * (controls[0] - controls[1] - controls[2]);
+        motorBR = throttle + controlToPwmScaling * (-controls[0] - controls[1] + controls[2]);
+    }
+
 #ifdef BZZZ_DEBUG
     void Controller::setQuaternionGains(float gainXY, float gainZ)
     {
