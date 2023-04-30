@@ -34,10 +34,10 @@ namespace bzzz
     void MotorDriver::arm(void)
     {
         m_armStatus = 1;
-        m_frontLeftEsc.writeMicroseconds(IDLE_ROTOR_SPEED); // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED  
-        m_frontRightEsc.writeMicroseconds(IDLE_ROTOR_SPEED); // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED 
-        m_backLeftEsc.writeMicroseconds(IDLE_ROTOR_SPEED); // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED 
-        m_backRightEsc.writeMicroseconds(IDLE_ROTOR_SPEED); // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED 
+        m_frontLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED); // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED  
+        m_frontRightEsc.writeMicroseconds(ARM_ROTOR_SPEED); // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED 
+        m_backLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED); // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED 
+        m_backRightEsc.writeMicroseconds(ARM_ROTOR_SPEED); // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED 
     };
 
     bool MotorDriver::getArmStatus(void)

@@ -24,8 +24,9 @@ void setupMotors()
 {
   delay(1500);
   motorDriver.attachEscToPwmPin();
+  delay(1500);
   motorDriver.arm();
-  delay(1000);
+  delay(1500);
 }
 
 /**
@@ -158,7 +159,7 @@ void loop()
       -radio.trimmerVRBPercentage() * 10.);
   controller.setAngularVelocityGains(
       -radio.trimmerVRCPercentage() * 0.1,
-      -radio.trimmerVREPercentage() * 0.1);
+      -radio.trimmerVREPercentage() * 0.01);
 
   ahrs.update();
   radio.readPiData();
