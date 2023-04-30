@@ -19,8 +19,8 @@
 #define SAMPLING_TIME (0.008)
 
 /*
-*AHRS config
-*/
+ *AHRS config
+ */
 #define MAGNETOMETER_BIAS_X 222.566
 #define MAGNETOMETER_BIAS_Y 41.087
 #define MAGNETOMETER_BIAS_Z -60.268
@@ -55,6 +55,9 @@
 /* Maximum yaw rate (rad/s) 10 deg/s = 0.1745 rad/s */
 #define RADIO_MAX_YAW_RATE_RAD_SEC 0.1745
 
+/**
+ * Control action to PWM scaling factor
+ */
 #define U_TO_PWM 8
 
 #ifndef BZZZ_VERBOSITY

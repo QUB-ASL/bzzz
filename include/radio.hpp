@@ -35,7 +35,7 @@ namespace bzzz
          * 11         Switch D
          * 12         Trimmer VRE
          */
-        int channelData[16];
+        int m_channelData[16];
 
     public:
         Radio();
@@ -44,23 +44,6 @@ namespace bzzz
          * @brief Read the receiver data sent from Pi
          */
         void readPiData(void);
-
-        /**
-         * @brief reformat receiver values
-         */
-        void readRadioData(
-            int &radioThrottle,
-            int &radioRoll,
-            int &radioPitch,
-            int &radioYawRate,
-            int &radioSwitchC,
-            int &radioVRA,
-            int &radioVRC,
-            int &radioVRB,
-            int &radioArm,
-            int &radioKill,
-            int &radioSwitchD,
-            int &radioVRE);
 
         /**
          * @brief pitch reference from RC in rad

@@ -36,8 +36,20 @@ namespace bzzz
          */
         void preflightCalibrate(bool calibrateMagnetometer = false);
 
+        /**
+         * @brief calibrate the magnetometer
+         *
+         * The biases and scaling parameters are computed by `preflightCalibrate`
+         *
+         * @param biasX magnetometer X-bias
+         * @param biasY magnetometer Y-bias
+         * @param biasZ magnetometer Z-bias
+         * @param scaleX magnetometer X-axis scaling
+         * @param scaleY magnetometer Y-axis scaling
+         * @param scaleZ magnetometer Z-axis scaling
+         */
         void calibrateMagnetometer(float biasX, float biasY, float biasZ,
-                                    float scaleX, float scaleY, float scaleZ);
+                                   float scaleX, float scaleY, float scaleZ);
         /**
          * @brief retrieves the quaternion
          *

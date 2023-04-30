@@ -42,32 +42,32 @@ void discardImuMeasurements(size_t numMeasurements = 5000)
 }
 
 /**
- * Determine the initial angular velocity readings of the IMU. 
+ * Determine the initial angular velocity readings of the IMU.
  * This value is subtracted from the angular velocity readings of the IMU
- * to get the correct angular velocity. 
+ * to get the correct angular velocity.
  * All angular velocities should be zero (at the start) when quadrotor is still.
  */
 void initAngularVelocity()
 {
-  float AngularVelocityTemp[3] = {0};
-  float AngularVelocityAverage[3] = {0};
+  float angularVelocityTemp[3] = {0};
+  float angularVelocityAverage[3] = {0};
   int numInitAngularVelocity = 10;
 
   for (int i = 0; i < numInitAngularVelocity; i++)
   {
     ahrs.update();
-    ahrs.angularVelocity(AngularVelocityTemp);
-    AngularVelocityAverage[0] += AngularVelocityTemp[0];
-    AngularVelocityAverage[1] += AngularVelocityTemp[1];
-    AngularVelocityAverage[2] += AngularVelocityTemp[2];
+    ahrs.angularVelocity(angularVelocityTemp);
+    angularVelocityAverage[0] += angularVelocityTemp[0];
+    angularVelocityAverage[1] += angularVelocityTemp[1];
+    angularVelocityAverage[2] += angularVelocityTemp[2];
   }
-  AngularVelocityAverage[0] /= (float)numInitAngularVelocity;
-  AngularVelocityAverage[1] /= (float)numInitAngularVelocity;
-  AngularVelocityAverage[2] /= (float)numInitAngularVelocity;
+  angularVelocityAverage[0] /= (float)numInitAngularVelocity;
+  angularVelocityAverage[1] /= (float)numInitAngularVelocity;
+  angularVelocityAverage[2] /= (float)numInitAngularVelocity;
 
-  initialAngularVelocity[0] = AngularVelocityAverage[0];
-  initialAngularVelocity[1] = AngularVelocityAverage[1];
-  initialAngularVelocity[2] = AngularVelocityAverage[2];
+  initialAngularVelocity[0] = angularVelocityAverage[0];
+  initialAngularVelocity[1] = angularVelocityAverage[1];
+  initialAngularVelocity[2] = angularVelocityAverage[2];
 }
 
 /**
@@ -112,7 +112,7 @@ void setupAHRS()
 {
   ahrs.setup();
   ahrs.preflightCalibrate(false);
-  ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z, 
+  ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z,
                              MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X);
 }
 
@@ -127,10 +127,10 @@ void setup()
   initAngularVelocity();
   radio.readPiData();
   delay(2000);
-      while (!radio.armed())
-      {
-          radio.readPiData();
-      }
+  while (!radio.armed())
+  {
+    radio.readPiData();
+  }
   setupMotors();
 }
 
@@ -141,15 +141,15 @@ void loop()
   float angularVelocityCorrected[3];
   float controls[3];
 
-    if (radio.kill()) 
+  if (radio.kill())
+  {
+    // Disarm motors then check if if kill switch is on or off
+    motorDriver.disarm();
+    while (radio.kill())
     {
-      //Disarm motors then check if if kill switch is on or off
-      motorDriver.disarm();
-      while(radio.kill())
-      {
-        radio.readKillSwitch();
-      }
+      radio.readKillSwitch();
     }
+  }
 
   // Note:
   // Forward pitch, left roll and heading towards west must be positive
@@ -173,9 +173,11 @@ void loop()
   angularVelocityCorrected[2] = angularVelocity[2] - initialAngularVelocity[2];
 
   // !!!deactivate for testing!!!
-  //yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
+  // TODO Next, we should fix this
+  // NOTE: It is very important that when the stick is at the middle,
+  //       the raw rate is exactly zero
+  yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
 
-  // TODO Try to update the function radio.rollReferenceAngleRad() and add a minus
   Quaternion referenceQuaternion(
       yawReferenceRad,
       radio.pitchReferenceAngleRad(),
@@ -187,9 +189,7 @@ void loop()
 
   controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
-  float throttleFromRadio = radio.throttleReferencePercentage() 
-                            * (ABSOLUTE_MAX_PWM - ABSOLUTE_MIN_PWM) 
-                            + ABSOLUTE_MIN_PWM;
+  float throttleFromRadio = radio.throttleReferencePercentage() * (ABSOLUTE_MAX_PWM - ABSOLUTE_MIN_PWM) + ABSOLUTE_MIN_PWM;
 
   // TODO create a method (in Controller) like
   // void controller.motorSignals(
@@ -199,8 +199,6 @@ void loop()
   //       float* motorSignals);
 
   // control actions to the motors
-  // THINK SOMETHING NOT QUITE RIGHT WITH motorFL.
-  // THE QUATERNION GAIN SEEMS TO EFFECT IT MORE THAN THE OTHER MOTORS
   float motorFL = throttleFromRadio + U_TO_PWM * (controls[0] + controls[1] + controls[2]);
   float motorFR = throttleFromRadio + U_TO_PWM * (-controls[0] + controls[1] - controls[2]);
   float motorBL = throttleFromRadio + U_TO_PWM * (controls[0] - controls[1] - controls[2]);
@@ -209,8 +207,8 @@ void loop()
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
 
   // To print do:
-  //logSerial(LogVerbosityLevel::Info,
-  //          "%.3f\t %.3f\t %.3f\t %.3f\t %.3f\t %.3f", 
+  // logSerial(LogVerbosityLevel::Info,
+  //          "%.3f\t %.3f\t %.3f\t %.3f\t %.3f\t %.3f",
   //          angularVelocity[0], angularVelocityCorrected[0],
   //          angularVelocity[1], angularVelocityCorrected[1],
   //          angularVelocity[2], angularVelocityCorrected[2]);

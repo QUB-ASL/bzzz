@@ -13,10 +13,10 @@ namespace bzzz
 
     private:
         bool m_armStatus = false;
-        Servo m_frontLeftEsc; // create servo object to control front left ESC
+        Servo m_frontLeftEsc;  // create servo object to control front left ESC
         Servo m_frontRightEsc; // create servo object to control front right ESC
-        Servo m_backLeftEsc; // create servo object to control back left ESC
-        Servo m_backRightEsc; // create servo object to control back right ESC
+        Servo m_backLeftEsc;   // create servo object to control back left ESC
+        Servo m_backRightEsc;  // create servo object to control back right ESC
 
     public:
         /**

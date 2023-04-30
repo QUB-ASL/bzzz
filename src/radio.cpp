@@ -35,11 +35,12 @@ namespace bzzz
         {
             allDataFromPi = Serial.readStringUntil('\n');
 
+            // TODO (Question) Should we transfer just the first 12 values?
             for (int i = 0; i < 16; i++)
             {
                 // take the substring from the start to the first occurence of a comma,
                 // convert it to int and save it in the array
-                channelData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
+                m_channelData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
 
                 // cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
@@ -47,75 +48,46 @@ namespace bzzz
         }
     }
 
-    void Radio::readRadioData(
-        int &radioThrottle,
-        int &radioRoll,
-        int &radioPitch,
-        int &radioYawRate,
-        int &radioSwitchC,
-        int &radioVRA,
-        int &radioVRC,
-        int &radioVRB,
-        int &radioArm,
-        int &radioKill,
-        int &radioSwitchD,
-        int &radioVRE)
-    {
-        // reformat receiver values  to match radio (RadioLink AT10)
-        radioThrottle = channelData[2];
-        radioRoll = channelData[3];
-        radioPitch = channelData[1];
-        radioYawRate = channelData[0];
-        radioSwitchC = channelData[4];
-        radioVRA = channelData[5];
-        radioVRC = channelData[6];
-        radioVRB = channelData[7];
-        radioArm = channelData[8];  // radioSwitchB
-        radioKill = channelData[9]; // radioSwitchA
-        radioSwitchD = channelData[10];
-        radioVRE = channelData[11];
-    }
-
     float Radio::pitchReferenceAngleRad()
     {
-        return mapRadioToAngle(channelData[RADIO_CHANNEL_PITCH]);
+        return mapRadioToAngle(m_channelData[RADIO_CHANNEL_PITCH]);
     }
 
     float Radio::rollReferenceAngleRad()
     {
-        return mapRadioToAngle(channelData[RADIO_CHANNEL_ROLL]);
+        return mapRadioToAngle(m_channelData[RADIO_CHANNEL_ROLL]);
     }
 
     float Radio::yawRateReferenceRadSec()
     {
-        float rawRatePercentage = mapTrimmerToPercentage(channelData[RADIO_CHANNEL_YAW_RATE]);
+        float rawRatePercentage = mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_YAW_RATE]);
         return -RADIO_MAX_YAW_RATE_RAD_SEC + RADIO_MAX_YAW_RATE_RAD_SEC * rawRatePercentage;
     }
 
     float Radio::throttleReferencePercentage()
     {
-        return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_THROTTLE]);
+        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_THROTTLE]);
     }
 
     bool Radio::armed()
     {
-        return channelData[RADIO_CHANNEL_SWITCH_B] >= 1500;
+        return m_channelData[RADIO_CHANNEL_SWITCH_B] >= 1500;
     }
 
     bool Radio::kill()
     {
-        return channelData[RADIO_CHANNEL_SWITCH_A] >= 1500;
+        return m_channelData[RADIO_CHANNEL_SWITCH_A] >= 1500;
     }
 
     float Radio::readKillSwitch()
     {
         Radio::readPiData();
-         return channelData[RADIO_CHANNEL_SWITCH_A];
+        return m_channelData[RADIO_CHANNEL_SWITCH_A];
     }
 
     ThreeWaySwitch Radio::switchC()
     {
-        int switchValue = channelData[RADIO_CHANNEL_SWITCH_C];
+        int switchValue = m_channelData[RADIO_CHANNEL_SWITCH_C];
         if (switchValue <= 450)
         {
             return ThreeWaySwitch::DOWN;
@@ -129,27 +101,27 @@ namespace bzzz
 
     bool Radio::switchD()
     {
-        return channelData[RADIO_CHANNEL_SWITCH_D] >= 1500;
+        return m_channelData[RADIO_CHANNEL_SWITCH_D] >= 1500;
     }
 
     float Radio::trimmerVRAPercentage()
     {
-        return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_VRA]);
+        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRA]);
     }
 
     float Radio::trimmerVRCPercentage()
     {
-        return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_VRC]);
+        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRC]);
     }
 
     float Radio::trimmerVRBPercentage()
     {
-        return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_VRB]);
+        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRB]);
     }
 
     float Radio::trimmerVREPercentage()
     {
-        return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_VRE]);
+        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRE]);
     }
 
 }
