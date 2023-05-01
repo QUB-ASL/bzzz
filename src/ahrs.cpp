@@ -49,7 +49,7 @@ namespace bzzz
     void AHRS::quaternion(float *q)
     {
         q[0] = -m_imu.getQuaternionY();
-        q[1] = m_imu.getQuaternionZ();
+        q[1] = -m_imu.getQuaternionZ();
         q[2] = m_imu.getQuaternionW();
         q[3] = -m_imu.getQuaternionX();
     }
@@ -72,7 +72,7 @@ namespace bzzz
         float qw = -m_imu.getQuaternionY();
         float qx = -m_imu.getQuaternionZ();
         float qy = m_imu.getQuaternionW();
-        float qz = m_imu.getQuaternionX();
+        float qz = -m_imu.getQuaternionX();
 
         float sinr_cosp = 2 * (qw * qx + qy * qz);
         float cosr_cosp = 1 - 2 * (qx * qx + qy * qy);

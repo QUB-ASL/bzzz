@@ -22,16 +22,10 @@ float yawReferenceRad = 0.0;
 void setupMotors()
 {
   delay(1500);
+  motorDriver.attachEscToPwmPin();
+  delay(1500);
   motorDriver.arm();
-  delay(1000);
-
-  // the following loop turns on the motor slowly, so get ready
-  for (int commonMotorSpeed = 840; commonMotorSpeed < 1190; commonMotorSpeed++)
-  {
-    motorDriver.writeSpeedToEsc(
-        commonMotorSpeed, commonMotorSpeed, commonMotorSpeed, commonMotorSpeed);
-    delay(10);
-  }
+  delay(1500);
 }
 
 /**
@@ -116,7 +110,7 @@ void loop()
       -radio.trimmerVRAPercentage() * 70.,
       -radio.trimmerVRBPercentage() * 5.);
   controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * 0.05,
+      -radio.trimmerVRCPercentage() * 0.2,
       -radio.trimmerVREPercentage() * 0.01);
 
   ahrs.update();
@@ -126,7 +120,7 @@ void loop()
   ahrs.angularVelocity(angularVelocity);
 
   // !!!deactivate for testing!!!
-  yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
+  //yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
 
   // TODO Try to update the function radio.rollReferenceAngleRad() and add a minus
   Quaternion referenceQuaternion(

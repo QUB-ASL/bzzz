@@ -1,4 +1,5 @@
-#include "ESC.h" // RC_ESP library installed by Library Manager
+#include <Servo.h>
+#include "Arduino.h"
 #include "config.hpp"
 
 #ifndef MOTORS_H
@@ -12,16 +13,21 @@ namespace bzzz
 
     private:
         bool m_armStatus = false;
-        ESC *m_frontLeftEsc;
-        ESC *m_frontRightEsc;
-        ESC *m_backLeftEsc;
-        ESC *m_backRightEsc;
+        Servo m_frontLeftEsc;  // create servo object to control front left ESC
+        Servo m_frontRightEsc; // create servo object to control front right ESC
+        Servo m_backLeftEsc;   // create servo object to control back left ESC
+        Servo m_backRightEsc;  // create servo object to control back right ESC
 
     public:
         /**
          * Construct a new torque system
          */
         MotorDriver();
+
+        /**
+         * Attach ESC to correct motor(ESC_PIN)
+         */
+        void attachEscToPwmPin(void);
 
         /**
          * @brief Write the correct speed to correct motor(ESC_PIN)
