@@ -82,8 +82,8 @@ void setupAHRS()
 {
   ahrs.setup();
   ahrs.preflightCalibrate(false);
-  // TODO create #define's with these parameters
-  ahrs.calibrateMagnetometer(222.566, 41.087, -60.268, 1.050, 0.936, 1.022);
+  ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z, 
+                             MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X);
 }
 
 /**
@@ -94,6 +94,12 @@ void setup()
   Serial.begin(SERIAL_BAUD_RATE);
   setupAHRS();
   initAttitude();
+  radio.readPiData();
+  delay(2000);
+  while (!radio.armed())
+      {
+          radio.readPiData();
+      }
   setupMotors();
 }
 
@@ -102,6 +108,16 @@ void loop()
   float quaternionImuData[4];
   float angularVelocity[3];
   float controls[3];
+
+  if (radio.kill()) 
+    {
+      //Disarm motors then check if if kill switch is on or off
+      motorDriver.disarm();
+      while(radio.kill())
+      {
+        radio.readKillSwitch();
+      }
+    }
 
   // Note:
   // Forward pitch, right roll and heading towards west must be positive
