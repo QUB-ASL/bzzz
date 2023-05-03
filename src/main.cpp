@@ -77,7 +77,7 @@ void initAngularVelocity()
 void initAttitude()
 {
   float quatInitTemp[4] = {0};
-  float averageQuaternion3D[3] = {0}; // 3D quaternion (x, y, z)
+  float averageQuaternion[4] = {0}; // 3D quaternion (x, y, z)
   int numInitQUat = 10;
 
   // make sure the estimator has converged; discard initial measurements
@@ -88,21 +88,23 @@ void initAttitude()
   {
     ahrs.update();
     ahrs.quaternion(quatInitTemp);
-    averageQuaternion3D[0] += quatInitTemp[1];
-    averageQuaternion3D[1] += quatInitTemp[2];
-    averageQuaternion3D[2] += quatInitTemp[3];
+    averageQuaternion[0] += quatInitTemp[0];
+    averageQuaternion[1] += quatInitTemp[1];
+    averageQuaternion[2] += quatInitTemp[2];
+    averageQuaternion[3] += quatInitTemp[3];
   }
-  averageQuaternion3D[0] /= (float)numInitQUat;
-  averageQuaternion3D[1] /= (float)numInitQUat;
-  averageQuaternion3D[2] /= (float)numInitQUat;
+  averageQuaternion[0] /= (float)numInitQUat;
+  averageQuaternion[1] /= (float)numInitQUat;
+  averageQuaternion[2] /= (float)numInitQUat;
+  averageQuaternion[3] /= (float)numInitQUat;
 
-  float normSqAverageQuaternion3D =
-      sq(averageQuaternion3D[0]) + sq(averageQuaternion3D[1]) + sq(averageQuaternion3D[2]);
+  float normAverageQuaternion =
+      sqrt(sq(averageQuaternion[0]) + sq(averageQuaternion[1]) + sq(averageQuaternion[2]) + sq(averageQuaternion[3]));
 
-  initialQuaternion[0] = sqrt(1. - normSqAverageQuaternion3D);
-  initialQuaternion[1] = averageQuaternion3D[0];
-  initialQuaternion[2] = averageQuaternion3D[1];
-  initialQuaternion[3] = averageQuaternion3D[2];
+  initialQuaternion[0] = averageQuaternion[0] / normAverageQuaternion;
+  initialQuaternion[1] = averageQuaternion[1] / normAverageQuaternion;
+  initialQuaternion[2] = averageQuaternion[2] / normAverageQuaternion;
+  initialQuaternion[3] = averageQuaternion[3] / normAverageQuaternion;
 }
 
 /**
@@ -169,8 +171,15 @@ void loop()
   float angularVelocityCorrected[3];
   float controls[3];
 
-  handleKill();
-  updateGainsFromRC();
+  // Note:
+  // Forward pitch, right roll and heading towards west must be positive
+
+  controller.setQuaternionGains(
+      -radio.trimmerVRAPercentage() * 70.,
+      -radio.trimmerVRBPercentage() * 5.);
+  controller.setAngularVelocityGains(
+      -radio.trimmerVRCPercentage() * 0.2,
+      -radio.trimmerVREPercentage() * 0.01);
 
   ahrs.update();
   radio.readPiData();
@@ -178,10 +187,8 @@ void loop()
   ahrs.quaternion(quaternionImuData);
   ahrs.angularVelocity(angularVelocity);
 
-  // Determine correct angularVelocity
-  angularVelocityCorrected[0] = angularVelocity[0] - initialAngularVelocity[0];
-  angularVelocityCorrected[1] = angularVelocity[1] - initialAngularVelocity[1];
-  angularVelocityCorrected[2] = angularVelocity[2] - initialAngularVelocity[2];
+  // !!!deactivate for testing!!!
+  // yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
 
   // !!!deactivate for testing!!!
   // TODO Next, we should fix this
