@@ -19,7 +19,7 @@ namespace bzzz
 
     float mapRadioToAngle(int x)
     {
-        return -PITCH_MAX_RAD + (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN) * 2 * PITCH_MAX_RAD);
+        return -PITCH_MAX_RAD + (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN)) * 2 * PITCH_MAX_RAD;
     }
 
     float mapTrimmerToPercentage(int x)

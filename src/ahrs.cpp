@@ -69,23 +69,21 @@ namespace bzzz
 #ifdef BZZZ_DEBUG
     void AHRS::eulerAngles(float *euler)
     {
-        float qw = -m_imu.getQuaternionY();
-        float qx = -m_imu.getQuaternionZ();
-        float qy = m_imu.getQuaternionW();
-        float qz = -m_imu.getQuaternionX();
+        float q[4] = {0};
+        quaternion(q);
 
-        float sinr_cosp = 2 * (qw * qx + qy * qz);
-        float cosr_cosp = 1 - 2 * (qx * qx + qy * qy);
+        float sinr_cosp = 2 * (q[0] * q[1] + q[2] * q[3]);
+        float cosr_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
         euler[2] = std::atan2(sinr_cosp, cosr_cosp);
 
         // pitch (y-axis rotation)
-        float sinp = std::sqrt(1 + 2 * (qw * qy - qx * qz));
-        float cosp = std::sqrt(1 - 2 * (qw * qy - qx * qz));
+        float sinp = std::sqrt(1 + 2 * (q[0] * q[2] - q[1] * q[3]));
+        float cosp = std::sqrt(1 - 2 * (q[0] * q[2] - q[1] * q[3]));
         euler[1] = 2 * std::atan2(sinp, cosp) - M_PI / 2;
 
         // yaw (z-axis rotation)
-        float siny_cosp = 2 * (qw * qz + qx * qy);
-        float cosy_cosp = 1 - 2 * (qy * qy + qz * qz);
+        float siny_cosp = 2 * (q[0] * q[3] + q[1] * q[2]);
+        float cosy_cosp = 1 - 2 * (q[2] * q[2] + q[3] * q[3]);
         euler[0] = std::atan2(siny_cosp, cosy_cosp);
     }
 #endif /* BZZZ_DEBUG */

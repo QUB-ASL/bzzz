@@ -47,7 +47,7 @@ void discardImuMeasurements(size_t numMeasurements = 5000)
 void initAttitude()
 {
   float quatInitTemp[4] = {0};
-  float averageQuaternion3D[3] = {0}; // 3D quaternion (x, y, z)
+  float averageQuaternion[4] = {0}; // 3D quaternion (x, y, z)
   int numInitQUat = 10;
 
   // make sure the estimator has converged; discard initial measurements
@@ -58,21 +58,23 @@ void initAttitude()
   {
     ahrs.update();
     ahrs.quaternion(quatInitTemp);
-    averageQuaternion3D[0] += quatInitTemp[1];
-    averageQuaternion3D[1] += quatInitTemp[2];
-    averageQuaternion3D[2] += quatInitTemp[3];
+    averageQuaternion[0] += quatInitTemp[0];
+    averageQuaternion[1] += quatInitTemp[1];
+    averageQuaternion[2] += quatInitTemp[2];
+    averageQuaternion[3] += quatInitTemp[3];
   }
-  averageQuaternion3D[0] /= (float)numInitQUat;
-  averageQuaternion3D[1] /= (float)numInitQUat;
-  averageQuaternion3D[2] /= (float)numInitQUat;
+  averageQuaternion[0] /= (float)numInitQUat;
+  averageQuaternion[1] /= (float)numInitQUat;
+  averageQuaternion[2] /= (float)numInitQUat;
+  averageQuaternion[3] /= (float)numInitQUat;
 
-  float normSqAverageQuaternion3D =
-      sq(averageQuaternion3D[0]) + sq(averageQuaternion3D[1]) + sq(averageQuaternion3D[2]);
+  float normAverageQuaternion =
+      sqrt(sq(averageQuaternion[0]) + sq(averageQuaternion[1]) + sq(averageQuaternion[2]) + sq(averageQuaternion[3]));
 
-  initialQuaternion[0] = sqrt(1. - normSqAverageQuaternion3D);
-  initialQuaternion[1] = averageQuaternion3D[0];
-  initialQuaternion[2] = averageQuaternion3D[1];
-  initialQuaternion[3] = averageQuaternion3D[2];
+  initialQuaternion[0] = averageQuaternion[0] / normAverageQuaternion;
+  initialQuaternion[1] = averageQuaternion[1] / normAverageQuaternion;
+  initialQuaternion[2] = averageQuaternion[2] / normAverageQuaternion;
+  initialQuaternion[3] = averageQuaternion[3] / normAverageQuaternion;
 }
 
 /**
