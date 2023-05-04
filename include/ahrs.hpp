@@ -1,6 +1,9 @@
 #include "config.hpp"
 #include "MPU9250.h"
 
+#ifndef AHRS_H
+#define AHRS_H
+
 namespace bzzz
 {
 
@@ -33,6 +36,8 @@ namespace bzzz
          */
         void preflightCalibrate(bool calibrateMagnetometer = false);
 
+        void calibrateMagnetometer(float biasX, float biasY, float biasZ,
+                                    float scaleX, float scaleY, float scaleZ);
         /**
          * @brief retrieves the quaternion
          *
@@ -47,6 +52,14 @@ namespace bzzz
          * @param q pointer to 4-array where to store the quaternion
          */
         void quaternion(float *q);
+
+        /**
+         * @brief angular velocity in rad/s
+         *
+         * @param w angular velocity vector (3-array)
+         *
+         */
+        void angularVelocity(float *w);
 
         /**
          * @brief checks for updated measurements from the IMU
@@ -75,4 +88,6 @@ namespace bzzz
 
     }; /* end of AHRS class */
 
-}
+} /* end of namespace bzzz */
+
+#endif /* AHRS_H */

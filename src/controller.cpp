@@ -4,16 +4,34 @@
 namespace bzzz
 {
 
-    // Note that these variables use the prefix `s_` as they
-    // are static (accessible only within this file)
+    Controller::Controller(){};
 
-    static const float s_lqrGain[3] = {1.0, 2.0, 3.0}; /**< LQR Gain */
-    static const float s_maxControlAction = 10.;       /**< Minimum control action */
-    static const float s_minControlAction = -10.;      /**< Maximum control action */
-
-    float controlAction(float systemState)
+    void Controller::controlAction(
+        Quaternion &attitudeError,
+        const float *angularVelocity,
+        float *control)
     {
-        float unconstrainedVoltage = s_lqrGain[0] * systemState + s_lqrGain[1];
-        return fmax(fmin(unconstrainedVoltage, s_maxControlAction), s_minControlAction);
+
+        for (int i = 0; i < 3; i++)
+        {
+            control[i] = m_quaternionGain[i] * attitudeError[i + 1] + m_angularVelocityGain[i] * angularVelocity[i];
+        }
     }
-}
+
+#ifdef BZZZ_DEBUG
+    void Controller::setQuaternionGains(float gainXY, float gainZ)
+    {
+        m_quaternionGain[0] = gainXY;
+        m_quaternionGain[1] = gainXY;
+        m_quaternionGain[2] = gainZ;
+    }
+
+    void Controller::setAngularVelocityGains(float gainXY, float gainZ)
+    {
+        m_angularVelocityGain[0] = gainXY;
+        m_angularVelocityGain[1] = gainXY;
+        m_angularVelocityGain[2] = gainZ;
+    }
+#endif /* BZZZ_DEBUG */
+
+} /* end of namespace bzzz */
