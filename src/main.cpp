@@ -96,6 +96,11 @@ void setup()
   Serial.begin(SERIAL_BAUD_RATE);
   setupAHRS();
   initAttitude();
+  delay(1000);
+  while (!radio.armed())
+  {
+    radio.readPiData();
+  }
   setupMotors();
 }
 
@@ -108,21 +113,28 @@ void loop()
   // Note:
   // Forward pitch, right roll and heading towards west must be positive
 
-  controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * 70.,
-      -radio.trimmerVRBPercentage() * 5.);
-  controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * 0.2,
-      -radio.trimmerVREPercentage() * 0.01);
+  radio.readPiData();
+
+  if (radio.kill())
+  {
+    motorDriver.disarm();
+    return; // exit the loop
+  }
 
   ahrs.update();
-  radio.readPiData();
+
+  controller.setQuaternionGains(
+      -radio.trimmerVRAPercentage() * 100.,
+      -radio.trimmerVRBPercentage() * 20.);
+  controller.setAngularVelocityGains(
+      -radio.trimmerVRCPercentage() * 0.5,
+      -radio.trimmerVREPercentage() * 0.05);
 
   ahrs.quaternion(quaternionImuData);
   ahrs.angularVelocity(angularVelocity);
 
   // !!!deactivate for testing!!!
-  //yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
+  // yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
 
   // TODO Try to update the function radio.rollReferenceAngleRad() and add a minus
   Quaternion referenceQuaternion(
