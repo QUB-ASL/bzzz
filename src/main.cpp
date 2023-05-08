@@ -56,6 +56,7 @@ void setupMotors()
   delay(1500);
   motorDriver.arm();
   delay(1500);
+  buzz(6);
 }
 
 /**
@@ -123,9 +124,11 @@ void setupAHRS()
  */
 void waitForArmCommand()
 {
-  while (radio.readPiData() && !radio.armed())
+  radio.readPiData();
+  delay(1000);
+  while (!radio.armed())
   {
-    // just wait
+    radio.readPiData();
   }
 }
 

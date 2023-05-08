@@ -77,7 +77,7 @@ namespace bzzz
 
     bool Radio::kill()
     {
-        return channelData[RADIO_CHANNEL_SWITCH_A] <= 500;
+        return channelData[RADIO_CHANNEL_SWITCH_A] >= 1500;
     }
 
     ThreeWaySwitch Radio::switchC()
