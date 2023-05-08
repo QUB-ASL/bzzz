@@ -16,6 +16,36 @@ Quaternion initialQuaternion;
 float yawReferenceRad = 0.0;
 
 /**
+ * Setup the buzzer
+ */
+void setupBuzzer()
+{
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, LOW); // turn off the buzzer
+}
+
+/**
+ * Make bzzz's buzzer beep
+ *
+ * This will produce `numBeeps` beeps of duration
+ * `durationMs` (in milliseconds) with equal pauses
+ * between the beeps.
+ *
+ * @param numBeeps number of beeps
+ * @param durationMs duration of every beep in ms
+ */
+void buzz(int numBeeps = 4, int durationMs = 50)
+{
+  for (int i = 0; i < numBeeps; i++)
+  {
+    digitalWrite(BUZZER_PIN, HIGH);
+    delay(durationMs);
+    digitalWrite(BUZZER_PIN, LOW);
+    delay(durationMs);
+  }
+}
+
+/**
  * Setup the motor driver (and warm up the engine, by spinning the
  * motors a bit)
  */
@@ -89,18 +119,30 @@ void setupAHRS()
 }
 
 /**
+ * Wait until the arm switch is at the ON position
+ */
+void waitForArmCommand()
+{
+  while (radio.readPiData() && !radio.armed())
+  {
+    // just wait
+  }
+}
+
+/**
  * Setup function
  */
 void setup()
 {
+  setupBuzzer();
   Serial.begin(SERIAL_BAUD_RATE);
   setupAHRS();
+  buzz(2);
   initAttitude();
+  buzz(3);
   delay(1000);
-  while (!radio.armed())
-  {
-    radio.readPiData();
-  }
+  buzz(3);
+  waitForArmCommand();
   setupMotors();
 }
 

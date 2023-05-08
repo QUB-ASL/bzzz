@@ -42,25 +42,10 @@ namespace bzzz
 
         /**
          * @brief Read the receiver data sent from Pi
+         *
+         * @return true iff new data was received from RPi
          */
-        void readPiData(void);
-
-        /**
-         * @brief reformat receiver values
-         */
-        void readRadioData(
-            int &radioThrottle,
-            int &radioRoll,
-            int &radioPitch,
-            int &radioYawRate,
-            int &radioSwitchC,
-            int &radioVRA,
-            int &radioVRC,
-            int &radioVRB,
-            int &radioArm,
-            int &radioKill,
-            int &radioSwitchD,
-            int &radioVRE);
+        bool readPiData(void);
 
         /**
          * @brief pitch reference from RC in rad

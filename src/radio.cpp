@@ -27,7 +27,7 @@ namespace bzzz
         return (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
     }
 
-    void Radio::readPiData(void)
+    bool Radio::readPiData(void)
     {
         String allDataFromPi;
 
@@ -44,36 +44,9 @@ namespace bzzz
                 // cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
             }
+            return true;
         }
-    }
-
-    void Radio::readRadioData(
-        int &radioThrottle,
-        int &radioRoll,
-        int &radioPitch,
-        int &radioYawRate,
-        int &radioSwitchC,
-        int &radioVRA,
-        int &radioVRC,
-        int &radioVRB,
-        int &radioArm,
-        int &radioKill,
-        int &radioSwitchD,
-        int &radioVRE)
-    {
-        // reformat receiver values  to match radio (RadioLink AT10)
-        radioThrottle = channelData[2];
-        radioRoll = channelData[3];
-        radioPitch = channelData[1];
-        radioYawRate = channelData[0];
-        radioSwitchC = channelData[4];
-        radioVRA = channelData[5];
-        radioVRC = channelData[6];
-        radioVRB = channelData[7];
-        radioArm = channelData[8];  // radioSwitchB
-        radioKill = channelData[9]; // radioSwitchA
-        radioSwitchD = channelData[10];
-        radioVRE = channelData[11];
+        return false;
     }
 
     float Radio::pitchReferenceAngleRad()
