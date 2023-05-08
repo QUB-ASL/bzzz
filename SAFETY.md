@@ -12,17 +12,17 @@ In the quadcopter lab (part of the autonomous systems lab) everyone should be aw
 - **Electrical** (low risk, as we typically work with low-voltage equipment)
 - **Fire or explosions** e.g., from mishandling LiPo batteries
 
-Our goal is to *identify* any possible risks and *minimise* the likilehood of such hazards.
+Our goal is to *identify* any possible risks and *minimise* the likelihood of such hazards.
 
 This document attempts to identify any possible risks and propose safety measures; it *complements* the [health and safety regulations and guidance](https://www.qub.ac.uk/directorates/EstatesDirectorate/UniversitySafetyService/HealthandSafetyPoliciesandGuidance/) of the university.
 
 **Table of Contents**
 
-1. [Soldering](#Soldering)
-2. [Rotating equipment](#Rotating_equipment)
-3. [LiPo batteries](#LiPo_batteries)
-4. [Testing quadcopters](#Testing_quadcopters)
-5. [In case of fire](#In_case_of_fire)
+1. [Soldering](#soldering)
+2. [Rotating equipment](#rotating-equipment)
+3. [LiPo batteries](#lipo-batteries)
+4. [Testing quadcopters](#testing-quadcopters)
+5. [Fire safety](#fire-safety)
 
 
 ## The basics
@@ -73,9 +73,9 @@ Read more about
 
 ## LiPo batteries
 
-### Risks 
+### Hazards 
 
-There are several risks associated with LiPo batteries, such as:
+There are several hazards associated with LiPo batteries, such as:
 
 - **Fire and explosion**: Mishandling of LiPo batteries can lead to fire, explosions, and toxic smoke inhalation. This is because LiPo batteries contain highly volatile and flammable electrolytes that can catch fire if they are damaged, overcharged, or punctured.
 - **Thermal runaway**: LiPo batteries can undergo a process called thermal runaway, where a small thermal event or overcharging can cause the battery to rapidly heat up, leading to a chain reaction and causing the battery to vent, catch fire, or explode.
@@ -95,7 +95,7 @@ Therefore, it is important to handle LiPo batteries with care.
 - Never overcharge a battery.
 - Never short-circuit a battery.
 - Follow proper disposing guidelines before discarding a battery.
-- Any bulge, smoke from a battery must be dealt with serious caution. Ask for help if necessary.
+- Any bulge, smoke from a battery must be dealt with serious caution.
 
 
 
@@ -140,7 +140,7 @@ When attaching the propellers, observe the following safety instructions:
 
 
 
-## In case of fire
+## Fire safety
 
 Firstly, familiarise with the [Fire Safety guidelines](https://www.qub.ac.uk/directorates/EstatesDirectorate/Services/FireSafety/) of the university.
 
@@ -148,12 +148,10 @@ Firstly, familiarise with the [Fire Safety guidelines](https://www.qub.ac.uk/dir
 
 ## 5. Endnotes
 
-
 - No equipment leaves the lab
 - Before you leave the lab:
-
- - switch off any electronics/electrical equipment (esp. battery chargers and soldering irons)
- - turn off the lights
- - lock the door
+  - switch off any electronics/electrical equipment (esp. battery chargers and soldering irons)
+  - turn off the lights
+  - lock the door
 
  
