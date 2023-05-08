@@ -16,6 +16,36 @@ Quaternion initialQuaternion;
 float yawReferenceRad = 0.0;
 
 /**
+ * Setup the buzzer
+ */
+void setupBuzzer()
+{
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, LOW); // turn off the buzzer
+}
+
+/**
+ * Make bzzz's buzzer beep
+ *
+ * This will produce `numBeeps` beeps of duration
+ * `durationMs` (in milliseconds) with equal pauses
+ * between the beeps.
+ *
+ * @param numBeeps number of beeps
+ * @param durationMs duration of every beep in ms
+ */
+void buzz(int numBeeps = 4, int durationMs = 50)
+{
+  for (int i = 0; i < numBeeps; i++)
+  {
+    digitalWrite(BUZZER_PIN, HIGH);
+    delay(durationMs);
+    digitalWrite(BUZZER_PIN, LOW);
+    delay(durationMs);
+  }
+}
+
+/**
  * Setup the motor driver (and warm up the engine, by spinning the
  * motors a bit)
  */
@@ -26,6 +56,7 @@ void setupMotors()
   delay(1500);
   motorDriver.arm();
   delay(1500);
+  buzz(6);
 }
 
 /**
@@ -89,13 +120,32 @@ void setupAHRS()
 }
 
 /**
+ * Wait until the arm switch is at the ON position
+ */
+void waitForArmCommand()
+{
+  radio.readPiData();
+  delay(1000);
+  while (!radio.armed())
+  {
+    radio.readPiData();
+  }
+}
+
+/**
  * Setup function
  */
 void setup()
 {
+  setupBuzzer();
   Serial.begin(SERIAL_BAUD_RATE);
   setupAHRS();
+  buzz(2);
   initAttitude();
+  buzz(3);
+  delay(1000);
+  buzz(3);
+  waitForArmCommand();
   setupMotors();
 }
 
@@ -108,21 +158,28 @@ void loop()
   // Note:
   // Forward pitch, right roll and heading towards west must be positive
 
-  controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * 70.,
-      -radio.trimmerVRBPercentage() * 5.);
-  controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * 0.2,
-      -radio.trimmerVREPercentage() * 0.01);
+  radio.readPiData();
+
+  if (radio.kill())
+  {
+    motorDriver.disarm();
+    return; // exit the loop
+  }
 
   ahrs.update();
-  radio.readPiData();
+
+  controller.setQuaternionGains(
+      -radio.trimmerVRAPercentage() * 100.,
+      -radio.trimmerVRBPercentage() * 20.);
+  controller.setAngularVelocityGains(
+      -radio.trimmerVRCPercentage() * 0.5,
+      -radio.trimmerVREPercentage() * 0.05);
 
   ahrs.quaternion(quaternionImuData);
   ahrs.angularVelocity(angularVelocity);
 
   // !!!deactivate for testing!!!
-  //yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
+  // yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
 
   // TODO Try to update the function radio.rollReferenceAngleRad() and add a minus
   Quaternion referenceQuaternion(

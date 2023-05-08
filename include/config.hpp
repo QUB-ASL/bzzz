@@ -32,6 +32,11 @@
 #define ABSOLUTE_MIN_PWM 800
 #define ABSOLUTE_MAX_PWM 2000
 
+/**
+ * Buzzer pin
+ */
+#define BUZZER_PIN 27
+
 /* Maximum pitch value corresponding to the top position of the stick (30deg = 0.52rad) */
 #define PITCH_MAX_RAD 0.5235987755982988
 
