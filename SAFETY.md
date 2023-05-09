@@ -105,41 +105,38 @@ Therefore, it is important to handle LiPo batteries with care.
 
 ## 6. Test flights
 
+> **Read first:** [Quadcopter motors](#4-quadcopter-motors)
+
 When attaching the propellers, observe the following safety instructions:
 
 - Attach the propellers carefully and tightly. 
-- In case a propeller seems to vibrate excessively, disarm the motors
+- In case a propeller seems to vibrate excessively, disarm the motors, disconnect the battery, and (i) check the propellers for structural damage, (ii) make sure all screws are tightly screwed.
 - Never use carbon fibre propellers as they can cause deep lacerations in case of an accident; use standard nylon propellers instead.
 
-- Before beginning to operate/test the drone:
-    1. Wear safety glasses and proper safety gear.
-    2. Drone must always stay inside the netting.
-    3. Make sure everyone is outside the netting.
-    4. Fasten the drone properly to the safety harness.
-    5. Fasten the propellers properly.
-    6. Make sure every electric connection, nut and bolt, screw are snug and tight.
-    7. Everyone must be alert.
-    8. Never fly the drone alone, have an expert to supervise.
-    9. Have the kill switch at the ready and be alert.
-    10. Make sure there are no gaps in the netting.
-    11. Follow these instructions while testing the drone as well.
-3. While testing the drone:
-    1. Do not enter the netting area.
-    2. Do not leave the drone unattended.
-    3. Be alert and agile.
-    4. If it is necessary to go near the drone, make sure to have no loose clothing is hanging from you.
-    5. Never try to touch the propellers.
-    6. If any propeller, part of the drone comes loose, kill the drone immediately.
-    7. If the drone comes loose, kill the drone immediately and disconnect the battery.
-4. After finishing the drone test/ operation:
-    1. Disconnect the battery.
-    2. Tighten all the parts once more.
-    3. Recharge the battery if necessary.
+### 6.1. Before a test flight
+
+1. Put on your protective glasses
+2. Bring the quadcopter inside the netted area
+3. After you power the quadcopter walk outside the net
+4. If you need to use the test bench, make sure that (i) the ball joint is securely screwed on the base of the quadcopter, (ii) the base of the ball joint is not loose (check this before every flight)
+5. Everyone must be alert.
+6. Have the kill switch at the ready and be alert.
+7. Make sure there are no gaps in the netting.
 
 
+### 6.2. During a test flight
 
+1. Do not enter the netting area.
+2. Do not leave the drone unattended.
+3. Be alert.
+5. Do not go near the pinning propellers.
+6. If any propeller or part of the drone comes loose, disarm immediately and disconnect the battery.
 
+### 6.3. At the end of a test flight
 
+1. Make sure you have disarmed using the kill switch on the RC.
+2. Disconnect the battery.
+3. Recharge the battery if necessary.
 
 
 
