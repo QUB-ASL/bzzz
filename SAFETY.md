@@ -2,7 +2,7 @@
 
 Last updated: 7 May 2023
 
-## Key hazards
+## 1. Key hazards
 
 In the quadcopter lab (part of the autonomous systems lab) everyone should be aware of the following types of hazards:
 
@@ -12,7 +12,7 @@ In the quadcopter lab (part of the autonomous systems lab) everyone should be aw
 - **Electrical** (low risk, as we typically work with low-voltage equipment)
 - **Fire or explosions** e.g., from mishandling LiPo batteries
 
-Our goal is to *identify* any possible risks and *minimise* the likelihood of such hazards.
+Our goal is to *identify* any possible hazards and *minimise* the likelihood of such hazards.
 
 This document attempts to identify any possible risks and propose safety measures; it *complements* the [health and safety regulations and guidance](https://www.qub.ac.uk/directorates/EstatesDirectorate/UniversitySafetyService/HealthandSafetyPoliciesandGuidance/) of the university.
 
@@ -25,16 +25,16 @@ This document attempts to identify any possible risks and propose safety measure
 5. [Fire safety](#fire-safety)
 
 
-## The basics
+## 2. The basics
 
 - Health and safety is everyone's responsibility
-- If you suspect that you have identified a risk, you should contact your line manager
+- If you suspect that you have identified a hazard, you should contact your line manager
 - Any accidents must be reported to your line manager
 
 > Important: In the case of an **emergency** where there is an imminent and serious danger to people or property, then the appropriate emergency services should be called. To do this from a University telephone, dial **2222** to contact the University Control Room operator or 9-999 to contact Police, Fire, and Ambulance services.
 
 
-## Soldering 
+## 3. Soldering 
 
 Some common risks associated with soldering include exposure to hazardous chemicals, eye injuries, burns, and inhalation of fumes and smoke. When soldering, the solder and flux emit fumes that can cause respiratory issues if inhaled in high quantities. Additionally, the soldering iron can become extremely hot (around 400C) and cause burns to the skin or eyes if safety controls are not in place. 
 
@@ -53,7 +53,7 @@ As a result:
 You may find more information at the [webpage](https://safety.eng.cam.ac.uk/safe-working/copy_of_soldering-safety) of the Dept of Engineering Health and Safety of the University of Cambridge.
 
 
-### Quadcopter motors
+### 4. Quadcopter motors
 
 The brushless motors used on a quadcopter can spin up to several thousands RPM, therefore, if you are close to a spinning motor you risk getting injured. 
 
@@ -67,13 +67,11 @@ At all times, observe the following safety instructions:
 
 > Keep in mind: when the ESCs are **armed**, the motors can start to rotate at any time.
 
-Read more about 
 
 
+## 5. LiPo batteries
 
-## LiPo batteries
-
-### Hazards 
+### 5.1. Hazards 
 
 There are several hazards associated with LiPo batteries, such as:
 
@@ -87,17 +85,20 @@ Therefore, it is important to handle LiPo batteries with care.
 <img src="https://m.media-amazon.com/images/I/71o7wIMQmDL.jpg" width=200>
 
 
-### How to charge and store a LiPo battery
+### 5.2. How to charge and store a LiPo battery
 
-- Storage-charge any unused batteries.
-- It is recommended to use a LiPo battery bag when charging a LiPo battery to provide an extra layer of protection against fire and explosion
-- Never let a battery voltage fall below critical level.
-- Never overcharge a battery.
+- LiPo batteries should not be stored fully charged. Instead, they should be brought down to **storage charge**, which corresponds to about 3.8V per cell. A LiPo battery not at storage voltage will degrade and the effect is cumulative: keeping a battery fully charged for 10 consecutive days is the same as keeping it fully charged for 1 day on 10 different days. 
+
+> It is highly recommended that we storage-charge the LiPo batteries at the end of every day.
+
+- It is recommended to use a **LiPo battery bag** when charging a LiPo battery to provide an extra layer of protection against fire and explosion.
+- Never let a battery voltage fall below critical level. If the voltage in a cell falls below 3.2V it can be permanently damaged. 
+- Never overcharge a battery. If the voltage of a cell exceeds 4.2V it can burst into flames. 
 - Never short-circuit a battery.
 - Follow proper disposing guidelines before discarding a battery.
 - Any bulge, smoke from a battery must be dealt with serious caution.
 
-
+> Read more about LiPo batteries [here](https://fpvfc.org/beginners-guide-to-lipo-batteries).
 
 
 ## Test flights
