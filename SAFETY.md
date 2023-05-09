@@ -2,6 +2,16 @@
 
 Last updated: 7 May 2023
 
+**Table of Contents**
+
+1. [Key hazards](#1-key-hazards)
+2. [The basics](#2-the-basics)
+3. [Soldering](#3-soldering)
+4. [Quadcopter motors](#4-quadcopter-motors)
+5. [LiPo batteries](#5-lipo-batteries)
+6. [Test flights](#6-test-flights)
+5. [Fire safety](#7-fire-safety)
+
 ## 1. Key hazards
 
 In the quadcopter lab (part of the autonomous systems lab) everyone should be aware of the following types of hazards:
@@ -15,14 +25,6 @@ In the quadcopter lab (part of the autonomous systems lab) everyone should be aw
 Our goal is to *identify* any possible hazards and *minimise* the likelihood of such hazards.
 
 This document attempts to identify any possible risks and propose safety measures; it *complements* the [health and safety regulations and guidance](https://www.qub.ac.uk/directorates/EstatesDirectorate/UniversitySafetyService/HealthandSafetyPoliciesandGuidance/) of the university.
-
-**Table of Contents**
-
-1. [Soldering](#soldering)
-2. [Rotating equipment](#rotating-equipment)
-3. [LiPo batteries](#lipo-batteries)
-4. [Testing quadcopters](#testing-quadcopters)
-5. [Fire safety](#fire-safety)
 
 
 ## 2. The basics
@@ -101,7 +103,7 @@ Therefore, it is important to handle LiPo batteries with care.
 > Read more about LiPo batteries [here](https://fpvfc.org/beginners-guide-to-lipo-batteries).
 
 
-## Test flights
+## 6. Test flights
 
 When attaching the propellers, observe the following safety instructions:
 
@@ -141,13 +143,13 @@ When attaching the propellers, observe the following safety instructions:
 
 
 
-## Fire safety
+## 7. Fire safety
 
 Firstly, familiarise with the [Fire Safety guidelines](https://www.qub.ac.uk/directorates/EstatesDirectorate/Services/FireSafety/) of the university.
 
 
 
-## 5. Endnotes
+## 8. Endnotes
 
 - No equipment leaves the lab
 - Before you leave the lab:
