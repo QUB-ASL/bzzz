@@ -1,6 +1,6 @@
 # General lab rules
 
-Last updated: 7 May 2023
+Last updated: 9 May 2023
 
 **Table of Contents**
 
@@ -10,7 +10,11 @@ Last updated: 7 May 2023
 4. [Quadcopter motors](#4-quadcopter-motors)
 5. [LiPo batteries](#5-lipo-batteries)
 6. [Test flights](#6-test-flights)
-5. [Fire safety](#7-fire-safety)
+7. [Fire safety](#7-fire-safety)
+8. [Emergency numbers](#8-emergency-numbers)
+9. [Endnotes](#9-endnotes)
+
+
 
 ## 1. Key hazards
 
@@ -144,9 +148,50 @@ When attaching the propellers, observe the following safety instructions:
 
 Firstly, familiarise with the [Fire Safety guidelines](https://www.qub.ac.uk/directorates/EstatesDirectorate/Services/FireSafety/) of the university.
 
+In our lab a fire can be caused by any of the following reasons:
+
+- Mishandling LiPo batteries
+- Misusing the soldering iron or a glue gun
+- Faulty electric circuits or misusing electric circuits (e.g., causing a short circuit)
+
+To minimise the risk of fire we must always follow the [fire safety guidelines](https://www.qub.ac.uk/directorates/EstatesDirectorate/Services/FireSafety/) of the university. 
+
+### 7.1. A few things about fire safety
+
+- The main cause of fire is **people**
+- The lab and the building is equipped with **fire doors** that can help to prevent the spread of smoke for at least 30 minutes to allow a safe exit in case of a fire. They are fitted with closing devices to ensure that the doors are in the correct position. Note that wedging fire doors open is illegal, against the university policy and unsafe. There are safe ways to hold them open if necessary.
+- Do not use fire fighting equipment unless you have received training. Keep in mind that CO<sub>2</sub> fire extinguishers should be used on live electrical fires.
+- Familiarise with the safety signage and notices in the building.
+- 
+
+### 7.2. In case of a fire
+
+If you discover a fire or even **suspect** a fire (through sight or smell), then **raise the alarm** by pressing the nearest available fire alarm manual call point.
+
+The procedure is:
+
+- Close the door
+- Sound the fire alarm
+- Ensure that Security have been informed
+- Assist in the evacuation
+- Tackle the fire if you are trained and someone is with you
+- Immediately leave the building by the nearest available fire exit
+- Do not use the elevators
+- Do not stop to collect your personal belongings
+- Report to the designated fire assembly point
+- Do not re-enter the building until you are told it is safe to do so
 
 
-## 8. Endnotes
+### 8. Emergency numbers
+
+- QUB security on extension 2222
+- Off campus: dial 999 and ask for the fire and rescue service
+
+
+
+
+
+## 9. Endnotes
 
 - No equipment leaves the lab
 - Before you leave the lab:
