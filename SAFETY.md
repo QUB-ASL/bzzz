@@ -162,7 +162,7 @@ To minimise the risk of fire we must always follow the [fire safety guidelines](
 - The lab and the building is equipped with **fire doors** that can help to prevent the spread of smoke for at least 30 minutes to allow a safe exit in case of a fire. They are fitted with closing devices to ensure that the doors are in the correct position. Note that wedging fire doors open is illegal, against the university policy and unsafe. There are safe ways to hold them open if necessary.
 - Do not use fire fighting equipment unless you have received training. Keep in mind that CO<sub>2</sub> fire extinguishers should be used on live electrical fires.
 - Familiarise with the safety signage and notices in the building.
-- 
+
 
 ### 7.2. In case of a fire
 
