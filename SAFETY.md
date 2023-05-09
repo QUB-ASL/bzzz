@@ -182,7 +182,7 @@ The procedure is:
 - Do not re-enter the building until you are told it is safe to do so
 
 
-### 8. Emergency numbers
+## 8. Emergency numbers
 
 - QUB security on extension 2222
 - Off campus: dial 999 and ask for the fire and rescue service
