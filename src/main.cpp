@@ -203,11 +203,11 @@ void loop()
   //       const float* angularVelocity,
   //       float* motorSignals);
 
-  // control actions to the motors
-  float motorFL = throttleFromRadio + U_TO_PWM * (controls[0] + controls[1] + controls[2]);
-  float motorFR = throttleFromRadio + U_TO_PWM * (-controls[0] + controls[1] - controls[2]);
-  float motorBL = throttleFromRadio + U_TO_PWM * (controls[0] - controls[1] - controls[2]);
-  float motorBR = throttleFromRadio + U_TO_PWM * (-controls[0] - controls[1] + controls[2]);
+  int motorFL, motorFR, motorBL, motorBR;
+  controller.motorPwmSignals(attitudeError,
+                             angularVelocity,
+                             throttleFromRadio,
+                             motorFL, motorFR, motorBL, motorBR);
 
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
 
