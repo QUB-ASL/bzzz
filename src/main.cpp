@@ -181,7 +181,6 @@ void loop()
   // !!!deactivate for testing!!!
   // yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
 
-  // TODO Try to update the function radio.rollReferenceAngleRad() and add a minus
   Quaternion referenceQuaternion(
       yawReferenceRad,
       radio.pitchReferenceAngleRad(),
@@ -196,19 +195,12 @@ void loop()
   // TODO Remove hard-coded numbers from here
   float throttleFromRadio = radio.throttleReferencePercentage() * 1000 + 1000;
 
-  // TODO create a method (in Controller) like
-  // void controller.motorSignals(
-  //       float throttleReference,
-  //       Quaternion& attitudeError,
-  //       const float* angularVelocity,
-  //       float* motorSignals);
-
+  // Compute control actions and send them to the motors
   int motorFL, motorFR, motorBL, motorBR;
   controller.motorPwmSignals(attitudeError,
                              angularVelocity,
                              throttleFromRadio,
                              motorFL, motorFR, motorBL, motorBR);
-
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
 
   // To print do:
