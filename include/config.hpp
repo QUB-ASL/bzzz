@@ -77,35 +77,8 @@
  */
 #define U_TO_PWM 8
 
-#ifndef BZZZ_VERBOSITY
-#define BZZZ_VERBOSITY 3
+#ifndef BZZZ_LOGGING_LEVEL
+#define BZZZ_LOGGING_LEVEL 3
 #endif
-
-// Various global utilities
-
-namespace bzzz
-{
-
-    /**
-     * Possible verbosity levels
-     */
-    enum LogVerbosityLevel
-    {
-        Debug = 1,
-        Info = 2,
-        Severe = 3
-    };
-
-    /**
-     * @brief print debug information to the serial
-     *
-     * @param fmt string format
-     *
-     * @param ...
-     */
-    void logSerial(LogVerbosityLevel verbosity,
-                   const char *fmt, ...);
-
-}
 
 #endif /* GLOBALS_H */

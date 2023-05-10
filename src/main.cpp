@@ -5,6 +5,7 @@
 #include "radio.hpp"
 #include "ahrs.hpp"
 #include "controller.hpp"
+#include "util.hpp"
 
 using namespace bzzz;
 
@@ -16,36 +17,6 @@ Quaternion initialQuaternion;
 float yawReferenceRad = 0.0;
 
 /**
- * Setup the buzzer
- */
-void setupBuzzer()
-{
-  pinMode(BUZZER_PIN, OUTPUT);
-  digitalWrite(BUZZER_PIN, LOW); // turn off the buzzer
-}
-
-/**
- * Make bzzz's buzzer beep
- *
- * This will produce `numBeeps` beeps of duration
- * `durationMs` (in milliseconds) with equal pauses
- * between the beeps.
- *
- * @param numBeeps number of beeps
- * @param durationMs duration of every beep in ms
- */
-void buzz(int numBeeps = 4, int durationMs = 50)
-{
-  for (int i = 0; i < numBeeps; i++)
-  {
-    digitalWrite(BUZZER_PIN, HIGH);
-    delay(durationMs);
-    digitalWrite(BUZZER_PIN, LOW);
-    delay(durationMs);
-  }
-}
-
-/**
  * Setup the AHRS
  */
 void setupAHRS()
@@ -54,17 +25,6 @@ void setupAHRS()
   ahrs.preflightCalibrate(false);
   ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z,
                              MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X);
-}
-
-/**
- * Wait until Raspberry Pi sends some data
- */
-void waitForPiSerial()
-{
-  while (!Serial.available())
-  {
-    // just wait
-  }
 }
 
 /**
@@ -85,6 +45,16 @@ void setup()
   buzz(6);                                   // 6 beeps => motors armed; keep clear!
 }
 
+void setGainsFromRcTrimmers()
+{
+  controller.setQuaternionGains(
+      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN,
+      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN);
+  controller.setAngularVelocityGains(
+      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN,
+      -radio.trimmerVREPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+}
+
 void loop()
 {
   float quaternionImuData[4];
@@ -99,14 +69,7 @@ void loop()
   }
 
   ahrs.update();
-
-  controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN,
-      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN);
-  controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN,
-      -radio.trimmerVREPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
-
+  setGainsFromRcTrimmers();
   ahrs.quaternion(quaternionImuData);
   ahrs.angularVelocity(angularVelocity);
 
@@ -134,9 +97,4 @@ void loop()
                              throttleFromRadio,
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
-
-  // To print do:
-  // logSerial(LogVerbosityLevel::Info,
-  //           "%.3f\t %.3f\t %.3f\t %.3f",
-  //           relativeQuaternion[0], relativeQuaternion[1], relativeQuaternion[2], relativeQuaternion[3]);
 }

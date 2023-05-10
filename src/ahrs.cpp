@@ -1,4 +1,5 @@
 #include "ahrs.hpp"
+#include "util.hpp"
 
 namespace bzzz
 {
@@ -33,11 +34,11 @@ namespace bzzz
 
     void AHRS::preflightCalibrate(bool calibrateMagnetometer /* =false */)
     {
-        Serial.println("[AHRS] stay still; calibrating the accelerometer");
+        logSerial(LogVerbosityLevel::Info, "[AHRS] stay still; calibrating the accelerometer");
         m_imu.calibrateAccelGyro();
         if (calibrateMagnetometer)
         {
-            Serial.println("[AHRS] rock and roll; calibrating the magnetometer");
+            logSerial(LogVerbosityLevel::Info, "[AHRS] rock and roll; calibrating the magnetometer");
             m_imu.calibrateMag();
             bzzz::logSerial(bzzz::LogVerbosityLevel::Info, "Magnetometer biases: [%.3f, %.3f, %.3f]",
                             m_imu.getMagBiasX(), m_imu.getMagBiasY(), m_imu.getMagBiasZ());
