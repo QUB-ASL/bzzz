@@ -54,7 +54,6 @@ void setupMotors()
   motorDriver.attachEscToPwmPin();
   delay(1500);
   motorDriver.arm(); // arm the motors
-  buzz(6);           // 6 beeps => motors armed; keep clear!
   delay(5000);       // Note that RC_ESC recommends a delay of 5000 ms after arming
 }
 
@@ -157,6 +156,7 @@ void setup()
   waitForArmCommand();            // wait for the RC to send an arming command
   buzz(2, 400);                   // two long beeps => preparation for arming
   setupMotors();                  // attach ESC and arm motors
+  buzz(6);                        // 6 beeps => motors armed; keep clear!
 }
 
 void loop()
