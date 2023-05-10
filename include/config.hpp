@@ -19,8 +19,8 @@
 #define SAMPLING_TIME (0.008)
 
 /*
-*AHRS config
-*/
+ * AHRS config
+ */
 #define MAGNETOMETER_BIAS_X 222.566
 #define MAGNETOMETER_BIAS_Y 41.087
 #define MAGNETOMETER_BIAS_Z -60.268

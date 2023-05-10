@@ -115,7 +115,7 @@ void setupAHRS()
 {
   ahrs.setup();
   ahrs.preflightCalibrate(false);
-  ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z, 
+  ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z,
                              MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X);
 }
 
@@ -192,9 +192,7 @@ void loop()
 
   controller.controlAction(attitudeError, angularVelocity, controls);
 
-    float throttleFromRadio = (radio.throttleReferencePercentage() 
-                              * (ABSOLUTE_MAX_PWM - ZERO_ROTOR_SPEED) 
-                              + ZERO_ROTOR_SPEED);
+  float throttleFromRadio = (radio.throttleReferencePercentage() * (ABSOLUTE_MAX_PWM - ZERO_ROTOR_SPEED) + ZERO_ROTOR_SPEED);
 
   // Compute control actions and send them to the motors
   int motorFL, motorFR, motorBL, motorBR;
