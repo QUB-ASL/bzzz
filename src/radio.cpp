@@ -119,4 +119,14 @@ namespace bzzz
         return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_VRE]);
     }
 
+    void Radio::waitForArmCommand()
+    {
+        readPiData();
+        delay(1000); // TODO is this delay necessary?
+        while (!armed())
+        {
+            readPiData();
+        }
+    }
+
 }

@@ -45,4 +45,13 @@ namespace bzzz
         return m_armStatus;
     };
 
+    void MotorDriver::attachAndArm()
+    {
+        delay(1500);
+        attachEscToPwmPin();
+        delay(1500);
+        arm();       // arm the motors
+        delay(5000); // Note that RC_ESC recommends a delay of 5000 ms after arming
+    }
+
 }

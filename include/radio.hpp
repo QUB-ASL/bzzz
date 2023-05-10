@@ -108,6 +108,11 @@ namespace bzzz
          */
         float trimmerVREPercentage();
 
+        /**
+         * Wait until the arm switch is at the ON position
+         */
+        void waitForArmCommand();
+
     }; /* end of class Radio */
 
 }

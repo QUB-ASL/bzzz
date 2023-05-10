@@ -46,67 +46,6 @@ void buzz(int numBeeps = 4, int durationMs = 50)
 }
 
 /**
- * Setup the motor driver: attach and arm
- */
-void setupMotors()
-{
-  delay(1500);
-  motorDriver.attachEscToPwmPin();
-  delay(1500);
-  motorDriver.arm(); // arm the motors
-  delay(5000);       // Note that RC_ESC recommends a delay of 5000 ms after arming
-}
-
-/**
- * At the beginning the AHRS hasn't converged, so we need to discard
- * some measurements
- */
-void discardImuMeasurements(size_t numMeasurements = 5000)
-{
-  for (int i = 0; i < numMeasurements; i++)
-  {
-    ahrs.update();
-  }
-}
-
-/**
- * Determine the initial attitude of the quadcopter. The initial
- * quaternion is stored in `initialQuaternion`.
- */
-void initAttitude()
-{
-  float quatInitTemp[4] = {0};
-  float averageQuaternion[4] = {0}; // 3D quaternion (x, y, z)
-  int numInitQUat = 10;
-
-  // make sure the estimator has converged; discard initial measurements
-  logSerial(LogVerbosityLevel::Info, "[AHRS] getting ready; discarding measurements");
-  discardImuMeasurements(10000);
-
-  for (int i = 0; i < numInitQUat; i++)
-  {
-    ahrs.update();
-    ahrs.quaternion(quatInitTemp);
-    averageQuaternion[0] += quatInitTemp[0];
-    averageQuaternion[1] += quatInitTemp[1];
-    averageQuaternion[2] += quatInitTemp[2];
-    averageQuaternion[3] += quatInitTemp[3];
-  }
-  averageQuaternion[0] /= (float)numInitQUat;
-  averageQuaternion[1] /= (float)numInitQUat;
-  averageQuaternion[2] /= (float)numInitQUat;
-  averageQuaternion[3] /= (float)numInitQUat;
-
-  float normAverageQuaternion =
-      sqrt(sq(averageQuaternion[0]) + sq(averageQuaternion[1]) + sq(averageQuaternion[2]) + sq(averageQuaternion[3]));
-
-  initialQuaternion[0] = averageQuaternion[0] / normAverageQuaternion;
-  initialQuaternion[1] = averageQuaternion[1] / normAverageQuaternion;
-  initialQuaternion[2] = averageQuaternion[2] / normAverageQuaternion;
-  initialQuaternion[3] = averageQuaternion[3] / normAverageQuaternion;
-}
-
-/**
  * Setup the AHRS
  */
 void setupAHRS()
@@ -115,19 +54,6 @@ void setupAHRS()
   ahrs.preflightCalibrate(false);
   ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z,
                              MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X);
-}
-
-/**
- * Wait until the arm switch is at the ON position
- */
-void waitForArmCommand()
-{
-  radio.readPiData();
-  delay(1000);
-  while (!radio.armed())
-  {
-    radio.readPiData();
-  }
 }
 
 /**
@@ -146,17 +72,17 @@ void waitForPiSerial()
  */
 void setup()
 {
-  setupBuzzer();                  // setup the buzzer
-  Serial.begin(SERIAL_BAUD_RATE); // start the serial
-  setupAHRS();                    // setup the IMU and AHRS
-  initAttitude();                 // determine initial attitude
-  buzz(2);                        // 2 beeps => AHRS setup complete
-  waitForPiSerial();              // wait for the RPi and the RC to connect
-  buzz(4);                        // 4 beeps => RPi+RC connected
-  waitForArmCommand();            // wait for the RC to send an arming command
-  buzz(2, 400);                   // two long beeps => preparation for arming
-  setupMotors();                  // attach ESC and arm motors
-  buzz(6);                        // 6 beeps => motors armed; keep clear!
+  setupBuzzer();                             // setup the buzzer
+  Serial.begin(SERIAL_BAUD_RATE);            // start the serial
+  setupAHRS();                               // setup the IMU and AHRS
+  ahrs.averageQuaternion(initialQuaternion); // determine initial attitude
+  buzz(2);                                   // 2 beeps => AHRS setup complete
+  waitForPiSerial();                         // wait for the RPi and the RC to connect
+  buzz(4);                                   // 4 beeps => RPi+RC connected
+  radio.waitForArmCommand();                 // wait for the RC to send an arming command
+  buzz(2, 400);                              // two long beeps => preparation for arming
+  motorDriver.attachAndArm();                // attach ESC and arm motors
+  buzz(6);                                   // 6 beeps => motors armed; keep clear!
 }
 
 void loop()
@@ -165,11 +91,7 @@ void loop()
   float angularVelocity[3];
   float controls[3];
 
-  // Note:
-  // Forward pitch, right roll and heading towards west must be positive
-
   radio.readPiData();
-
   if (radio.kill())
   {
     motorDriver.disarm();
@@ -202,7 +124,8 @@ void loop()
 
   controller.controlAction(attitudeError, angularVelocity, controls);
 
-  float throttleFromRadio = radio.throttleReferencePercentage() * (ABSOLUTE_MAX_PWM - ZERO_ROTOR_SPEED) + ZERO_ROTOR_SPEED;
+  float throttleFromRadio =
+      radio.throttleReferencePercentage() * (ABSOLUTE_MAX_PWM - ZERO_ROTOR_SPEED) + ZERO_ROTOR_SPEED;
 
   // Compute control actions and send them to the motors
   int motorFL, motorFR, motorBL, motorBR;

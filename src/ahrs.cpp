@@ -66,6 +66,54 @@ namespace bzzz
         return m_imu.update();
     }
 
+    /**
+     * At the beginning the AHRS hasn't converged, so we need to discard
+     * some measurements
+     */
+    void AHRS::discardImuMeasurements(size_t numMeasurements)
+    {
+        for (int i = 0; i < numMeasurements; i++)
+        {
+            update();
+        }
+    }
+
+    void AHRS::averageQuaternion(
+        Quaternion &avQuaternion,
+        size_t windowLength,
+        size_t numDiscardMeasurements)
+    {
+        float quatInitTemp[4] = {0};
+        float averageQuaternion[4] = {0}; // 3D quaternion (x, y, z)
+
+        logSerial(LogVerbosityLevel::Info, "[AHRS] getting ready; discarding measurements");
+
+        // make sure the estimator has converged; discard initial measurements
+        discardImuMeasurements(numDiscardMeasurements);
+
+        for (int i = 0; i < windowLength; i++)
+        {
+            update();
+            quaternion(quatInitTemp);
+            averageQuaternion[0] += quatInitTemp[0];
+            averageQuaternion[1] += quatInitTemp[1];
+            averageQuaternion[2] += quatInitTemp[2];
+            averageQuaternion[3] += quatInitTemp[3];
+        }
+        averageQuaternion[0] /= (float)windowLength;
+        averageQuaternion[1] /= (float)windowLength;
+        averageQuaternion[2] /= (float)windowLength;
+        averageQuaternion[3] /= (float)windowLength;
+
+        float normAverageQuaternion =
+            sqrt(sq(averageQuaternion[0]) + sq(averageQuaternion[1]) + sq(averageQuaternion[2]) + sq(averageQuaternion[3]));
+
+        avQuaternion[0] = averageQuaternion[0] / normAverageQuaternion;
+        avQuaternion[1] = averageQuaternion[1] / normAverageQuaternion;
+        avQuaternion[2] = averageQuaternion[2] / normAverageQuaternion;
+        avQuaternion[3] = averageQuaternion[3] / normAverageQuaternion;
+    }
+
 #ifdef BZZZ_DEBUG
     void AHRS::eulerAngles(float *euler)
     {

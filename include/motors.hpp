@@ -61,6 +61,11 @@ namespace bzzz
          */
         bool getArmStatus(void);
 
+        /**
+         * Setup the motor driver: attach and arm
+         */
+        void attachAndArm();
+
     }; /* end of class TorqueSystem */
 
 } /* end of namespace bzzz */
