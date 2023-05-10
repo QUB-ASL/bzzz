@@ -46,17 +46,15 @@ void buzz(int numBeeps = 4, int durationMs = 50)
 }
 
 /**
- * Setup the motor driver (and warm up the engine, by spinning the
- * motors a bit)
+ * Setup the motor driver: attach and arm
  */
 void setupMotors()
 {
   delay(1500);
   motorDriver.attachEscToPwmPin();
   delay(1500);
-  motorDriver.arm();
-  delay(1500);
-  buzz(6);
+  motorDriver.arm(); // arm the motors
+  delay(5000);       // Note that RC_ESC recommends a delay of 5000 ms after arming
 }
 
 /**
@@ -115,8 +113,8 @@ void setupAHRS()
 {
   ahrs.setup();
   ahrs.preflightCalibrate(false);
-  // TODO create #define's with these parameters
-  ahrs.calibrateMagnetometer(222.566, 41.087, -60.268, 1.050, 0.936, 1.022);
+  ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z,
+                             MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X);
 }
 
 /**
@@ -133,20 +131,32 @@ void waitForArmCommand()
 }
 
 /**
+ * Wait until Raspberry Pi sends some data
+ */
+void waitForPiSerial()
+{
+  while (!Serial.available())
+  {
+    // just wait
+  }
+}
+
+/**
  * Setup function
  */
 void setup()
 {
-  setupBuzzer();
-  Serial.begin(SERIAL_BAUD_RATE);
-  setupAHRS();
-  buzz(2);
-  initAttitude();
-  buzz(3);
-  delay(1000);
-  buzz(3);
-  waitForArmCommand();
-  setupMotors();
+  setupBuzzer();                  // setup the buzzer
+  Serial.begin(SERIAL_BAUD_RATE); // start the serial
+  setupAHRS();                    // setup the IMU and AHRS
+  initAttitude();                 // determine initial attitude
+  buzz(2);                        // 2 beeps => AHRS setup complete
+  waitForPiSerial();              // wait for the RPi and the RC to connect
+  buzz(4);                        // 4 beeps => RPi+RC connected
+  waitForArmCommand();            // wait for the RC to send an arming command
+  buzz(2, 400);                   // two long beeps => preparation for arming
+  setupMotors();                  // attach ESC and arm motors
+  buzz(6);                        // 6 beeps => motors armed; keep clear!
 }
 
 void loop()
@@ -169,11 +179,11 @@ void loop()
   ahrs.update();
 
   controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * 100.,
-      -radio.trimmerVRBPercentage() * 20.);
+      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN,
+      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN);
   controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * 0.5,
-      -radio.trimmerVREPercentage() * 0.05);
+      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN,
+      -radio.trimmerVREPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 
   ahrs.quaternion(quaternionImuData);
   ahrs.angularVelocity(angularVelocity);
@@ -192,8 +202,7 @@ void loop()
 
   controller.controlAction(attitudeError, angularVelocity, controls);
 
-  // TODO Remove hard-coded numbers from here
-  float throttleFromRadio = radio.throttleReferencePercentage() * 1000 + 1000;
+  float throttleFromRadio = radio.throttleReferencePercentage() * (ABSOLUTE_MAX_PWM - ZERO_ROTOR_SPEED) + ZERO_ROTOR_SPEED;
 
   // Compute control actions and send them to the motors
   int motorFL, motorFR, motorBL, motorBR;
