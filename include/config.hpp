@@ -19,6 +19,17 @@
 #define SAMPLING_TIME (0.008)
 
 /*
+*AHRS config
+*/
+#define MAGNETOMETER_BIAS_X 222.566
+#define MAGNETOMETER_BIAS_Y 41.087
+#define MAGNETOMETER_BIAS_Z -60.268
+
+#define MAGNETOMETER_SCALE_X 1.050
+#define MAGNETOMETER_SCALE_Y 0.936
+#define MAGNETOMETER_SCALE_Z 1.022
+
+/*
  * Motors config
  */
 #define FRONT_LEFT_ESC_PIN 33
@@ -49,6 +60,21 @@
 /* Maximum yaw rate (rad/s) 10 deg/s = 0.1745 rad/s */
 #define RADIO_MAX_YAW_RATE_RAD_SEC 0.1745
 
+/** Trimmer A on RC - maximum quaternion XY gain */
+#define RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN 100.
+
+/** Trimmer B on RC - maximum quaternion Z gain */
+#define RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN 20.
+
+/** Trimmer C on RC - maximum omega xy gain */
+#define RADIO_TRIMMER_MAX_OMEGA_XY_GAIN 0.5
+
+/** Trimmer E on RC - maximum omega z gain */
+#define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 0.05
+
+/**
+ * Control action to PWM scaling factor
+ */
 #define U_TO_PWM 8
 
 #ifndef BZZZ_VERBOSITY

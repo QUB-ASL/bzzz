@@ -115,8 +115,8 @@ void setupAHRS()
 {
   ahrs.setup();
   ahrs.preflightCalibrate(false);
-  // TODO create #define's with these parameters
-  ahrs.calibrateMagnetometer(222.566, 41.087, -60.268, 1.050, 0.936, 1.022);
+  ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z, 
+                             MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_X);
 }
 
 /**
@@ -169,11 +169,11 @@ void loop()
   ahrs.update();
 
   controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * 100.,
-      -radio.trimmerVRBPercentage() * 20.);
+      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN,
+      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN);
   controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * 0.5,
-      -radio.trimmerVREPercentage() * 0.05);
+      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN,
+      -radio.trimmerVREPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 
   ahrs.quaternion(quaternionImuData);
   ahrs.angularVelocity(angularVelocity);
@@ -192,8 +192,9 @@ void loop()
 
   controller.controlAction(attitudeError, angularVelocity, controls);
 
-  // TODO Remove hard-coded numbers from here
-  float throttleFromRadio = radio.throttleReferencePercentage() * 1000 + 1000;
+    float throttleFromRadio = (radio.throttleReferencePercentage() 
+                              * (ABSOLUTE_MAX_PWM - ZERO_ROTOR_SPEED) 
+                              + ZERO_ROTOR_SPEED);
 
   // Compute control actions and send them to the motors
   int motorFL, motorFR, motorBL, motorBR;
