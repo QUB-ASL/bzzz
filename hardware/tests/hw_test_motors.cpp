@@ -6,20 +6,48 @@
 bzzz::MotorDriver motorDriver;
 bzzz::Radio radio;
 
-void setup()
+void setupMotors()
 {
-  Serial.begin(115200);
   delay(1500);
   motorDriver.attachEscToPwmPin();
   delay(1500);
   motorDriver.arm(); // arm the motors
   delay(5000);       // Note that RC_ESC recommends a delay of 5000 ms after arming
+}
+
+void setup()
+{
+  setupMotors();     // attach ESC and arm motors
 } 
+
+
+//HARDWARE TEST STOP START MOTORS
+
+// void loop()
+// {
+//   motorDriver.writeSpeedToEsc(1150, 1150, 1150, 1150); // sets the ESC speed
+//   delay(1000);                                         // Wait for a while 
+//   motorDriver.disarm();                                // Stop the ESC altogether
+//   delay(1000); 
+// }
+
+
+//HARDWARE TEST VARIABLE MOTOR SPEEDS
+
+#define PERIOD 10000. // Period milliseconds
 
 void loop()
 {
-  motorDriver.writeSpeedToEsc(1150, 1150, 1150, 1150); // sets the ESC speed
-  delay(1000);                                         // Wait for a while 
-  motorDriver.disarm();                                // Stop the ESC altogether
-  delay(1000); 
+  for (float i = 0; i < PERIOD; i++)
+  {
+    int commonMotorSpeed = ((ABSOLUTE_MAX_PWM - ZERO_ROTOR_SPEED)/2) 
+                           * (sin(2.*PI*i*(1/PERIOD))+1) + ZERO_ROTOR_SPEED;
+    motorDriver.writeSpeedToEsc(commonMotorSpeed, commonMotorSpeed, 
+                                commonMotorSpeed, commonMotorSpeed);
+    delay(1);         // Wait for a while
+    if (i == PERIOD)
+    {
+      i=0;
+    }
+  }
 }
