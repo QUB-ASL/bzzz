@@ -35,7 +35,7 @@ namespace bzzz
          * 11         Switch D
          * 12         Trimmer VRE
          */
-        int channelData[16];
+        int m_channelData[16];
 
     public:
         Radio();

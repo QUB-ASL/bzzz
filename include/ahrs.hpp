@@ -42,9 +42,16 @@ namespace bzzz
         bool setup(void);
 
         /**
-         * @brief pre-flight calibration
+         * @brief calibrate the magnetometer
          *
-         * @param calibrateMagnetometer whether to calibrate the magnetometer
+         * The biases and scaling parameters are computed by `preflightCalibrate`
+         *
+         * @param biasX magnetometer X-bias
+         * @param biasY magnetometer Y-bias
+         * @param biasZ magnetometer Z-bias
+         * @param scaleX magnetometer X-axis scaling
+         * @param scaleY magnetometer Y-axis scaling
+         * @param scaleZ magnetometer Z-axis scaling
          */
         void preflightCalibrate(bool calibrateMagnetometer = false);
 
@@ -90,7 +97,7 @@ namespace bzzz
          *
          * @param avQuaternion reference to quaternion; this is where the result
          *                     should be stored
-         * @param windowLength number of measurements to be used to compute the 
+         * @param windowLength number of measurements to be used to compute the
          *                     average quaternion. Default: 50
          * @param numDiscardMeasurements number of measurements to be discarded
          *                     before starting to collect measurements.
