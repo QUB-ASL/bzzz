@@ -78,25 +78,20 @@ void discardImuMeasurements(size_t numMeasurements = 5000)
  */
 void initAngularVelocity()
 {
-  float AngularVelocityTemp[3] = {0};
-  float AngularVelocityAverage[3] = {0};
+  float angularVelocityTemp[3] = {0};
   int numInitAngularVelocity = 10;
 
   for (int i = 0; i < numInitAngularVelocity; i++)
   {
     ahrs.update();
-    ahrs.angularVelocity(AngularVelocityTemp);
-    AngularVelocityAverage[0] += AngularVelocityTemp[0];
-    AngularVelocityAverage[1] += AngularVelocityTemp[1];
-    AngularVelocityAverage[2] += AngularVelocityTemp[2];
+    ahrs.angularVelocity(angularVelocityTemp);
+    initialAngularVelocity[0] += angularVelocityTemp[0];
+    initialAngularVelocity[1] += angularVelocityTemp[1];
+    initialAngularVelocity[2] += angularVelocityTemp[2];
   }
-  AngularVelocityAverage[0] /= (float)numInitAngularVelocity;
-  AngularVelocityAverage[1] /= (float)numInitAngularVelocity;
-  AngularVelocityAverage[2] /= (float)numInitAngularVelocity;
-
-  initialAngularVelocity[0] = AngularVelocityAverage[0];
-  initialAngularVelocity[1] = AngularVelocityAverage[1];
-  initialAngularVelocity[2] = AngularVelocityAverage[2];
+  initialAngularVelocity[0] /= (float)numInitAngularVelocity;
+  initialAngularVelocity[1] /= (float)numInitAngularVelocity;
+  initialAngularVelocity[2] /= (float)numInitAngularVelocity;
 }
 
 /**
