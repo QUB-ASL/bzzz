@@ -6,18 +6,9 @@
 bzzz::MotorDriver motorDriver;
 bzzz::Radio radio;
 
-void setupMotors()
-{
-  delay(1500);
-  motorDriver.attachEscToPwmPin();
-  delay(1500);
-  motorDriver.arm(); // arm the motors
-  delay(5000);       // Note that RC_ESC recommends a delay of 5000 ms after arming
-}
-
 void setup()
 {
-  setupMotors();     // attach ESC and arm motors
+  motorDriver.attachAndArm();     // attach ESC and arm motors
 } 
 
 
