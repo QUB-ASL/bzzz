@@ -108,6 +108,25 @@ namespace bzzz
             size_t windowLength = 50,
             size_t numDiscardMeasurements = 10000);
 
+        /**
+         * 
+         * Determine the average angular velocities.
+         * 
+         * It can be used to determine the average angular velocities of the quadcopter.
+         * 
+         * @param averageAngularVelocity reference to angular velocites; 
+         *                     this is where the result should be stored
+         * @param windowLength number of measurements to be used to compute the
+         *                     average quaternion. Default: 50
+         * @param numDiscardMeasurements number of measurements to be discarded
+         *                     before starting to collect measurements.
+         *                     Default: 100 (as it is called after averageQuaternion)
+         */
+        void averageAngularVelocities(
+            float *averageAngularVelocity,
+            size_t windowLength = 50,
+            size_t numDiscardMeasurements = 100); 
+
 /*
  * While flying we will not need to access the Euler angles,
  * so the following is available only in debug mode.

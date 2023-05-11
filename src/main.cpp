@@ -15,6 +15,7 @@ AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
 float yawReferenceRad = 0.0;
+float initialAngularVelocity[3];
 
 /**
  * Setup the AHRS
@@ -32,17 +33,18 @@ void setupAHRS()
  */
 void setup()
 {
-  setupBuzzer();                             // setup the buzzer
-  Serial.begin(SERIAL_BAUD_RATE);            // start the serial
-  setupAHRS();                               // setup the IMU and AHRS
-  ahrs.averageQuaternion(initialQuaternion); // determine initial attitude
-  buzz(2);                                   // 2 beeps => AHRS setup complete
-  waitForPiSerial();                         // wait for the RPi and the RC to connect
-  buzz(4);                                   // 4 beeps => RPi+RC connected
-  radio.waitForArmCommand();                 // wait for the RC to send an arming command
-  buzz(2, 400);                              // two long beeps => preparation for arming
-  motorDriver.attachAndArm();                // attach ESC and arm motors
-  buzz(6);                                   // 6 beeps => motors armed; keep clear!
+  setupBuzzer();                                         // setup the buzzer
+  Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
+  setupAHRS();                                           // setup the IMU and AHRS
+  ahrs.averageQuaternion(initialQuaternion);             // determine initial attitude
+  ahrs.averageAngularVelocities(initialAngularVelocity); // determine initial attitude
+  buzz(2);                                               // 2 beeps => AHRS setup complete
+  waitForPiSerial();                                     // wait for the RPi and the RC to connect
+  buzz(4);                                               // 4 beeps => RPi+RC connected
+  radio.waitForArmCommand();                             // wait for the RC to send an arming command
+  buzz(2, 400);                                          // two long beeps => preparation for arming
+  motorDriver.attachAndArm();                            // attach ESC and arm motors
+  buzz(6);                                               // 6 beeps => motors armed; keep clear!
 }
 
 /**
@@ -64,7 +66,8 @@ void setGainsFromRcTrimmers()
 void loop()
 {
   float quaternionImuData[4];
-  float angularVelocity[3];
+  float measuredAngularVelocity[3];
+  float angularVelocityCorrected[3];
   float controls[3];
 
   radio.readPiData();
@@ -77,7 +80,12 @@ void loop()
   ahrs.update();
   setGainsFromRcTrimmers();
   ahrs.quaternion(quaternionImuData);
-  ahrs.angularVelocity(angularVelocity);
+  ahrs.angularVelocity(measuredAngularVelocity);
+
+  // Determine correct angularVelocity
+  angularVelocityCorrected[0] = measuredAngularVelocity[0] - initialAngularVelocity[0];
+  angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
+  angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
 
   // !!!deactivate for testing!!!
   // yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
@@ -91,7 +99,7 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  controller.controlAction(attitudeError, angularVelocity, controls);
+  controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
   // Throttle from RC to throttle reference
   float throttlePrcntFromRc = radio.throttleReferencePercentage();
@@ -100,7 +108,7 @@ void loop()
   // Compute control actions and send them to the motors
   int motorFL, motorFR, motorBL, motorBR;
   controller.motorPwmSignals(attitudeError,
-                             angularVelocity,
+                             angularVelocityCorrected,
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
