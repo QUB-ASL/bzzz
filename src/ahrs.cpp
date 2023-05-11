@@ -67,10 +67,6 @@ namespace bzzz
         return m_imu.update();
     }
 
-    /**
-     * At the beginning the AHRS hasn't converged, so we need to discard
-     * some measurements
-     */
     void AHRS::discardImuMeasurements(size_t numMeasurements)
     {
         for (int i = 0; i < numMeasurements; i++)
