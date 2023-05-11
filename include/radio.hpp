@@ -35,7 +35,7 @@ namespace bzzz
          * 11         Switch D
          * 12         Trimmer VRE
          */
-        int channelData[16];
+        int m_channelData[16];
 
     public:
         Radio();
@@ -107,6 +107,11 @@ namespace bzzz
          * @brief value of trimmer VRE (0-1)
          */
         float trimmerVREPercentage();
+
+        /**
+         * Wait until the arm switch is at the ON position
+         */
+        void waitForArmCommand();
 
     }; /* end of class Radio */
 

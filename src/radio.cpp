@@ -39,7 +39,7 @@ namespace bzzz
             {
                 // take the substring from the start to the first occurence of a comma,
                 // convert it to int and save it in the array
-                channelData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
+                m_channelData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
 
                 // cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
@@ -51,38 +51,38 @@ namespace bzzz
 
     float Radio::pitchReferenceAngleRad()
     {
-        return mapRadioToAngle(channelData[RADIO_CHANNEL_PITCH]);
+        return mapRadioToAngle(m_channelData[RADIO_CHANNEL_PITCH]);
     }
 
     float Radio::rollReferenceAngleRad()
     {
-        return mapRadioToAngle(channelData[RADIO_CHANNEL_ROLL]);
+        return mapRadioToAngle(m_channelData[RADIO_CHANNEL_ROLL]);
     }
 
     float Radio::yawRateReferenceRadSec()
     {
-        float rawRatePercentage = mapTrimmerToPercentage(channelData[RADIO_CHANNEL_YAW_RATE]);
+        float rawRatePercentage = mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_YAW_RATE]);
         return -RADIO_MAX_YAW_RATE_RAD_SEC + RADIO_MAX_YAW_RATE_RAD_SEC * rawRatePercentage;
     }
 
     float Radio::throttleReferencePercentage()
     {
-        return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_THROTTLE]);
+        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_THROTTLE]);
     }
 
     bool Radio::armed()
     {
-        return channelData[RADIO_CHANNEL_SWITCH_B] >= 1500;
+        return m_channelData[RADIO_CHANNEL_SWITCH_B] >= 1500;
     }
 
     bool Radio::kill()
     {
-        return channelData[RADIO_CHANNEL_SWITCH_A] >= 1500;
+        return m_channelData[RADIO_CHANNEL_SWITCH_A] >= 1500;
     }
 
     ThreeWaySwitch Radio::switchC()
     {
-        int switchValue = channelData[RADIO_CHANNEL_SWITCH_C];
+        int switchValue = m_channelData[RADIO_CHANNEL_SWITCH_C];
         if (switchValue <= 450)
         {
             return ThreeWaySwitch::DOWN;
@@ -96,27 +96,37 @@ namespace bzzz
 
     bool Radio::switchD()
     {
-        return channelData[RADIO_CHANNEL_SWITCH_D] >= 1500;
+        return m_channelData[RADIO_CHANNEL_SWITCH_D] >= 1500;
     }
 
     float Radio::trimmerVRAPercentage()
     {
-        return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_VRA]);
+        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRA]);
     }
 
     float Radio::trimmerVRCPercentage()
     {
-        return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_VRC]);
+        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRC]);
     }
 
     float Radio::trimmerVRBPercentage()
     {
-        return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_VRB]);
+        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRB]);
     }
 
     float Radio::trimmerVREPercentage()
     {
-        return mapTrimmerToPercentage(channelData[RADIO_CHANNEL_VRE]);
+        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRE]);
+    }
+
+    void Radio::waitForArmCommand()
+    {
+        readPiData();
+        delay(1000); // TODO is this delay necessary?
+        while (!armed())
+        {
+            readPiData();
+        }
     }
 
 }
