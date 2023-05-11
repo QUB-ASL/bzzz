@@ -50,6 +50,19 @@ namespace bzzz
      */
     void waitForPiSerial();
 
+    /**
+     * Maps a percentage to a value in an interval
+     *
+     * It returns minVal + percentage * (maxVal - minVal)
+     *
+     * @param percentage percentage; a value in [0, 1]
+     * @param minVal minimum value
+     * @param maxVal maximum value
+     *
+     * @return value between minVal and maxVal
+     */
+    float mapPrcnt(float percentage, float minVal, float maxVal);
+
 }
 
 #endif /* BZZZ_UTILS_H */

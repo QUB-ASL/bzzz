@@ -43,4 +43,9 @@ namespace bzzz
         }
     }
 
+    float mapPrcnt(float percentage, float minVal, float maxVal)
+    {
+        return minVal + percentage * (maxVal - minVal);
+    }
+
 }

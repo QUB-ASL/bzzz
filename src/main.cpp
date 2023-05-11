@@ -45,6 +45,9 @@ void setup()
   buzz(6);                                   // 6 beeps => motors armed; keep clear!
 }
 
+/**
+ * Set controller gain values from RC trimmers
+ */
 void setGainsFromRcTrimmers()
 {
   controller.setQuaternionGains(
@@ -55,6 +58,9 @@ void setGainsFromRcTrimmers()
       -radio.trimmerVREPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 }
 
+/**
+ * Loop function
+ */
 void loop()
 {
   float quaternionImuData[4];
@@ -87,14 +93,15 @@ void loop()
 
   controller.controlAction(attitudeError, angularVelocity, controls);
 
-  float throttleFromRadio =
-      radio.throttleReferencePercentage() * (ABSOLUTE_MAX_PWM - ZERO_ROTOR_SPEED) + ZERO_ROTOR_SPEED;
+  // Throttle from RC to throttle reference
+  float throttlePrcntFromRc = radio.throttleReferencePercentage();
+  float throttleRef = mapPrcnt(throttlePrcntFromRc, ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM);
 
   // Compute control actions and send them to the motors
   int motorFL, motorFR, motorBL, motorBR;
   controller.motorPwmSignals(attitudeError,
                              angularVelocity,
-                             throttleFromRadio,
+                             throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
 }
