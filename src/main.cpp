@@ -14,6 +14,7 @@ AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
 float yawReferenceRad = 0.0;
+float initialAngularVelocity[3];
 
 /**
  * Setup the buzzer
@@ -67,6 +68,30 @@ void discardImuMeasurements(size_t numMeasurements = 5000)
   {
     ahrs.update();
   }
+}
+
+/**
+ * Determine the initial angular velocity readings of the IMU. 
+ * This value is subtracted from the angular velocity readings of the IMU
+ * to get the correct angular velocity. 
+ * All angular velocities should be zero (at the start) when quadrotor is still.
+ */
+void initAngularVelocity()
+{
+  float angularVelocityTemp[3] = {0};
+  int numInitAngularVelocity = 10;
+
+  for (int i = 0; i < numInitAngularVelocity; i++)
+  {
+    ahrs.update();
+    ahrs.angularVelocity(angularVelocityTemp);
+    initialAngularVelocity[0] += angularVelocityTemp[0];
+    initialAngularVelocity[1] += angularVelocityTemp[1];
+    initialAngularVelocity[2] += angularVelocityTemp[2];
+  }
+  initialAngularVelocity[0] /= (float)numInitAngularVelocity;
+  initialAngularVelocity[1] /= (float)numInitAngularVelocity;
+  initialAngularVelocity[2] /= (float)numInitAngularVelocity;
 }
 
 /**
@@ -162,7 +187,8 @@ void setup()
 void loop()
 {
   float quaternionImuData[4];
-  float angularVelocity[3];
+  float measuredAngularVelocity[3];
+  float angularVelocityCorrected[3];
   float controls[3];
 
   // Note:
@@ -186,7 +212,12 @@ void loop()
       -radio.trimmerVREPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 
   ahrs.quaternion(quaternionImuData);
-  ahrs.angularVelocity(angularVelocity);
+  ahrs.angularVelocity(measuredAngularVelocity);
+
+  // Determine correct angularVelocity
+  angularVelocityCorrected[0] = measuredAngularVelocity[0] - initialAngularVelocity[0];
+  angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
+  angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
 
   // !!!deactivate for testing!!!
   // yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
@@ -200,14 +231,14 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  controller.controlAction(attitudeError, angularVelocity, controls);
+  controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
   float throttleFromRadio = radio.throttleReferencePercentage() * (ABSOLUTE_MAX_PWM - ZERO_ROTOR_SPEED) + ZERO_ROTOR_SPEED;
 
   // Compute control actions and send them to the motors
   int motorFL, motorFR, motorBL, motorBR;
   controller.motorPwmSignals(attitudeError,
-                             angularVelocity,
+                             angularVelocityCorrected,
                              throttleFromRadio,
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
