@@ -33,17 +33,18 @@ void setupAHRS()
  */
 void setup()
 {
-  setupBuzzer();                             // setup the buzzer
-  Serial.begin(SERIAL_BAUD_RATE);            // start the serial
-  setupAHRS();                               // setup the IMU and AHRS
-  ahrs.averageQuaternion(initialQuaternion); // determine initial attitude
-  buzz(2);                                   // 2 beeps => AHRS setup complete
-  waitForPiSerial();                         // wait for the RPi and the RC to connect
-  buzz(4);                                   // 4 beeps => RPi+RC connected
-  radio.waitForArmCommand();                 // wait for the RC to send an arming command
-  buzz(2, 400);                              // two long beeps => preparation for arming
-  motorDriver.attachAndArm();                // attach ESC and arm motors
-  buzz(6);                                   // 6 beeps => motors armed; keep clear!
+  setupBuzzer();                                         // setup the buzzer
+  Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
+  setupAHRS();                                           // setup the IMU and AHRS
+  ahrs.averageQuaternion(initialQuaternion);             // determine initial attitude
+  ahrs.averageAngularVelocities(initialAngularVelocity); // determine initial attitude
+  buzz(2);                                               // 2 beeps => AHRS setup complete
+  waitForPiSerial();                                     // wait for the RPi and the RC to connect
+  buzz(4);                                               // 4 beeps => RPi+RC connected
+  radio.waitForArmCommand();                             // wait for the RC to send an arming command
+  buzz(2, 400);                                          // two long beeps => preparation for arming
+  motorDriver.attachAndArm();                            // attach ESC and arm motors
+  buzz(6);                                               // 6 beeps => motors armed; keep clear!
 }
 
 void setGainsFromRcTrimmers()

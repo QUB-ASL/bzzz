@@ -115,6 +115,31 @@ namespace bzzz
         avQuaternion[3] = averageQuaternion[3] / normAverageQuaternion;
     }
 
+    void AHRS::averageAngularVelocities(
+        float averageAngularVelocity[3],
+        size_t windowLength,
+        size_t numDiscardMeasurements)
+    {
+        float angularVelocityTemp[3] = {0};
+
+        logSerial(LogVerbosityLevel::Info, "[AHRS] getting ready; discarding measurements");
+
+        // make sure the estimator has converged; discard initial measurements
+        discardImuMeasurements(numDiscardMeasurements);
+
+        for (int i = 0; i < windowLength; i++)
+        {
+            update();
+            angularVelocity(angularVelocityTemp);
+            averageAngularVelocity[0] += angularVelocityTemp[0];
+            averageAngularVelocity[1] += angularVelocityTemp[1];
+            averageAngularVelocity[2] += angularVelocityTemp[2];
+        }
+        averageAngularVelocity[0] /= (float)windowLength;
+        averageAngularVelocity[1] /= (float)windowLength;
+        averageAngularVelocity[2] /= (float)windowLength;
+    }
+
 #ifdef BZZZ_DEBUG
     void AHRS::eulerAngles(float *euler)
     {
