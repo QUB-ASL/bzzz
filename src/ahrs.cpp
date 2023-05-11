@@ -1,4 +1,5 @@
 #include "ahrs.hpp"
+#include "util.hpp"
 
 namespace bzzz
 {
@@ -33,11 +34,11 @@ namespace bzzz
 
     void AHRS::preflightCalibrate(bool calibrateMagnetometer /* =false */)
     {
-        Serial.println("[AHRS] stay still; calibrating the accelerometer");
+        logSerial(LogVerbosityLevel::Info, "[AHRS] stay still; calibrating the accelerometer");
         m_imu.calibrateAccelGyro();
         if (calibrateMagnetometer)
         {
-            Serial.println("[AHRS] rock and roll; calibrating the magnetometer");
+            logSerial(LogVerbosityLevel::Info, "[AHRS] rock and roll; calibrating the magnetometer");
             m_imu.calibrateMag();
             bzzz::logSerial(bzzz::LogVerbosityLevel::Info, "Magnetometer biases: [%.3f, %.3f, %.3f]",
                             m_imu.getMagBiasX(), m_imu.getMagBiasY(), m_imu.getMagBiasZ());
@@ -64,6 +65,75 @@ namespace bzzz
     bool AHRS::update()
     {
         return m_imu.update();
+    }
+
+    void AHRS::discardImuMeasurements(size_t numMeasurements)
+    {
+        for (int i = 0; i < numMeasurements; i++)
+        {
+            update();
+        }
+    }
+
+    void AHRS::averageQuaternion(
+        Quaternion &avQuaternion,
+        size_t windowLength,
+        size_t numDiscardMeasurements)
+    {
+        float quatInitTemp[4] = {0};
+        float averageQuaternion[4] = {0}; // 3D quaternion (x, y, z)
+
+        logSerial(LogVerbosityLevel::Info, "[AHRS] getting ready; discarding measurements");
+
+        // make sure the estimator has converged; discard initial measurements
+        discardImuMeasurements(numDiscardMeasurements);
+
+        for (int i = 0; i < windowLength; i++)
+        {
+            update();
+            quaternion(quatInitTemp);
+            averageQuaternion[0] += quatInitTemp[0];
+            averageQuaternion[1] += quatInitTemp[1];
+            averageQuaternion[2] += quatInitTemp[2];
+            averageQuaternion[3] += quatInitTemp[3];
+        }
+        averageQuaternion[0] /= (float)windowLength;
+        averageQuaternion[1] /= (float)windowLength;
+        averageQuaternion[2] /= (float)windowLength;
+        averageQuaternion[3] /= (float)windowLength;
+
+        float normAverageQuaternion =
+            sqrt(sq(averageQuaternion[0]) + sq(averageQuaternion[1]) + sq(averageQuaternion[2]) + sq(averageQuaternion[3]));
+
+        avQuaternion[0] = averageQuaternion[0] / normAverageQuaternion;
+        avQuaternion[1] = averageQuaternion[1] / normAverageQuaternion;
+        avQuaternion[2] = averageQuaternion[2] / normAverageQuaternion;
+        avQuaternion[3] = averageQuaternion[3] / normAverageQuaternion;
+    }
+
+    void AHRS::averageAngularVelocities(
+        float averageAngularVelocity[3],
+        size_t windowLength,
+        size_t numDiscardMeasurements)
+    {
+        float angularVelocityTemp[3] = {0};
+
+        logSerial(LogVerbosityLevel::Info, "[AHRS] getting ready; discarding measurements");
+
+        // make sure the estimator has converged; discard initial measurements
+        discardImuMeasurements(numDiscardMeasurements);
+
+        for (int i = 0; i < windowLength; i++)
+        {
+            update();
+            angularVelocity(angularVelocityTemp);
+            averageAngularVelocity[0] += angularVelocityTemp[0];
+            averageAngularVelocity[1] += angularVelocityTemp[1];
+            averageAngularVelocity[2] += angularVelocityTemp[2];
+        }
+        averageAngularVelocity[0] /= (float)windowLength;
+        averageAngularVelocity[1] /= (float)windowLength;
+        averageAngularVelocity[2] /= (float)windowLength;
     }
 
 #ifdef BZZZ_DEBUG

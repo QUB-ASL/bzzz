@@ -5,12 +5,12 @@
 
 // Various defines such as PIN numbers and global constants
 
-/*
+/**
  * IMU config
  */
 #define IMU_ADDRESS (0x68)
 
-/*
+/**
  * Serial config
  */
 #define SERIAL_BAUD_RATE 115200
@@ -48,16 +48,16 @@
  */
 #define BUZZER_PIN 27
 
-/* Maximum pitch value corresponding to the top position of the stick (30deg = 0.52rad) */
+/** Maximum pitch value corresponding to the top position of the stick (30deg = 0.52rad) */
 #define PITCH_MAX_RAD 0.5235987755982988
 
-/* Value from the radio when the stick is at the lowest position */
+/** Value from the radio when the stick is at the lowest position */
 #define RADIO_STICK_MIN 300
 
-/* Value from the radio when the stick is at the highest position */
+/** Value from the radio when the stick is at the highest position */
 #define RADIO_STICK_MAX 1700
 
-/* Maximum yaw rate (rad/s) 10 deg/s = 0.1745 rad/s */
+/** Maximum yaw rate (rad/s) 10 deg/s = 0.1745 rad/s */
 #define RADIO_MAX_YAW_RATE_RAD_SEC 0.1745
 
 /** Trimmer A on RC - maximum quaternion XY gain */
@@ -77,35 +77,8 @@
  */
 #define U_TO_PWM 8
 
-#ifndef BZZZ_VERBOSITY
-#define BZZZ_VERBOSITY 3
+#ifndef BZZZ_LOGGING_LEVEL
+#define BZZZ_LOGGING_LEVEL 3
 #endif
-
-// Various global utilities
-
-namespace bzzz
-{
-
-    /**
-     * Possible verbosity levels
-     */
-    enum LogVerbosityLevel
-    {
-        Debug = 1,
-        Info = 2,
-        Severe = 3
-    };
-
-    /**
-     * @brief print debug information to the serial
-     *
-     * @param fmt string format
-     *
-     * @param ...
-     */
-    void logSerial(LogVerbosityLevel verbosity,
-                   const char *fmt, ...);
-
-}
 
 #endif /* GLOBALS_H */
