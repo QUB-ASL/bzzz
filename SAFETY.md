@@ -84,7 +84,7 @@ There are several hazards associated with LiPo batteries, such as:
 - **Fire and explosion**: Mishandling of LiPo batteries can lead to fire, explosions, and toxic smoke inhalation. This is because LiPo batteries contain highly volatile and flammable electrolytes that can catch fire if they are damaged, overcharged, or punctured.
 - **Thermal runaway**: LiPo batteries can undergo a process called thermal runaway, where a small thermal event or overcharging can cause the battery to rapidly heat up, leading to a chain reaction and causing the battery to vent, catch fire, or explode.
 - **Physical damage**: LiPo batteries are sensitive to physical damage, such as punctures or crushing, which can cause them to catch fire or explode.
-- **Voltage deviation**: If the voltages across the cells deviate too much from each other (5mV ~ 10Mv), the battery can become unstable and dangerous.
+- **Voltage deviation**: If the voltages across the cells deviate too much from each other (5 ~ 10mV), the battery can become unstable and dangerous.
 
 Therefore, it is important to handle LiPo batteries with care.
 
@@ -133,7 +133,7 @@ When attaching the propellers, observe the following safety instructions:
 1. Do not enter the netting area.
 2. Do not leave the drone unattended.
 3. Be alert.
-5. Do not go near the pinning propellers.
+5. Do not go near the spinning propellers.
 6. If any propeller or part of the drone comes loose, disarm immediately and disconnect the battery.
 
 ### 6.3. At the end of a test flight
