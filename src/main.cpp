@@ -5,6 +5,7 @@
 #include "radio.hpp"
 #include "ahrs.hpp"
 #include "controller.hpp"
+#include "fail_safes.hpp"
 #include "util.hpp"
 
 using namespace bzzz;
@@ -14,6 +15,7 @@ Radio radio;
 AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
+FailSafes failSafes;
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 
@@ -33,6 +35,13 @@ void setupAHRS()
  */
 void setup()
 {
+
+  /**
+   * Fail safes setup,
+   * remmber to assign all object pointers properly.
+  */
+ failSafes.setMotorDriverObjPtr(&motorDriver);
+
   setupBuzzer();                                         // setup the buzzer
   Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
   setupAHRS();                                           // setup the IMU and AHRS
@@ -70,7 +79,8 @@ void loop()
   float angularVelocityCorrected[3];
   float controls[3];
 
-  radio.readPiData();
+  // if radio data received update the last data read time.
+  if(radio.readPiData()) failSafes.setLastRadioReceptionTime(micros());
   if (radio.kill())
   {
     motorDriver.disarm();
@@ -112,4 +122,7 @@ void loop()
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
+
+  // one function to run all fail safe checks
+  failSafes.runFailSafes();
 }
