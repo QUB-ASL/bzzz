@@ -98,7 +98,9 @@ void loop()
   Quaternion currentQuaternion(quaternionImuData);
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
-
+  
+  Serial.println("Yr: " + String(radio.yawRateReferenceRadSec()) + " Pr: " + String(radio.pitchReferenceAngleRad()) + " Rr: " + String(radio.rollReferenceAngleRad()) + " Tr: " + String(radio.throttleReferencePercentage()));
+  
   controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
   // Throttle from RC to throttle reference
