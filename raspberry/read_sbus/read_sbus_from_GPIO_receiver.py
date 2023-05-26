@@ -2,10 +2,8 @@ import read_sbus_from_GPIO
 import time
 import serial
 
-SBUS_PIN = 25 #pin where sbus wire is plugged in
-ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1) #serial connection between Pi and ESP32
-ser.reset_input_buffer()                               #serial.Serial(port, buad rate, timeout)
 
+SBUS_PIN = 25 #pin where sbus wire is plugged in
 reader = read_sbus_from_GPIO.SbusReader(SBUS_PIN)
 reader.begin_listen()
 
@@ -16,6 +14,11 @@ while(not reader.is_connected()):
 #Note that there will be nonsense data for the first 10ms or so of connection
 #until the first packet comes in.
 time.sleep(.1)
+
+
+ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=0) #serial connection between Pi and ESP32
+ser.reset_input_buffer()                               #serial.Serial(port, buad rate, timeout)
+
 
 while True:
         try:
@@ -45,8 +48,9 @@ while True:
                 #cleanup cleanly after ctrl-c
                 reader.end_listen()
                 exit()
-        except:
+        except Exception as e:
                 #cleanup cleanly after error
+                print(f"Exception: {e}\n exiting.....")
                 reader.end_listen()
                 raise
 

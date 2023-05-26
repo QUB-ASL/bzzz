@@ -33,7 +33,7 @@ namespace bzzz
 
         if (Serial.available() > 0)
         {
-            allDataFromPi = Serial.readStringUntil('\n');
+            allDataFromPi = SERIAL_RADIO.readStringUntil('\n');
 
             for (int i = 0; i < 16; i++)
             {
