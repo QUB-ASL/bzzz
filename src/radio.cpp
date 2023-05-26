@@ -41,9 +41,10 @@ namespace bzzz
             {
                 // take the substring from the start to the first occurence of a comma,
                 // convert it to int and save it in the array
+                // read the data into as dummy data and later check if the data is proper or not
                 m_dummyChannelData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
-                if(m_dummyChannelData[i] < 100) m_dummyChannelData[i] = 100;  // TODO: change 100 and 1900 to an appropriate value later
-                else if (m_dummyChannelData[i] > 1900) m_dummyChannelData[i] = 1900;
+                if(m_dummyChannelData[i] < 100 || m_dummyChannelData[i] > 1900) return false; //m_dummyChannelData[i] = 100;  // TODO: change 100 and 1900 to an appropriate value later
+                // else if (m_dummyChannelData[i] > 1900) m_dummyChannelData[i] = 1900;
                 
 
                 // cut the channelData string after the first occurence of a comma
@@ -51,6 +52,7 @@ namespace bzzz
             }
             if(data_count == 15) for(int i = 0; i < 16; i++) m_channelData[i] = m_dummyChannelData[i];
             else return false;
+            if(m_channelData[RADIO_CHANNEL_THROTTLE] < 0) m_channelData[RADIO_CHANNEL_THROTTLE] = 0;
             return true;
         }
         return false;
