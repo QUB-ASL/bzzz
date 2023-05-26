@@ -50,7 +50,7 @@ namespace bzzz
                 // cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
             }
-            if(data_count == 15) for(int i = 0; i < 16; i++) m_channelData[i] = m_dummyChannelData[i];
+            if(data_count == 16) for(int i = 0; i < 16; i++) m_channelData[i] = m_dummyChannelData[i];
             else return false;
             if(m_channelData[RADIO_CHANNEL_THROTTLE] < 0) m_channelData[RADIO_CHANNEL_THROTTLE] = 0;
             return true;
@@ -76,7 +76,8 @@ namespace bzzz
 
     float Radio::throttleReferencePercentage()
     {
-        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_THROTTLE]);
+        float temp = mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_THROTTLE]);
+        return (temp < 0)?0:temp;
     }
 
     bool Radio::armed()
