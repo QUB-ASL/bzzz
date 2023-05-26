@@ -30,20 +30,27 @@ namespace bzzz
     bool Radio::readPiData(void)
     {
         String allDataFromPi;
+        int data_count = 0;
 
         if (Serial.available() > 0)
         {
             allDataFromPi = Serial.readStringUntil('\n');
+            data_count = 0;
 
-            for (int i = 0; i < 16; i++)
+            for (int i = 0; i < 16; i++, data_count++)
             {
                 // take the substring from the start to the first occurence of a comma,
                 // convert it to int and save it in the array
-                m_channelData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
+                m_dummyChannelData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
+                if(m_dummyChannelData[i] < 100) m_dummyChannelData[i] = 100;  // TODO: change 100 and 1900 to an appropriate value later
+                else if (m_dummyChannelData[i] > 1900) m_dummyChannelData[i] = 1900;
+                
 
                 // cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
             }
+            if(data_count == 15) for(int i = 0; i < 16; i++) m_channelData[i] = m_dummyChannelData[i];
+            else return false;
             return true;
         }
         return false;
