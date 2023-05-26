@@ -48,13 +48,13 @@ void setup()
   setupAHRS();                                           // setup the IMU and AHRS
   ahrs.averageQuaternion(initialQuaternion);             // determine initial attitude
   ahrs.averageAngularVelocities(initialAngularVelocity); // determine initial attitude
-  buzz(2);                                               // 2 beeps => AHRS setup complete
-  waitForPiSerial();                                     // wait for the RPi and the RC to connect
-  buzz(4);                                               // 4 beeps => RPi+RC connected
-  radio.waitForArmCommand();                             // wait for the RC to send an arming command
-  buzz(2, 400);                                          // two long beeps => preparation for arming
-  motorDriver.attachAndArm();                            // attach ESC and arm motors
-  buzz(6);                                               // 6 beeps => motors armed; keep clear!
+  // buzz(2);                                               // 2 beeps => AHRS setup complete
+  // waitForPiSerial();                                     // wait for the RPi and the RC to connect
+  // buzz(4);                                               // 4 beeps => RPi+RC connected
+  // radio.waitForArmCommand();                             // wait for the RC to send an arming command
+  // buzz(2, 400);                                          // two long beeps => preparation for arming
+  // motorDriver.attachAndArm();                            // attach ESC and arm motors
+  // buzz(6);                                               // 6 beeps => motors armed; keep clear!
 }
 
 /**
@@ -111,7 +111,9 @@ void loop()
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
   ahrs.eulerAngles(eulerAngles);
-  logSerial(LogVerbosityLevel::Info, "Y: %f, P: %f, R: %f \n", eulerAngles[0], eulerAngles[1], eulerAngles[2]);
+  //Serial.println("Y: " + String(eulerAngles[0]) + " P: " + String(eulerAngles[1]) + " R: " + String(eulerAngles[2]));
+  Serial.println("Yr: " + String(radio.yawRateReferenceRadSec()) + " Pr: " + String(radio.pitchReferenceAngleRad()) + " Rr: " + String(radio.rollReferenceAngleRad()) + " Tr: " + String(radio.throttleReferencePercentage()));
+  // logSerial(LogVerbosityLevel::Debug, "Y: %f, P: %f, R: %f \n", eulerAngles[0], eulerAngles[1], eulerAngles[2]);
 
   controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
