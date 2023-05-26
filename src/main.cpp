@@ -18,6 +18,7 @@ Quaternion initialQuaternion;
 FailSafes failSafes;
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
+float eulerAngles[3];
 
 /**
  * Setup the AHRS
@@ -108,6 +109,9 @@ void loop()
   Quaternion currentQuaternion(quaternionImuData);
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
+
+  ahrs.eulerAngles(eulerAngles);
+  logSerial(LogVerbosityLevel::Info, "Y: %f, P: %f, R: %f \n", eulerAngles[0], eulerAngles[1], eulerAngles[2]);
 
   controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
