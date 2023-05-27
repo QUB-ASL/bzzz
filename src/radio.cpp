@@ -114,7 +114,17 @@ namespace bzzz
 
     ThreeWaySwitch Radio::switchC()
     {
-        return (m_encodedSwitchesData & RADIO_SWITCH_C_BITS) >> 1;
+        switch((m_encodedSwitchesData & RADIO_SWITCH_C_BITS) >> 1)
+        {
+            case 0:
+                return ThreeWaySwitch::DOWN;
+            case 1:
+                return ThreeWaySwitch::MID;
+            case 2:
+                return ThreeWaySwitch::UP;
+            default:
+                return ThreeWaySwitch::DOWN;
+        }
     }
 
     bool Radio::switchD()
