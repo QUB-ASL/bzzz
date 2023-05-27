@@ -42,6 +42,12 @@ DOWN = "DOWN"
 MID = "MID"
 UP = "UP"
 
+
+
+ZERO_ROTOR_SPEED = 1000
+ABSOLUTE_MAX_PWM = 2000
+
+
 class RadioDataParser:
     def __init__(self):
         self.m_channelData = None
@@ -57,7 +63,8 @@ class RadioDataParser:
         return -PITCH_MAX_RAD + (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN)) * 2 * PITCH_MAX_RAD
 
     def mapTrimmerToPercentage(self, x):
-        return (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN))
+        percentage = (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN))
+        return percentage if percentage >= 0 else 0
 
     def pitchReferenceAngleRad(self):
         return self.mapRadioToAngle(self.m_channelData[RADIO_CHANNEL_PITCH])
@@ -100,32 +107,15 @@ class RadioDataParser:
 
     def trimmerVREPercentage(self):
         return self.mapTrimmerToPercentage(self.m_channelData[RADIO_CHANNEL_VRE])
-
-    def waitForArmCommand(self):
-        self.readPiData()
-        while not self.armed()
-            self.readPiData()
     
-    def readPiData(void):
-        allDataFromPi = ""
+    def mapPrcnt(self, percentage, minVal, maxVal):
+        return minVal + percentage * (maxVal - minVal)
+    
+    def encapsulateRadioData(self):
+        reArrangedYPRTData = [self.yawRateReferenceRadSec(), self.pitchReferenceAngleRad(), self.rollReferenceAngleRad(), self.mapPrcnt(self.throttleReferencePercentage(), ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM)]
+        bitEncodedSwithcesData = (self.armed() << 4) | (self.kill() << 3) | (self.switchC() << 1) | self.switchD()
+        reArrangedABCETrimmersData = [self.trimmerVRAPercentage(), self.trimmerVRBPercentage(), self.trimmerVRCPercentage(), self.trimmerVREPercentage()]
 
-        if (Serial.available() > 0)
-        {
-            allDataFromPi = Serial.readStringUntil('\n');
-
-            for (int i = 0; i < 16; i++)
-            {
-                // take the substring from the start to the first occurence of a comma,
-                // convert it to int and save it in the array
-                m_channelData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
-
-                // cut the channelData string after the first occurence of a comma
-                allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
-            }
-            return true;
-        }
-        return false;
-    }
-
-
-}
+        reArrangedData = reArrangedYPRTData + reArrangedABCETrimmersData
+        
+        return ",".join(map(lambda x: str(x)[:5], reArrangedData)) + f",{bin(bitEncodedSwithcesData)[2:]}"

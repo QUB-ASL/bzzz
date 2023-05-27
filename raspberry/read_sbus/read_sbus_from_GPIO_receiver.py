@@ -27,7 +27,8 @@ while True:
 
                 #returns list of length 16, so -1 from channel num to get index
                 channel_data = reader.translate_latest_packet()
-                parser.m_channelData = map(lambda x: int(x), channel_data.strip().split(","))
+                parser.m_channelData = map(lambda x: 0 if int(x) < 0 else (2000 if int(x) > 2000 else int(x)), channel_data.strip().split(","))
+                channel_data = parser.encapsulateRadioData()
                 #print(channel_data) #Uncomment to Print data received on Pi from the RC receiver
 
                 ser.write(f'{channel_data}'.encode()) #Send data from Pi to ESP32
