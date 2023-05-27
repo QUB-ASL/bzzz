@@ -1,6 +1,7 @@
 import read_sbus_from_GPIO
 import time
 import serial
+from radioDataParser import RadioDataParser
 
 SBUS_PIN = 25 #pin where sbus wire is plugged in
 ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1) #serial connection between Pi and ESP32
@@ -17,6 +18,8 @@ while(not reader.is_connected()):
 #until the first packet comes in.
 time.sleep(.1)
 
+parser = RadioDataParser()
+
 while True:
         try:
                 is_connected = reader.is_connected()
@@ -24,6 +27,7 @@ while True:
 
                 #returns list of length 16, so -1 from channel num to get index
                 channel_data = reader.translate_latest_packet()
+                parser.m_channelData = map(lambda x: int(x), channel_data.strip().split(","))
                 #print(channel_data) #Uncomment to Print data received on Pi from the RC receiver
 
                 ser.write(f'{channel_data}'.encode()) #Send data from Pi to ESP32
