@@ -21,21 +21,31 @@ namespace bzzz
 
     private:
         /**
-         * Channel    Variable
-         * 1          yaw rate
-         * 2          pitch
-         * 3          throttle
-         * 4          roll
-         * 5          Switch C
-         * 6          Trimmer VRA
-         * 7          Trimmer VRC
-         * 8          Trimmer VRB
-         * 9          Switch B (for arming)
-         * 10         Switch A (kill)
-         * 11         Switch D
-         * 12         Trimmer VRE
+         * Array of reference data from radio with information as follows
+         * index    Variable
+         * 0          yaw rate in rad/s
+         * 1          pitch in rad
+         * 2          roll in rad
+         * 3          throttle in PWM range [1000, 2000]
+         * 4          % trim A
+         * 5          % trim B
+         * 6          % trim C
+         * 7          % trim E
          */
-        int m_channelData[16];
+        float m_dummyRefData[8];
+        float m_refData[8];
+
+        /**
+         * The last part of the radio data from R-Pi is a 5-bit data encoding 
+         * the positions of switches as follows
+         * bit index    Variable
+         * 4(MSB)     Switch B (Arm switch  ){1 if switch_is_on else 0}
+         * 3          Switch A (Kill switch ){1 if switch_is_on else 0}
+         * 2, 1       Switch C (3-way switch){00 for position DOWN, 01 for position MID, 10 for position UP}
+         * 0(LSB)     Switch D (2-way switch){1 if switch_is_on else 0}
+        */
+        int m_dummyEncodedSwtchsData, m_encodedSwitchesData;
+
 
     public:
         Radio();

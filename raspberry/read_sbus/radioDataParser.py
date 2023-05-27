@@ -118,4 +118,4 @@ class RadioDataParser:
 
         reArrangedData = reArrangedYPRTData + reArrangedABCETrimmersData
         
-        return ",".join(map(lambda x: str(x)[:5], reArrangedData)) + f",{bin(bitEncodedSwithcesData)[2:]}"
+        return ",".join(map(lambda x: str(x)[:5], reArrangedData)) + f",{bitEncodedSwithcesData}"

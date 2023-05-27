@@ -2,16 +2,16 @@
 
 #define RADIO_CHANNEL_YAW_RATE 0
 #define RADIO_CHANNEL_PITCH 1
-#define RADIO_CHANNEL_THROTTLE 2
-#define RADIO_CHANNEL_ROLL 3
-#define RADIO_CHANNEL_VRA 5
-#define RADIO_CHANNEL_VRB 7
+#define RADIO_CHANNEL_ROLL 2
+#define RADIO_CHANNEL_THROTTLE 3
+#define RADIO_CHANNEL_VRA 4
+#define RADIO_CHANNEL_VRB 5
 #define RADIO_CHANNEL_VRC 6
-#define RADIO_CHANNEL_VRE 11
-#define RADIO_CHANNEL_SWITCH_A 9
-#define RADIO_CHANNEL_SWITCH_B 8
-#define RADIO_CHANNEL_SWITCH_C 4
-#define RADIO_CHANNEL_SWITCH_D 10
+#define RADIO_CHANNEL_VRE 7
+#define RADIO_SWITCH_A_BIT 0b10000
+#define RADIO_SWITCH_B_BIT 0b01000
+#define RADIO_SWITCH_C_BITS 0b00110
+#define RADIO_SWITCH_D_BIT 0b00001
 
 namespace bzzz
 {
@@ -30,19 +30,52 @@ namespace bzzz
     bool Radio::readPiData(void)
     {
         String allDataFromPi;
+        int data_count = 0;
 
         if (Serial.available() > 0)
         {
             allDataFromPi = Serial.readStringUntil('\n');
 
-            for (int i = 0; i < 16; i++)
+            
+            if(allDataFromPi.substring(1, allDataFromPi.indexOf(",")) != "S") return false;
+            // cut the channelData string after the first occurence of a comma
+            allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
+
+            for (int i = 0; i < 8; i++, data_count++)
             {
                 // take the substring from the start to the first occurence of a comma,
                 // convert it to int and save it in the array
-                m_channelData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
+                // save the data to a dummy array
+                m_dummyRefData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toFloat();
 
                 // cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
+            }
+            // Check if 8 data points are received and return false if not. 
+            // if yes, copy the data to the actual array
+            // this helps to retain previous data if corrupted data is received
+            if(data_count != 8) 
+            {
+                return false;
+            }
+            else 
+            { 
+                for(int i = 0; i < 8; i++) 
+                {
+                    m_refData[i] = m_dummyRefData[i];
+                }
+            }
+
+            // get the encoded switches data
+            m_dummyEncodedSwtchsData = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
+            // the max value possible for encoded switch data in binary is 0b{1 1 10 1} = 29
+            if (m_dummyEncodedSwtchsData <0 || m_dummyEncodedSwtchsData > 29)
+            {
+                return false;
+            }
+            else
+            {
+                m_encodedSwitchesData = m_dummyEncodedSwtchsData;
             }
             return true;
         }
@@ -51,72 +84,62 @@ namespace bzzz
 
     float Radio::pitchReferenceAngleRad()
     {
-        return mapRadioToAngle(m_channelData[RADIO_CHANNEL_PITCH]);
+        return m_refData[RADIO_CHANNEL_PITCH];
     }
 
     float Radio::rollReferenceAngleRad()
     {
-        return mapRadioToAngle(m_channelData[RADIO_CHANNEL_ROLL]);
+        return m_refData[RADIO_CHANNEL_ROLL];
     }
 
     float Radio::yawRateReferenceRadSec()
     {
-        float rawRatePercentage = mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_YAW_RATE]);
-        return -RADIO_MAX_YAW_RATE_RAD_SEC + RADIO_MAX_YAW_RATE_RAD_SEC * rawRatePercentage;
+        return m_refData[RADIO_CHANNEL_YAW_RATE];
     }
 
     float Radio::throttleReferencePercentage()
     {
-        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_THROTTLE]);
+        return m_refData[RADIO_CHANNEL_THROTTLE];
     }
 
     bool Radio::armed()
     {
-        return m_channelData[RADIO_CHANNEL_SWITCH_B] >= 1500;
+        return m_encodedSwitchesData & RADIO_SWITCH_B_BIT;
     }
 
     bool Radio::kill()
     {
-        return m_channelData[RADIO_CHANNEL_SWITCH_A] >= 1500;
+        return m_encodedSwitchesData & RADIO_SWITCH_A_BIT;
     }
 
     ThreeWaySwitch Radio::switchC()
     {
-        int switchValue = m_channelData[RADIO_CHANNEL_SWITCH_C];
-        if (switchValue <= 450)
-        {
-            return ThreeWaySwitch::DOWN;
-        }
-        else if (switchValue <= 1200)
-        {
-            return ThreeWaySwitch::MID;
-        }
-        return ThreeWaySwitch::UP;
+        return (m_encodedSwitchesData & RADIO_SWITCH_C_BITS) >> 1;
     }
 
     bool Radio::switchD()
     {
-        return m_channelData[RADIO_CHANNEL_SWITCH_D] >= 1500;
+        return m_encodedSwitchesData & RADIO_SWITCH_D_BIT;
     }
 
     float Radio::trimmerVRAPercentage()
     {
-        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRA]);
+        return m_refData[RADIO_CHANNEL_VRA];
     }
 
     float Radio::trimmerVRCPercentage()
     {
-        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRC]);
+        return m_refData[RADIO_CHANNEL_VRC];
     }
 
     float Radio::trimmerVRBPercentage()
     {
-        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRB]);
+        return m_refData[RADIO_CHANNEL_VRB];
     }
 
     float Radio::trimmerVREPercentage()
     {
-        return mapTrimmerToPercentage(m_channelData[RADIO_CHANNEL_VRE]);
+        return m_refData[RADIO_CHANNEL_VRE];
     }
 
     void Radio::waitForArmCommand()
