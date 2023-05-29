@@ -11,7 +11,7 @@ reader.begin_listen()
 
 #wait until connection is established
 while(not reader.is_connected()):
-    time.sleep(.2)
+        time.sleep(.2)
 
 #Note that there will be nonsense data for the first 10ms or so of connection
 #until the first packet comes in.
