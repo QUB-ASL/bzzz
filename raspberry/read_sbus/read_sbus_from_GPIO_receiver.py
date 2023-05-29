@@ -2,6 +2,7 @@ import read_sbus_from_GPIO
 import time
 import serial
 from radioDataParser import RadioDataParser
+import threading
 
 
 SBUS_PIN = 25 #pin where sbus wire is plugged in
@@ -75,21 +76,17 @@ def receive_data_from_ESP():
         else:
                 return None
         
+def print_receive_data_from_ESP():
+        received_data = receive_data_from_ESP()
+        if received_data is not None:
+                print(received_data)
+
+
 def get_radio_data_parse_and_send_to_ESP():
-        is_connected, packet_age, channel_data = get_radio_data()
-        channel_data = parse_radio_data(channel_data)
-        send_data_to_ESP(channel_data)
-        
-
-
-while True:
         try:
-                get_radio_data_parse_and_send_to_ESP()
-                received_data = receive_data_from_ESP()
-                if received_data is not None:
-                        print(received_data)
-                time.sleep(0.01)
-                
+                is_connected, packet_age, channel_data = get_radio_data()
+                channel_data = parse_radio_data(channel_data)
+                send_data_to_ESP(channel_data)
         except KeyboardInterrupt:
                 #cleanup cleanly after ctrl-c
                 reader.end_listen()
@@ -98,6 +95,16 @@ while True:
                 #cleanup cleanly after error
                 reader.end_listen()
                 raise
+
+
+def run_thread_every_given_interval(interval, function_to_run,  num_times_to_run=0):
+        if num_times_to_run != 1:
+                threading.Timer(interval, run_thread_every_given_interval, [interval, function_to_run, num_times_to_run if num_times_to_run else 0]).start()
+        function_to_run()
+
+if __name__ == "__main__":
+        run_thread_every_given_interval(0.02, get_radio_data_parse_and_send_to_ESP)
+        run_thread_every_given_interval(0.02, print_receive_data_from_ESP)
 
 
 

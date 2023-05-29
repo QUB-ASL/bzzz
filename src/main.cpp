@@ -33,6 +33,9 @@ void setupAHRS()
  */
 void setup()
 {
+                                            // two long beeps => preparation for arming
+  motorDriver.attachAndArm();    
+  while(true);
   setupBuzzer();                                         // setup the buzzer
   Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
   setupAHRS();                                           // setup the IMU and AHRS
@@ -102,7 +105,7 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  Serial.println("Yr: " + String(radio.yawRateReferenceRadSec()) + " Pr: " + String(radio.pitchReferenceAngleRad()) + " Rr: " + String(radio.rollReferenceAngleRad()) + " Tr: " + String(radio.throttleReferencePercentage()));
+  // Serial.println("Yr: " + String(radio.yawRateReferenceRadSec()) + " Pr: " + String(radio.pitchReferenceAngleRad()) + " Rr: " + String(radio.rollReferenceAngleRad()) + " Tr: " + String(radio.throttleReferencePercentage()));
   
   controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
