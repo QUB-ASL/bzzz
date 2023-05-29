@@ -96,9 +96,14 @@ namespace bzzz
         return m_refData[RADIO_CHANNEL_YAW_RATE];
     }
 
-    float Radio::throttleReferencePercentage()
+    float Radio::throttleReferencePWM()
     {
         return m_refData[RADIO_CHANNEL_THROTTLE];
+    }
+
+    float Radio::throttleReferencePercentage()
+    {
+        return m_refData[RADIO_CHANNEL_THROTTLE]/1000 - 1;
     }
 
     bool Radio::armed()

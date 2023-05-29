@@ -68,10 +68,15 @@ namespace bzzz
         float rollReferenceAngleRad();
 
         /**
+         * @brief throttle reference as a PWM (1000-2000), but capped at 1900
+         */
+        float throttleReferencePWM();
+
+        /**
          * @brief throttle reference as a percentage (0-1)
          */
         float throttleReferencePercentage();
-
+        
         /**
          * @brief yaw rate in rad/s
          *
