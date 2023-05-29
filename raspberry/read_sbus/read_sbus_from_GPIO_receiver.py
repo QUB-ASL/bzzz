@@ -52,7 +52,7 @@ while True:
                 # bits 2 and 1: 2-bit info of switch C: 00 for position DOWN, 01 for position MID, 10 for position UP
                 # bit-0: 1-bit info of switch D: 1 if D_on else 0
                 channel_data = parser.encapsulateRadioData()
-                print(channel_data) #Uncomment to Print data received on Pi from the RC receiver
+                # print(channel_data) #Uncomment to Print data received on Pi from the RC receiver
 
                 # Send with S in the beginning to indicate the start of the data, and also useful to check if data 
                 # is received properly on the ESP's end
@@ -62,7 +62,7 @@ while True:
                 while ser.inWaiting() > 0:
                         try:
                                 line = ser.readline().  decode('ascii').rstrip()
-                                #print(line)
+                                print(line)
                         except UnicodeDecodeError as e:
                                 print(f"UnicodeDecodeError {e}, retrying....")
                 else:
