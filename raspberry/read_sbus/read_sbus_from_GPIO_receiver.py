@@ -32,43 +32,62 @@ parser = RadioDataParser()
 # first. It beocmes worse if they share resources, as one might not be aware that the other changed some values in the shared resurce (not thread-safe).
 # Possible solution is to use Locks (but make sure to release them). 
 
+
+def get_radio_data():
+        is_connected = reader.is_connected()
+        packet_age = reader.get_latest_packet_age() #milliseconds
+
+        #returns list of length 16, so -1 from channel num to get index
+        channel_data = str(reader.translate_latest_packet())[1:-1]
+
+        return is_connected, packet_age, channel_data
+
+def parse_radio_data(channel_data):
+        # check if data is in range [1000, 2000]
+        parser.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (2000 if int(x) > 2000 else int(x)), channel_data.strip().split(",")))
+        # process and encapsulate the data
+        # the output data packet format will be as follows
+        # Y_radPs, P_rad, R_rad, T_PWM_MIN2MAX, % trimA, % trimB, % trimC, % trimE, encodedSwitchesData
+        # here the final data value encodedSwitchesData is an integer carrying information 
+        # of the position of switches A, B, C, and D in the last 5-bits (the rightmost 5-bits),
+        # in which each bit corresponds to data as follows
+        # bit-4 (MSB): 1-bit info of Switch B: 1 if armed else 0
+        # bit-3: 1-bit info of Switch A: 1 if kill_on else 0
+        # bits 2 and 1: 2-bit info of switch C: 00 for position DOWN, 01 for position MID, 10 for position UP
+        # bit-0: 1-bit info of switch D: 1 if D_on else 0
+        channel_data = parser.encapsulateRadioData()
+        # print(channel_data) #Uncomment to Print data received on Pi from the RC receiver
+        return channel_data
+
+def send_data_to_ESP(channel_data):
+        # Send with S in the beginning to indicate the start of the data, and also useful to check if data 
+        # is received properly on the ESP's end
+        ser.write(f'S,{channel_data}\n'.encode()) #Send data from Pi to ESP32
+        # ser.write(b"\n") #Starts a new line so ESP32 knows when to stop reading
+
+def receive_data_from_ESP():
+        while ser.inWaiting() > 0:
+                try:
+                        line = ser.readline().decode('ascii').rstrip()
+                        return line
+                except UnicodeDecodeError as e:
+                        print(f"UnicodeDecodeError {e}, retrying....")
+        else:
+                return None
+        
+def get_radio_data_parse_and_send_to_ESP():
+        is_connected, packet_age, channel_data = get_radio_data()
+        channel_data = parse_radio_data(channel_data)
+        send_data_to_ESP(channel_data)
+        
+
+
 while True:
         try:
-                is_connected = reader.is_connected()
-                packet_age = reader.get_latest_packet_age() #milliseconds
-
-                #returns list of length 16, so -1 from channel num to get index
-                channel_data = str(reader.translate_latest_packet())[1:-1]
-                # check if data is in range [1000, 2000]
-                parser.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (2000 if int(x) > 2000 else int(x)), channel_data.strip().split(",")))
-                # process and encapsulate the data
-                # the output data packet format will be as follows
-                # Y_radPs, P_rad, R_rad, T_PWM_MIN2MAX, % trimA, % trimB, % trimC, % trimE, encodedSwitchesData
-                # here the final data value encodedSwitchesData is an integer carrying information 
-                # of the position of switches A, B, C, and D in the last 5-bits (the rightmost 5-bits),
-                # in which each bit corresponds to data as follows
-                # bit-4 (MSB): 1-bit info of Switch B: 1 if armed else 0
-                # bit-3: 1-bit info of Switch A: 1 if kill_on else 0
-                # bits 2 and 1: 2-bit info of switch C: 00 for position DOWN, 01 for position MID, 10 for position UP
-                # bit-0: 1-bit info of switch D: 1 if D_on else 0
-                channel_data = parser.encapsulateRadioData()
-                # print(channel_data) #Uncomment to Print data received on Pi from the RC receiver
-
-                # Send with S in the beginning to indicate the start of the data, and also useful to check if data 
-                # is received properly on the ESP's end
-                ser.write(f'S,{channel_data}\n'.encode()) #Send data from Pi to ESP32
-                # ser.write(b"\n") #Starts a new line so ESP32 knows when to stop reading
-                
-                while ser.inWaiting() > 0:
-                        try:
-                                line = ser.readline().decode('ascii').rstrip()
-                                print(line)
-                        except UnicodeDecodeError as e:
-                                print(f"UnicodeDecodeError {e}, retrying....")
-                else:
-                        pass
-                        #print("no data")
-
+                get_radio_data_parse_and_send_to_ESP()
+                received_data = receive_data_from_ESP()
+                if received_data is not None:
+                        print(received_data)
                 time.sleep(0.01)
                 
         except KeyboardInterrupt:

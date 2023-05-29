@@ -76,7 +76,6 @@ namespace bzzz
             {
                 m_encodedSwitchesData = m_dummyEncodedSwtchsData;
             }
-            Serial.println(m_encodedSwitchesData);
             return true;
         }
         return false;
