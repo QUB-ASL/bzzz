@@ -39,9 +39,12 @@ void setup()
   ahrs.averageQuaternion(initialQuaternion);             // determine initial attitude
   ahrs.averageAngularVelocities(initialAngularVelocity); // determine initial attitude
   buzz(2);                                               // 2 beeps => AHRS setup complete
+  Serial.println("waiting for PiSerial...");
   waitForPiSerial();                                     // wait for the RPi and the RC to connect
   buzz(4);                                               // 4 beeps => RPi+RC connected
+  Serial.println("waiting for arm...");
   radio.waitForArmCommand();                             // wait for the RC to send an arming command
+  Serial.println("armed...");
   buzz(2, 400);                                          // two long beeps => preparation for arming
   motorDriver.attachAndArm();                            // attach ESC and arm motors
   buzz(6);                                               // 6 beeps => motors armed; keep clear!

@@ -61,7 +61,7 @@ while True:
                 
                 while ser.inWaiting() > 0:
                         try:
-                                line = ser.readline().  decode('ascii').rstrip()
+                                line = ser.readline().decode('ascii').rstrip()
                                 print(line)
                         except UnicodeDecodeError as e:
                                 print(f"UnicodeDecodeError {e}, retrying....")

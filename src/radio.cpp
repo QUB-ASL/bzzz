@@ -8,8 +8,8 @@
 #define RADIO_CHANNEL_VRB 5
 #define RADIO_CHANNEL_VRC 6
 #define RADIO_CHANNEL_VRE 7
-#define RADIO_SWITCH_A_BIT 0b10000
-#define RADIO_SWITCH_B_BIT 0b01000
+#define RADIO_SWITCH_A_BIT 0b01000
+#define RADIO_SWITCH_B_BIT 0b10000
 #define RADIO_SWITCH_C_BITS 0b00110
 #define RADIO_SWITCH_D_BIT 0b00001
 
@@ -35,9 +35,8 @@ namespace bzzz
         if (Serial.available() > 0)
         {
             allDataFromPi = Serial.readStringUntil('\n');
-
             
-            if(allDataFromPi.substring(1, allDataFromPi.indexOf(",")) != "S") return false;
+            if(allDataFromPi.substring(0, allDataFromPi.indexOf(",")) != "S") return false;
             // cut the channelData string after the first occurence of a comma
             allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
 
@@ -46,7 +45,7 @@ namespace bzzz
                 // take the substring from the start to the first occurence of a comma,
                 // convert it to int and save it in the array
                 // save the data to a dummy array
-                m_dummyRefData[i] = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toFloat();
+                m_dummyRefData[i] = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toFloat();
 
                 // cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
@@ -67,7 +66,7 @@ namespace bzzz
             }
 
             // get the encoded switches data
-            m_dummyEncodedSwtchsData = allDataFromPi.substring(1, allDataFromPi.indexOf(",")).toInt();
+            m_dummyEncodedSwtchsData = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toInt();
             // the max value possible for encoded switch data in binary is 0b{1 1 10 1} = 29
             if (m_dummyEncodedSwtchsData <0 || m_dummyEncodedSwtchsData > 29)
             {
@@ -77,6 +76,7 @@ namespace bzzz
             {
                 m_encodedSwitchesData = m_dummyEncodedSwtchsData;
             }
+            Serial.println(m_encodedSwitchesData);
             return true;
         }
         return false;
@@ -155,10 +155,11 @@ namespace bzzz
     void Radio::waitForArmCommand()
     {
         readPiData();
-        delay(1000); // TODO is this delay necessary?
+        delay(20); // TODO is this delay necessary?
         while (!armed())
         {
             readPiData();
+            // Serial.println(m_encodedSwitchesData);
         }
     }
 

@@ -64,6 +64,7 @@ class RadioDataParser:
 
     def mapTrimmerToPercentage(self, x):
         percentage = (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN))
+        percentage = 1 if percentage > 1 else percentage
         return percentage if percentage >= 0 else 0
 
     def pitchReferenceAngleRad(self):
