@@ -53,6 +53,7 @@ namespace bzzz
             if(data_count == 16) for(int i = 0; i < 16; i++) m_channelData[i] = m_dummyChannelData[i];
             else return false;
             if(m_channelData[RADIO_CHANNEL_THROTTLE] < 0) m_channelData[RADIO_CHANNEL_THROTTLE] = 0;
+            else if(m_channelData[RADIO_CHANNEL_THROTTLE] > 1) m_channelData[RADIO_CHANNEL_THROTTLE] = 1;
             return true;
         }
         return false;
