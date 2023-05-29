@@ -45,7 +45,7 @@ UP = "UP"
 
 
 ZERO_ROTOR_SPEED = 1000
-ABSOLUTE_MAX_PWM = 2000
+ABSOLUTE_MAX_PWM = 1900
 
 
 class RadioDataParser:
