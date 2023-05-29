@@ -6,7 +6,7 @@ import threading
 
 
 SBUS_PIN = 25 #pin where sbus wire is plugged in
-ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=1) #serial connection between Pi and ESP32
+ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1) #serial connection between Pi and ESP32
 ser.reset_input_buffer()                               #serial.Serial(port, buad rate, timeout)
 
 reader = read_sbus_from_GPIO.SbusReader(SBUS_PIN)
@@ -103,8 +103,12 @@ def run_thread_every_given_interval(interval, function_to_run,  num_times_to_run
         function_to_run()
 
 if __name__ == "__main__":
-        run_thread_every_given_interval(0.02, get_radio_data_parse_and_send_to_ESP)
-        run_thread_every_given_interval(0.02, print_receive_data_from_ESP)
+        while True:
+                get_radio_data_parse_and_send_to_ESP()
+                print_receive_data_from_ESP()
+                time.sleep(0.015)
+        # run_thread_every_given_interval(0.02, get_radio_data_parse_and_send_to_ESP)
+        # run_thread_every_given_interval(0.02, print_receive_data_from_ESP)
 
 
 
