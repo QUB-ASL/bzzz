@@ -99,6 +99,7 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
+  logSerial(LogVerbosityLevel::Info, "wx: %f wy %f wz %f", measuredAngularVelocity[0], measuredAngularVelocity[1], measuredAngularVelocity[2]);
   controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
   // Throttle from RC to throttle reference
