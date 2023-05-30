@@ -32,7 +32,9 @@ namespace bzzz
          * 6          % trim C
          * 7          % trim E
          */
+        // A substitute variable to load the read data from Raspberry Pi. This data is tested for corruption before copying to the actual variable.
         float m_dummyRefData[8];
+        // The actual variable to store un-corrupt data. This data will be used as reference for the flight controller.
         float m_refData[8];
 
         /**
@@ -44,7 +46,10 @@ namespace bzzz
          * 2, 1       Switch C (3-way switch){00 for position DOWN, 01 for position MID, 10 for position UP}
          * 0(LSB)     Switch D (2-way switch){1 if switch_is_on else 0}
         */
-        int m_dummyEncodedSwtchsData, m_encodedSwitchesData;
+        // A substitute variable to load the encoded switch read data from Raspberry Pi. This data is tested for corruption before copying to the actual variable.
+        int m_dummyEncodedSwtchsData;
+        // The actual variable to store un-corrupt data. This is the data that will be used to take the some associated logial decisions.
+        int m_encodedSwitchesData;
 
 
     public:

@@ -1,4 +1,4 @@
-
+from enum import Enum
 
 # Maximum pitch value corresponding to the top position of the stick (30deg = 0.52rad)
 PITCH_MAX_RAD = 0.5235987755982988
@@ -38,9 +38,10 @@ RADIO_CHANNEL_SWITCH_B = 8
 RADIO_CHANNEL_SWITCH_C = 4
 RADIO_CHANNEL_SWITCH_D = 10
 
-DOWN = "DOWN"
-MID = "MID"
-UP = "UP"
+class ThreeWaySwitch(Enum):
+    DOWN = 0
+    MID = 1
+    UP = 2
 
 
 
@@ -53,19 +54,13 @@ class RadioDataParser:
         self.m_channelData = None
         self.rawRatePercentage = None
         self.switchValue = None
-        self.ThreeWaySwitch = {
-            "DOWN" : 0,
-            "MID" : 1,
-            "UP" : 2
-        }
 
     def mapRadioToAngle(self, x):
-        return -PITCH_MAX_RAD + (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN)) * 2 * PITCH_MAX_RAD
+        return -PITCH_MAX_RAD + (x - RADIO_STICK_MIN) / (RADIO_STICK_MAX - RADIO_STICK_MIN) * 2 * PITCH_MAX_RAD
 
     def mapTrimmerToPercentage(self, x):
-        percentage = (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN))
-        percentage = 1 if percentage > 1 else percentage
-        return percentage if percentage >= 0 else 0
+        percentage = (x - RADIO_STICK_MIN) / (RADIO_STICK_MAX - RADIO_STICK_MIN)
+        return max(min(percentage, 1), 0)
 
     def pitchReferenceAngleRad(self):
         return self.mapRadioToAngle(self.m_channelData[RADIO_CHANNEL_PITCH])
@@ -74,7 +69,7 @@ class RadioDataParser:
         return self.mapRadioToAngle(self.m_channelData[RADIO_CHANNEL_ROLL])
 
     def yawRateReferenceRadSec(self):
-        self.rawRatePercentage = self.mapTrimmerToPercentage(self.m_channelData[RADIO_CHANNEL_YAW_RATE]);
+        self.rawRatePercentage = self.mapTrimmerToPercentage(self.m_channelData[RADIO_CHANNEL_YAW_RATE])
         return -RADIO_MAX_YAW_RATE_RAD_SEC + RADIO_MAX_YAW_RATE_RAD_SEC * self.rawRatePercentage
     
     def throttleReferencePercentage(self):
@@ -87,12 +82,12 @@ class RadioDataParser:
         return self.m_channelData[RADIO_CHANNEL_SWITCH_A] >= 1500
 
     def switchC(self):
-        self.switchValue = self.m_channelData[RADIO_CHANNEL_SWITCH_C];
+        self.switchValue = self.m_channelData[RADIO_CHANNEL_SWITCH_C]
         if self.switchValue <= 450:
-            return self.ThreeWaySwitch[DOWN]
+            return ThreeWaySwitch.DOWN
         elif self.switchValue <= 1200:
-            return self.ThreeWaySwitch[MID]
-        return self.ThreeWaySwitch[UP]
+            return ThreeWaySwitch.MID
+        return ThreeWaySwitch.UP
 
     def switchD(self):
         return self.m_channelData[RADIO_CHANNEL_SWITCH_D] >= 1500
@@ -112,7 +107,7 @@ class RadioDataParser:
     def mapPrcnt(self, percentage, minVal, maxVal):
         return minVal + percentage * (maxVal - minVal)
     
-    def encapsulateRadioData(self):
+    def formatRadioDataForSending(self):
         reArrangedYPRTData = [self.yawRateReferenceRadSec(), self.pitchReferenceAngleRad(), self.rollReferenceAngleRad(), self.mapPrcnt(self.throttleReferencePercentage(), ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM)]
         bitEncodedSwithcesData = (self.armed() << 4) | (self.kill() << 3) | (self.switchC() << 1) | self.switchD()
         reArrangedABCETrimmersData = [self.trimmerVRAPercentage(), self.trimmerVRBPercentage(), self.trimmerVRCPercentage(), self.trimmerVREPercentage()]

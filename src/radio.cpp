@@ -8,10 +8,29 @@
 #define RADIO_CHANNEL_VRB 5
 #define RADIO_CHANNEL_VRC 6
 #define RADIO_CHANNEL_VRE 7
-#define RADIO_SWITCH_A_BIT 0b01000
-#define RADIO_SWITCH_B_BIT 0b10000
-#define RADIO_SWITCH_C_BITS 0b00110
-#define RADIO_SWITCH_D_BIT 0b00001
+/**
+ * In the processed radio data sent from R-Pi, the last element sent is an
+ * integer in which the switches' position data is encoded as follows
+ *      For switches A, B, and D (since these are only two-way switches), each 
+ *      were assigned a single bit with 0 indicating that the switch is in off state
+ *      and 1 otherwise. For switch C, as it is a three-way switch, it was assigned with
+ *      two bits with 00 = DOWN, 01 = MID, and 10 = UP.
+ * This encoded data is formated as follows
+ *
+ *      |0|0|0|B|A|C|c|D| this is the Least-significant byte of the received integer.
+ *      In which bit |B| indicates switch B's position (This is given the first position because it is the arm switch)
+ *               bit |A| indicates switch A's position (This is the kill switch)
+ *               bits |C|c| together indicate switch C's position
+ *               bit |D| indicates switch D's position      
+*/
+#define RADIO_SWITCH_A_BIT 0b01000  // Bit position of switch A
+#define RADIO_SWITCH_B_BIT 0b10000  // Bit position of switch B
+#define RADIO_SWITCH_C_BITS 0b00110  // Bits' position of switch C
+#define RADIO_SWITCH_D_BIT 0b00001  // Bit position of switch D
+
+
+// These are the number of data channles. We do not count the switch data channels.
+#define NUM_RADIO_CHANNELS 8
 
 namespace bzzz
 {
@@ -40,7 +59,7 @@ namespace bzzz
             // cut the channelData string after the first occurence of a comma
             allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
 
-            for (int i = 0; i < 8; i++, data_count++)
+            for (int i = 0; i < NUM_RADIO_CHANNELS && allDataFromPi != ""; i++, data_count++)
             {
                 // take the substring from the start to the first occurence of a comma,
                 // convert it to int and save it in the array
@@ -53,16 +72,13 @@ namespace bzzz
             // Check if 8 data points are received and return false if not. 
             // if yes, copy the data to the actual array
             // this helps to retain previous data if corrupted data is received
-            if(data_count != 8) 
+            if(data_count != NUM_RADIO_CHANNELS) 
             {
                 return false;
             }
-            else 
-            { 
-                for(int i = 0; i < 8; i++) 
-                {
-                    m_refData[i] = m_dummyRefData[i];
-                }
+            for(int i = 0; i < NUM_RADIO_CHANNELS; i++) 
+            {
+                m_refData[i] = m_dummyRefData[i];
             }
 
             // get the encoded switches data
@@ -72,10 +88,7 @@ namespace bzzz
             {
                 return false;
             }
-            else
-            {
-                m_encodedSwitchesData = m_dummyEncodedSwtchsData;
-            }
+            m_encodedSwitchesData = m_dummyEncodedSwtchsData;
             return true;
         }
         return false;
@@ -103,6 +116,9 @@ namespace bzzz
 
     float Radio::throttleReferencePercentage()
     {
+        // Since PWM range is [1000, 2000], we subtract 1000 to calculate the percentage
+        //   percentage = (Referance_PWM - 1000)/1000
+        //=> percentage = Reference_PWM/1000 - 1
         return m_refData[RADIO_CHANNEL_THROTTLE]/1000 - 1;
     }
 
@@ -159,11 +175,10 @@ namespace bzzz
     void Radio::waitForArmCommand()
     {
         readPiData();
-        delay(20); // TODO is this delay necessary?
+        delay(20);
         while (!armed())
         {
             readPiData();
-            // Serial.println(m_encodedSwitchesData);
         }
     }
 

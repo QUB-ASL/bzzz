@@ -7,7 +7,7 @@ import threading
 
 SBUS_PIN = 25 #pin where sbus wire is plugged in
 ser = serial.Serial('/dev/ttyUSB0', 500000, timeout=1) #serial connection between Pi and ESP32
-ser.reset_input_buffer()                               #serial.Serial(port, buad rate, timeout)
+ser.reset_input_buffer()
 
 reader = read_sbus_from_GPIO.SbusReader(SBUS_PIN)
 reader.begin_listen()
@@ -56,15 +56,13 @@ def parse_radio_data(channel_data):
         # bit-3: 1-bit info of Switch A: 1 if kill_on else 0
         # bits 2 and 1: 2-bit info of switch C: 00 for position DOWN, 01 for position MID, 10 for position UP
         # bit-0: 1-bit info of switch D: 1 if D_on else 0
-        channel_data = parser.encapsulateRadioData()
-        # print(channel_data) #Uncomment to Print data received on Pi from the RC receiver
+        channel_data = parser.formatRadioDataForSending()
         return channel_data
 
 def send_data_to_ESP(channel_data):
         # Send with S in the beginning to indicate the start of the data, and also useful to check if data 
         # is received properly on the ESP's end
-        ser.write(f'S,{channel_data}\n'.encode()) #Send data from Pi to ESP32
-        # ser.write(b"\n") #Starts a new line so ESP32 knows when to stop reading
+        ser.write(f'S,{channel_data}\n'.encode()) #Send data from Pi to ESP32, send a new line char so ESP32 knows when to stop reading
 
 def receive_data_from_ESP():
         while ser.inWaiting() > 0:
@@ -102,13 +100,8 @@ def run_thread_every_given_interval(interval, function_to_run,  num_times_to_run
                 threading.Timer(interval, run_thread_every_given_interval, [interval, function_to_run, num_times_to_run if num_times_to_run else 0]).start()
         function_to_run()
 
-if __name__ == "__main__":
-        # while True:
-                # get_radio_data_parse_and_send_to_ESP()
-                # print_receive_data_from_ESP()
-                # time.sleep(0.015)
-        run_thread_every_given_interval(0.02, get_radio_data_parse_and_send_to_ESP)
-        run_thread_every_given_interval(0.02, print_receive_data_from_ESP)
+
+run_thread_every_given_interval(0.02, get_radio_data_parse_and_send_to_ESP)
 
 
 
