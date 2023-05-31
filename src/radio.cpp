@@ -59,7 +59,7 @@ namespace bzzz
             // cut the channelData string after the first occurence of a comma
             allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
 
-            for (int i = 0; i < NUM_RADIO_CHANNELS && allDataFromPi != ""; i++, data_count++)
+            for (int i = 0; i < NUM_RADIO_CHANNELS || allDataFromPi != ""; i++, data_count++)
             {
                 // take the substring from the start to the first occurence of a comma,
                 // convert it to int and save it in the array
