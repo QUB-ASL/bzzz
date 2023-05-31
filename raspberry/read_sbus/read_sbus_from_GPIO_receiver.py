@@ -65,6 +65,11 @@ def send_data_to_ESP(channel_data):
         ser.write(f'S,{channel_data}\n'.encode()) #Send data from Pi to ESP32, send a new line char so ESP32 knows when to stop reading
 
 def receive_data_from_ESP():
+        """Read data from ESP32 via UART.
+
+        :return: String if data is received, None otherwise.
+        :rtype: str, or None
+        """
         while ser.inWaiting() > 0:
                 try:
                         line = ser.readline().decode('ascii').rstrip()
@@ -75,12 +80,16 @@ def receive_data_from_ESP():
                 return None
         
 def print_receive_data_from_ESP():
+        """Read data from ESP32 via UART and print iff data is received.
+        """
         received_data = receive_data_from_ESP()
         if received_data is not None:
                 print(received_data)
 
 
 def get_radio_data_parse_and_send_to_ESP():
+        """Read the radio data, process it, format it into a string, and send it via UART.
+        """
         try:
                 is_connected, packet_age, channel_data = get_radio_data()
                 channel_data = parse_radio_data(channel_data)
@@ -96,11 +105,22 @@ def get_radio_data_parse_and_send_to_ESP():
 
 
 def run_thread_every_given_interval(interval, function_to_run,  num_times_to_run=0):
+        """Create a thread of the given function, attach a timer to it and run it everytime the interval is elapsed.
+
+        :param interval: Interval between each run in seconds. Note: The given interval must be larger than worst execution time of the given function.
+        :type interval: float
+        :param function_to_run: Function handel which is to be run.
+        :type function_to_run: Of class fucntion
+        :param num_times_to_run: Number of times to run the thread before killing it, 
+        0 means that the thread is called as long as the program doesn't terminate, defaults to 0.
+        :type num_times_to_run: int, optional
+        """
         if num_times_to_run != 1:
                 threading.Timer(interval, run_thread_every_given_interval, [interval, function_to_run, num_times_to_run if num_times_to_run else 0]).start()
         function_to_run()
 
 
+# Run the get_radio_data_parse_and_send_to_ESP funtionn @ 50Hz
 run_thread_every_given_interval(0.02, get_radio_data_parse_and_send_to_ESP)
 
 
