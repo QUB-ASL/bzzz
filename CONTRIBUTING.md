@@ -82,12 +82,28 @@ When you create a new PR, you will see the following template:
 >
 > - Closes #1
 > - Addresses #2
+>
+> ## Tests
+> 
+> Has this been tested on the quadcopter? How? Provide details?
+>
 
 
 You need to **modify it**: e.g., update the **associated issues**. If the PR is not associated with an issue, delete that section.
 
+Lastly, give your PR a meaningful title.
 
-### 1.6. Issues
+
+### 1.6. Reviewing a PR
+
+If you have been invited to review a PR
+
+- Go to "files changed"
+- Click on a line to add your comments and select **Add single comment** (not "start a review"). You can use [markdown](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) for your comments 
+- Once you go through all files, complete your review: click on **review changes** (green button at the top-right corner) and either "Approve" or "Request changes"
+
+
+### 1.7. Issues
 
 - If you have found a bug, or you want to request a new feature, create an issue 
 - Make sure your bug report is accompanied by a _minimal reproducible example_ (MRE)
@@ -230,6 +246,11 @@ void loop()
 ```
 
 
-# 5. Electronics
+## 5. Electronics
 
 The sketches and grb files should be part of this project.
+
+
+## 6. Markdown
+
+Use [markdown](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) for your comments, issues and PRs on GitHub. It is particularly important to use markdown for inline code (e.g., `variableName`) and code blocks.
