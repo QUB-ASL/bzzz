@@ -9,23 +9,10 @@ _Version: 0.1.1_
 
 - The `main` branch is locked and no-one can push to it directly
 - The main development branch is called `dev`
-- All development will take place in branches out of dev<sup>1</sup>
+- All development will take place in branches out of dev
 - Do not commit big files
 - Avoid committing binary files
 
-
-<details>
-  <summary>Details</summary>
-  
-  <sup>1</sup> To create a new branch out of dev do
-
-  ```
-  git checkout dev
-  git pull origin dev
-  git checkout -b name_of_branch dev
-  ```
-
-</details>
 
 ### 1.2. Git commits
 
@@ -56,6 +43,8 @@ Addresses #101
 - To create a new branch do 
 
 ```git
+git checkout dev
+git pull origin dev
 git checkout -b feature/123-read-imu dev
 ```
 
