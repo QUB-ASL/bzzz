@@ -21,46 +21,58 @@ namespace bzzz
 
     private:
         /**
-         * Channel    Variable
-         * 1          yaw rate
-         * 2          pitch
-         * 3          throttle
-         * 4          roll
-         * 5          Switch C
-         * 6          Trimmer VRA
-         * 7          Trimmer VRC
-         * 8          Trimmer VRB
-         * 9          Switch B (for arming)
-         * 10         Switch A (kill)
-         * 11         Switch D
-         * 12         Trimmer VRE
+         * Array of reference data from radio with information as follows
+         * index    Variable
+         * 0          yaw rate in rad/s
+         * 1          pitch in rad
+         * 2          roll in rad
+         * 3          throttle in PWM range [1000, 2000]
+         * 4          % trim A
+         * 5          % trim B
+         * 6          % trim C
+         * 7          % trim E
+         *
+         * A substitute variable to load the read data from Raspberry Pi.
+         * This data is tested for corruption before copying to the actual variable.
          */
-        int channelData[16];
+        float m_rawRefData[8];
+
+        /**
+         * The actual variable to store un-corrupt data.
+         * This data will be used as reference for the flight controller.
+         */
+        float m_refData[8];
+
+        /**
+         * The last part of the radio data from R-Pi is a 5-bit data encoding
+         * the positions of switches as follows
+         * bit index    Variable
+         * 4(MSB)     Switch B (Arm switch  ){1 if switch_is_on else 0}
+         * 3          Switch A (Kill switch ){1 if switch_is_on else 0}
+         * 2, 1       Switch C (3-way switch){00 for position DOWN, 01
+         *            for position MID, 10 for position UP}
+         * 0(LSB)     Switch D (2-way switch){1 if switch_is_on else 0}
+         *
+         * A substitute variable to load the encoded switch read data from Raspberry Pi.
+         * This data is tested for corruption before copying to the actual variable.
+         */
+        int m_rawEncodedSwtchsData;
+
+        /**
+         * The actual variable to store un-corrupt data.
+         * This is the data that will be used to take the some associated logial decisions.
+         */
+        int m_encodedSwitchesData;
 
     public:
         Radio();
 
         /**
          * @brief Read the receiver data sent from Pi
+         *
+         * @return true iff new data was received from RPi
          */
-        void readPiData(void);
-
-        /**
-         * @brief reformat receiver values
-         */
-        void readRadioData(
-            int &radioThrottle,
-            int &radioRoll,
-            int &radioPitch,
-            int &radioYawRate,
-            int &radioSwitchC,
-            int &radioVRA,
-            int &radioVRC,
-            int &radioVRB,
-            int &radioArm,
-            int &radioKill,
-            int &radioSwitchD,
-            int &radioVRE);
+        bool readPiData(void);
 
         /**
          * @brief pitch reference from RC in rad
@@ -71,6 +83,11 @@ namespace bzzz
          * @brief roll reference from RC in rad
          */
         float rollReferenceAngleRad();
+
+        /**
+         * @brief throttle reference as a PWM (1000-2000), but capped at 1900
+         */
+        float throttleReferencePWM();
 
         /**
          * @brief throttle reference as a percentage (0-1)
@@ -122,6 +139,11 @@ namespace bzzz
          * @brief value of trimmer VRE (0-1)
          */
         float trimmerVREPercentage();
+
+        /**
+         * Wait until the arm switch is at the ON position
+         */
+        void waitForArmCommand();
 
     }; /* end of class Radio */
 
