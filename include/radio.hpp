@@ -35,7 +35,7 @@ namespace bzzz
          * A substitute variable to load the read data from Raspberry Pi.
          * This data is tested for corruption before copying to the actual variable.
          */
-        float m_dummyRefData[8];
+        float m_rawRefData[8];
 
         /**
          * The actual variable to store un-corrupt data.
@@ -56,7 +56,7 @@ namespace bzzz
          * A substitute variable to load the encoded switch read data from Raspberry Pi.
          * This data is tested for corruption before copying to the actual variable.
          */
-        int m_dummyEncodedSwtchsData;
+        int m_rawEncodedSwtchsData;
 
         /**
          * The actual variable to store un-corrupt data.

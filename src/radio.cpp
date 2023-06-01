@@ -64,7 +64,7 @@ namespace bzzz
                 // take the substring from the start to the first occurence of a comma,
                 // convert it to int and save it in the array
                 // save the data to a dummy array
-                m_dummyRefData[i] = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toFloat();
+                m_rawRefData[i] = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toFloat();
 
                 // cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
@@ -78,17 +78,17 @@ namespace bzzz
             }
             for(int i = 0; i < NUM_RADIO_CHANNELS; i++) 
             {
-                m_refData[i] = m_dummyRefData[i];
+                m_refData[i] = m_rawRefData[i];
             }
 
             // get the encoded switches data
-            m_dummyEncodedSwtchsData = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toInt();
+            m_rawEncodedSwtchsData = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toInt();
             // the max value possible for encoded switch data in binary is 0b{1 1 10 1} = 29
-            if (m_dummyEncodedSwtchsData <0 || m_dummyEncodedSwtchsData > 29)
+            if (m_rawEncodedSwtchsData <0 || m_rawEncodedSwtchsData > 29)
             {
                 return false;
             }
-            m_encodedSwitchesData = m_dummyEncodedSwtchsData;
+            m_encodedSwitchesData = m_rawEncodedSwtchsData;
             return true;
         }
         return false;
