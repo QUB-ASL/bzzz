@@ -22,18 +22,6 @@ time.sleep(.1)
 
 parser = RadioDataParser()
 
-# TODO: implement the below loop as a thread with frequency 50Hz. Might want to .join() and manage threads using 
-# ThreadPoolExecutor as a context manager for multi-threading tasks such as altitude hold, loitering algos for future usage.
-# NOTE: When a thread terminates with an exception, the ThreadPoolExecutor will not report it, so might want to handel exceptions properly
-# in the threaded functions
-# NOTE: The order of execution of pooled threads cannot be predicted, this is highly dependent on what the OS does at that time.
-# This will cause many synchronization issues and racing conditions if they use shared resources, 
-# for example let us say that thread_1 needs results of thread_2, so the required order of 
-# execution is start thread_2, let it finish, start thread_1, let it finish. But pooling threads 1 and 2 cannot gurantee which of the two run 
-# first. It beocmes worse if they share resources, as one might not be aware that the other changed some values in the shared resurce (not thread-safe).
-# Possible solution is to use Locks (but make sure to release them). 
-
-
 def get_radio_data():
         is_connected = reader.is_connected()
         packet_age = reader.get_latest_packet_age() #milliseconds
