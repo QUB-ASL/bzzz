@@ -13,7 +13,7 @@
 /**
  * Serial config
  */
-#define SERIAL_BAUD_RATE 115200
+#define SERIAL_BAUD_RATE 500000
 
 /** Sampling time */
 #define SAMPLING_TIME (0.008)

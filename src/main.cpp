@@ -39,9 +39,12 @@ void setup()
   ahrs.averageQuaternion(initialQuaternion);             // determine initial attitude
   ahrs.averageAngularVelocities(initialAngularVelocity); // determine initial attitude
   buzz(2);                                               // 2 beeps => AHRS setup complete
+  logSerial(LogVerbosityLevel::Info, "waiting for PiSerial...");
   waitForPiSerial();                                     // wait for the RPi and the RC to connect
   buzz(4);                                               // 4 beeps => RPi+RC connected
+  logSerial(LogVerbosityLevel::Info, "waiting for arm...");
   radio.waitForArmCommand();                             // wait for the RC to send an arming command
+  logSerial(LogVerbosityLevel::Info, "armed...");
   buzz(2, 400);                                          // two long beeps => preparation for arming
   motorDriver.attachAndArm();                            // attach ESC and arm motors
   buzz(6);                                               // 6 beeps => motors armed; keep clear!
@@ -99,11 +102,12 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
+  logSerial(LogVerbosityLevel::Debug, "Yr: %f Pr: %f Rr: %f Tr: %f", radio.yawRateReferenceRadSec(), radio.pitchReferenceAngleRad(), radio.rollReferenceAngleRad(), radio.throttleReferencePWM());
+  
   controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
   // Throttle from RC to throttle reference
-  float throttlePrcntFromRc = radio.throttleReferencePercentage();
-  float throttleRef = mapPrcnt(throttlePrcntFromRc, ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM);
+  float throttleRef = radio.throttleReferencePWM();
 
   // Compute control actions and send them to the motors
   int motorFL, motorFR, motorBL, motorBR;
