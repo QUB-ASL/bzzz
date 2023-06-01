@@ -102,7 +102,7 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  logSerial(LogVerbosityLevel::Info, "Yr: %f Pr: %f Rr: %f Tr: %f", radio.yawRateReferenceRadSec(), radio.pitchReferenceAngleRad(), radio.rollReferenceAngleRad(), radio.throttleReferencePWM());
+  logSerial(LogVerbosityLevel::Debug, "Yr: %f Pr: %f Rr: %f Tr: %f", radio.yawRateReferenceRadSec(), radio.pitchReferenceAngleRad(), radio.rollReferenceAngleRad(), radio.throttleReferencePWM());
   
   controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 

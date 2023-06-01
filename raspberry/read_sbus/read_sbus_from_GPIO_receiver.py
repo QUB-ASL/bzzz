@@ -56,7 +56,7 @@ def parse_radio_data(channel_data):
         # bit-3: 1-bit info of Switch A: 1 if kill_on else 0
         # bits 2 and 1: 2-bit info of switch C: 00 for position DOWN, 01 for position MID, 10 for position UP
         # bit-0: 1-bit info of switch D: 1 if D_on else 0
-        channel_data = parser.formatRadioDataForSending()
+        channel_data = parser.format_radio_data_for_sending()
         return channel_data
 
 def send_data_to_ESP(channel_data):
@@ -68,7 +68,6 @@ def receive_data_from_ESP():
         """Read data from ESP32 via UART.
 
         :return: String if data is received, None otherwise.
-        :rtype: str, or None
         """
         while ser.inWaiting() > 0:
                 try:
@@ -108,12 +107,9 @@ def run_thread_every_given_interval(interval, function_to_run,  num_times_to_run
         """Create a thread of the given function, attach a timer to it and run it everytime the interval is elapsed.
 
         :param interval: Interval between each run in seconds. Note: The given interval must be larger than worst execution time of the given function.
-        :type interval: float
         :param function_to_run: Function handel which is to be run.
-        :type function_to_run: Of class fucntion
         :param num_times_to_run: Number of times to run the thread before killing it, 
         0 means that the thread is called as long as the program doesn't terminate, defaults to 0.
-        :type num_times_to_run: int, optional
         """
         if num_times_to_run != 1:
                 threading.Timer(interval, run_thread_every_given_interval, [interval, function_to_run, num_times_to_run if num_times_to_run else 0]).start()
