@@ -42,8 +42,7 @@ RADIO_CHANNEL_SWITCH_D = 10
 class ThreeWaySwitch(Enum):
     """Enum for three-way switches
 
-    :param Enum: Parent class
-    :type Enum: Enumerator
+    :param Enum: Of parent class Enum
     """
     DOWN = 0
     MID = 1
@@ -68,65 +67,56 @@ class RadioDataParser:
         self.rawRatePercentage = None
         self.switchValue = None
 
-    def mapRadioToAngle(self, x):
+    def __map_radio_to_angle(self, x):
         """Maps radio stick positions to corresponding angles in radians linearly.
 
         :param x: Stick position data.
-        :type x: int
         :return: angle in radians.
-        :rtype: float
         """
         return -PITCH_MAX_RAD + (x - RADIO_STICK_MIN) / (RADIO_STICK_MAX - RADIO_STICK_MIN) * 2 * PITCH_MAX_RAD
 
-    def mapTrimmerToPercentage(self, x):
+    def __map_trimmer_to_percentage(self, x):
         """Linearly maps radio timmer or stick data to percentage [0, 1].
 
         :param x: Stick or trimmer position data.
-        :type x: int
         :return: Percentage in range [0, 1].
-        :rtype: float
         """
         percentage = (x - RADIO_STICK_MIN) / (RADIO_STICK_MAX - RADIO_STICK_MIN)
         return max(min(percentage, 1), 0)
 
-    def pitchReferenceAngleRad(self):
+    def pitch_reference_angle_rad(self):
         """Maps pitch stick data to reference pitch angle in radians.
 
         :return: reference pitch angle in radians.
-        :rtype: float
         """
-        return self.mapRadioToAngle(self.m_channelData[RADIO_CHANNEL_PITCH])
+        return self.__map_radio_to_angle(self.m_channelData[RADIO_CHANNEL_PITCH])
 
-    def rollReferenceAngleRad(self):
+    def roll_reference_angle_rad(self):
         """Maps roll stick data to reference roll angle in radians.
 
         :return: reference roll angle in radians.
-        :rtype: float
         """
-        return self.mapRadioToAngle(self.m_channelData[RADIO_CHANNEL_ROLL])
+        return self.__map_radio_to_angle(self.m_channelData[RADIO_CHANNEL_ROLL])
 
-    def yawRateReferenceRadSec(self):
+    def yaw_rate_reference_rad_sec(self):
         """Maps yaw stick data to reference yaw angle in radians.
 
         :return: reference yaw angle in radians.
-        :rtype: float
         """
-        self.rawRatePercentage = self.mapTrimmerToPercentage(self.m_channelData[RADIO_CHANNEL_YAW_RATE])
+        self.rawRatePercentage = self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_YAW_RATE])
         return -RADIO_MAX_YAW_RATE_RAD_SEC + RADIO_MAX_YAW_RATE_RAD_SEC * self.rawRatePercentage
     
-    def throttleReferencePercentage(self):
+    def throttle_reference_percentage(self):
         """Maps throttle stick data to reference percentage.
 
         :return: percentage reference of throttle.
-        :rtype: float
         """
-        return self.mapTrimmerToPercentage(self.m_channelData[RADIO_CHANNEL_THROTTLE])
+        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_THROTTLE])
 
     def armed(self):
         """Checks if the arm switch (switch B) has been toggled.
 
         :return: Arm status. True if armed else False.
-        :rtype: bool
         """
         return self.m_channelData[RADIO_CHANNEL_SWITCH_B] >= 1500
 
@@ -134,15 +124,13 @@ class RadioDataParser:
         """Checks if the kill switch (switch A) has been toggled.
 
         :return: Kill status. True if killed else False.
-        :rtype: bool
         """
         return self.m_channelData[RADIO_CHANNEL_SWITCH_A] >= 1500
 
-    def switchC(self):
+    def switch_C(self):
         """Checks the position of the three-way switch C.
 
         :return: Three-way switch position. DOWN = 0, MID = 1, UP = 2.
-        :rtype: Of class ThreeWaySwitch, extends Enum
         """
         self.switchValue = self.m_channelData[RADIO_CHANNEL_SWITCH_C]
         if self.switchValue <= 450:
@@ -151,61 +139,52 @@ class RadioDataParser:
             return ThreeWaySwitch.MID
         return ThreeWaySwitch.UP
 
-    def switchD(self):
+    def switch_D(self):
         """Checks the positon of the switch D.
 
         :return: Switch D position.
-        :rtype: bool
         """
         return self.m_channelData[RADIO_CHANNEL_SWITCH_D] >= 1500
 
-    def trimmerVRAPercentage(self):
+    def trimmer_VRA_percentage(self):
         """Maps Variable Resistor A data to percentage.
 
         :return: VRA percentage in range [0, 1].
-        :rtype: float
         """
-        return self.mapTrimmerToPercentage(self.m_channelData[RADIO_CHANNEL_VRA])
+        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRA])
 
-    def trimmerVRCPercentage(self):
+    def trimmer_VRC_percentage(self):
         """Maps Variable Resistor C data to percentage.
 
         :return: VRC percentage in range [0, 1].
-        :rtype: float
         """
-        return self.mapTrimmerToPercentage(self.m_channelData[RADIO_CHANNEL_VRC])
+        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRC])
 
-    def trimmerVRBPercentage(self):
+    def trimmer_VRB_percentage(self):
         """Maps Variable Resistor B data to percentage.
 
         :return: VRB percentage in range [0, 1].
-        :rtype: float
         """
-        return self.mapTrimmerToPercentage(self.m_channelData[RADIO_CHANNEL_VRB])
+        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRB])
 
-    def trimmerVREPercentage(self):
+    def trimmer_VRE_percentage(self):
         """Maps Variable Resistor E data to percentage.
 
         :return: VRE percentage in range [0, 1].
-        :rtype: float
         """
-        return self.mapTrimmerToPercentage(self.m_channelData[RADIO_CHANNEL_VRE])
+        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRE])
     
-    def mapPrcnt(self, percentage, minVal, maxVal):
+    def __map_prcnt(self, percentage, minVal, maxVal):
         """Linearly maps percentage data to range [minVal, maxVal].
 
         :param percentage: Value of percentage, in range [0, 1], to be mapped.
-        :type percentage: float
         :param minVal: Lower boundary of the mapped data.
-        :type minVal: int/ float
         :param maxVal: Upper boundary of the mapped data.
-        :type maxVal: int/ float
         :return: mapped data in range [minVal, maxVal].
-        :rtype: int/ float
         """
         return minVal + percentage * (maxVal - minVal)
     
-    def formatRadioDataForSending(self):
+    def format_radio_data_for_sending(self):
         """Processes, encodes, and formats the radio data into a 
         string so that it can be sent via UART.
 
@@ -249,9 +228,9 @@ class RadioDataParser:
         :return: Formatted string that contains the processed radio data, 
                  where each data point is seperated by a comma.
         """
-        reArrangedYPRTData = [self.yawRateReferenceRadSec(), self.pitchReferenceAngleRad(), self.rollReferenceAngleRad(), self.mapPrcnt(self.throttleReferencePercentage(), ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM)]
-        bitEncodedSwithcesData = (self.armed() << 4) | (self.kill() << 3) | (self.switchC() << 1) | self.switchD()
-        reArrangedABCETrimmersData = [self.trimmerVRAPercentage(), self.trimmerVRBPercentage(), self.trimmerVRCPercentage(), self.trimmerVREPercentage()]
+        reArrangedYPRTData = [self.yaw_rate_reference_rad_sec(), self.pitch_reference_angle_rad(), self.roll_reference_angle_rad(), self.__map_prcnt(self.throttle_reference_percentage(), ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM)]
+        bitEncodedSwithcesData = (self.armed() << 4) | (self.kill() << 3) | (self.switch_C() << 1) | self.switch_D()
+        reArrangedABCETrimmersData = [self.trimmer_VRA_percentage(), self.trimmer_VRB_percentage(), self.trimmer_VRC_percentage(), self.trimmer_VRE_percentage()]
 
         reArrangedData = reArrangedYPRTData + reArrangedABCETrimmersData
         
