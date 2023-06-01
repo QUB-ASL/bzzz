@@ -35,17 +35,7 @@
 namespace bzzz
 {
     Radio::Radio(){};
-
-    float mapRadioToAngle(int x)
-    {
-        return -PITCH_MAX_RAD + (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN)) * 2 * PITCH_MAX_RAD;
-    }
-
-    float mapTrimmerToPercentage(int x)
-    {
-        return (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
-    }
-
+    
     bool Radio::readPiData(void)
     {
         String allDataFromPi;
