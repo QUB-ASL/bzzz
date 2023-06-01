@@ -9,9 +9,23 @@ _Version: 0.1.1_
 
 - The `main` branch is locked and no-one can push to it directly
 - The main development branch is called `dev`
-- All development will take place in branches out of dev
+- All development will take place in branches out of dev<sup>1</sup>
 - Do not commit big files
 - Avoid committing binary files
+
+
+<details>
+  <summary>Details</summary>
+  
+  <sup>1</sup> To create a new branch out of dev do
+
+  ```
+  git checkout dev
+  git pull origin dev
+  git checkout -b name_of_branch dev
+  ```
+
+</details>
 
 ### 1.2. Git commits
 
@@ -49,18 +63,22 @@ where the number `123` corresponds to the number of an open issue.
 
 - Every branch should be associated with a pull request (PR); after you crate a branch, create a PR
 - Pull requests must have an adequately detailed description
-- Avoid lengthy PRs with lots of changes
+- Avoid lengthy PRs with lots of changes (each PR should focus on one issue)
 - No PR will be merged to `dev` unless it has been tested (evidence should be provided)
-- The branch `dev` will be merged into `main` before making a new release
+- The branch `dev` will be merged into `main` before making a new release (`CHANGELOG.md` must be updated when doing so)
 - All PRs must be reviewed before they can be merged
 - When a PR is ready for review, its author should invite one of the collaborators to review it
-- All collaborators should complete their reviews in a timely manner
 - Do not merge other people's PRs
+
+**Important:** All collaborators should complete their reviews in a timely manner! 
+
 
 ### 1.5. Issues
 
 - If you have found a bug, or you want to request a new feature, create an issue 
 - Make sure your bug report is accompanied by a _minimal reproducible example_ (MRE)
+- When you create an issue, assign it to someone (e.g., yourself)
+- Use appropriate labels for your issues
 
 
 ## 2. Project structure
@@ -103,7 +121,20 @@ Bzzz's C++ naming convention is as follows:
 
 - Just follow [PEP8](https://peps.python.org/pep-0008/)
 - Make sure you have read the corresponding [naming convention](https://peps.python.org/pep-0008/#naming-conventions)
-- Use virtualenv
+- Use `virtualenv` to run your Python code
+
+<details>
+  <summary>Python tips</summary>
+
+  - Study [PEP8](https://peps.python.org/pep-0008/) carefully (and follow it)
+  - Classes are `CamelCase`
+  - Function/method names are `snake_case`
+  - Use an autopep8 formatter in VS code
+  - Unused (output) variables are `_like_this`
+  - Avoid one-letter or confusing variable names (e.g., use `acceleration` instead of `a`)
+  - Should this method be public? Think again! If not, make it a `__private_method()`
+
+</details>
 
 ### 3.3. Documentation and comments
 
