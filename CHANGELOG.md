@@ -5,8 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-Note: This is the main Changelog file for the Rust solver. The Changelog file for the Python interface (`opengen`) can be found in [/open-codegen/CHANGELOG.md](open-codegen/CHANGELOG.md)
-
 The following subsections are used:
 
 - **Added**: new features
