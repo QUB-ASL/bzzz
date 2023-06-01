@@ -84,7 +84,7 @@ When you create a new PR, you will see the following template:
 > - Addresses #2
 
 
-You need to **modify it**. 
+You need to **modify it**: e.g., update the **associated issues**. If the PR is not associated with an issue, delete that section.
 
 
 ### 1.6. Issues
