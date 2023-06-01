@@ -1,6 +1,6 @@
 # Contributing guidelines
 
-_Version: 0.1.1_
+_Version: 0.1.2_
 
 
 ## 1. Working with git
@@ -50,19 +50,44 @@ git checkout -b feature/123-read-imu dev
 
 where the number `123` corresponds to the number of an open issue.
 
-- Every branch should be associated with a pull request (PR); after you crate a branch, create a PR
+- After you create a branch, create a PR for your code to be reviewed
+- When you create a new PR, make sure that the base branch is `dev` (not `main`), unless you want to create a new release (see below)
 - Pull requests must have an adequately detailed description
 - Avoid lengthy PRs with lots of changes (each PR should focus on one issue)
 - No PR will be merged to `dev` unless it has been tested (evidence should be provided)
 - The branch `dev` will be merged into `main` before making a new release (`CHANGELOG.md` must be updated when doing so)
 - All PRs must be reviewed before they can be merged
-- When a PR is ready for review, its author should invite one of the collaborators to review it
+- When a PR is ready for review, its author should invite at least one of the collaborators to review it
 - Do not merge other people's PRs
 
-**Important:** All collaborators should complete their reviews in a timely manner! 
+**Important:** All invited reviewers should complete their reviews in a timely manner! 
 
 
-### 1.5. Issues
+### 1.5. Pull request template
+
+When you create a new PR, you will see the following template:
+
+> ## Main Changes
+>
+> :warning: Before you make a contribution make sure you've read bzzz's **contributing guidelines**
+>
+> :warning: Do not make a PR to merge into `main`; merge into `dev` instead (unless you are creating a new release)
+>
+> Is this a PR about some _specific_ development (e.g., reading values from the IMU)? If not, don't submit it. 
+>
+> Describe the main changes here
+>
+>
+> ## Associated Issues
+>
+> - Closes #1
+> - Addresses #2
+
+
+You need to **modify it**. 
+
+
+### 1.6. Issues
 
 - If you have found a bug, or you want to request a new feature, create an issue 
 - Make sure your bug report is accompanied by a _minimal reproducible example_ (MRE)
@@ -203,3 +228,8 @@ void loop()
   taskEXIT_CRITICAL_ISR(&timerMux);
 }
 ```
+
+
+# 5. Electronics
+
+The sketches and grb files should be part of this project.
