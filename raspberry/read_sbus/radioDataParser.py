@@ -206,34 +206,48 @@ class RadioDataParser:
         return minVal + percentage * (maxVal - minVal)
     
     def formatRadioDataForSending(self):
-        """Processes, encodes, and formats the radio data into a string so that it can be sent via UART.
-        The formatted data has the following structure:
-            S, Y, P, R, T, VRA, VRB, VRC, VRE, SWTCHs
-                where:
-                S is the packet start indicator, 
-                Y is yaw reference rate in rad/s,
-                P is pitch reference angle in rad,
-                R is roll reference angle in rad,
-                T is PWM signal according to given throttle percentage,
-                VRA is percentage trimmer A value,
-                VRB is percentage trimmer B value,
-                VRC is percentage trimmer C value,
-                VRE is percentage trimmer E value,
-                SWTCHs is an integer whose last five bits contain the encoded position data of 
-                the A, B, C, and D switches, and the encoding is as follows:
-                    |0|0|0|B|A|C|c|D| 
-                        this is the Least-significant byte of the sent integer.
-                        In which bit |B| indicates switch B's position (This is given the first position because it is the arm switch)
-                        bit |A| indicates switch A's position (This is the kill switch)
-                        bits |C|c| together indicate switch C's position
-                        bit |D| indicates switch D's position  
+        """Processes, encodes, and formats the radio data into a 
+        string so that it can be sent via UART.
 
-                        For switches A, B, and D (since these are only two-way switches), each 
-                        were assigned a single bit with 0 indicating that the switch is in off state
-                        and 1 otherwise. For switch C, as it is a three-way switch, it was assigned with
-                        two bits with 00 = DOWN, 01 = MID, and 10 = UP.    
-        :return: Formatted string that contains the processed radio data, where each data point is seperated by a comma.
-        :rtype: Of class str (string)
+        The formatted data has the following structure:
+        
+        ```
+        S, Y, P, R, T, VRA, VRB, VRC, VRE, SWTCHs
+        ```
+
+        where:
+        - `S` is the packet start indicator, 
+        - `Y` is yaw reference rate in rad/s,
+        - `P` is pitch reference angle in rad,
+        - `R` is roll reference angle in rad,
+        - `T` is PWM signal according to given throttle percentage,
+        - `VRA` is percentage trimmer A value,
+        - `VRB` is percentage trimmer B value,
+        - `VRC` is percentage trimmer C value,
+        - `VRE` is percentage trimmer E value,
+        - `SWTCHs` is an integer whose last five bits contain the encoded position data of 
+           the A, B, C, and D switches, and the encoding is as follows:
+            
+            ```
+            |0|0|0|B|A|C|c|D| 
+            ```
+            
+            this is the Least-significant byte of the sent integer in which
+            
+            - bit `|B|` indicates switch B's position 
+              (This is given the first position because it is the arm switch)
+            - bit `|A|` indicates switch A's position 
+              (This is the kill switch)
+            - bits `|C|c|` together indicate switch C's position
+            - bit `|D|` indicates switch D's position  
+
+            For switches `A`, `B`, and `D` (since these are only two-way switches), each 
+            were assigned a single bit with 0 indicating that the switch is in off state
+            and 1 otherwise. For switch C, as it is a three-way switch, it was assigned with
+            two bits with 00 = DOWN, 01 = MID, and 10 = UP.    
+        
+        :return: Formatted string that contains the processed radio data, 
+                 where each data point is seperated by a comma.
         """
         reArrangedYPRTData = [self.yawRateReferenceRadSec(), self.pitchReferenceAngleRad(), self.rollReferenceAngleRad(), self.mapPrcnt(self.throttleReferencePercentage(), ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM)]
         bitEncodedSwithcesData = (self.armed() << 4) | (self.kill() << 3) | (self.switchC() << 1) | self.switchD()
