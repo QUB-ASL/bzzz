@@ -3,26 +3,37 @@
 # NOTE: for now, we are just passing dummy values
 
 from filters import median_filter
+from time import time_ns, sleep
+import VL53L0X
 
 class TimeOfFlightSensor:
-    def __init__(self, num_latest_readings_to_keep: int = 5):
-        self._current_travel_time = None
-        self._travel_time_readings_list = None
-        self._travel_time_readings_list_current_index = None
+    def __init__(self, num_latest_readings_to_keep: int = 5, use_sleep=False):
+        self._current_altitude = None
+        self._altitude_readings_list = None
+        self._altitude_readings_list_current_index = None
         self._num_latest_readings_to_keep = num_latest_readings_to_keep
         
-        self._current_altitude = None
         self._previous_altitude = None
-
+        self._last_update_time = None
+        self.use_sleep = use_sleep
         self._init_ToF_sensor()
 
-    def _init_ToF_sensor(self):
-        self._travel_time_readings_list = list()
-        self._travel_time_readings_list_current_index = 0
-        # TODO: add code to init pressure sensor
-        for i in range(self._num_latest_readings_to_keep):
-            self._travel_time_readings_list.append(self._get_current_ToF_measurement())
+    def _init_ToF_sensor(self, address=0x29, mode=VL53L0X.Vl53l0xAccuracyMode.BEST):
+        print("Init ToF, wait.....")
+        self.tof = VL53L0X.VL53L0X(i2c_bus=1,i2c_address=address)        
+        self.tof.open()
+        self.tof.start_ranging(mode=mode)
+        self.timing = self.tof.get_timing()
+        if self.timing < 20000:
+            self.timing = 20000
+        self._last_update_time = time_ns()
+        self._altitude_readings_list = list()
+        self._altitude_readings_list_current_index = 0
+        for _ in range(self._num_latest_readings_to_keep):
+            self._altitude_readings_list.append(self._get_current_ToF_measurement())
+            sleep(self.timing/1000000.0)
         self.update_altitude()
+        print("Init ToF, Done!")
 
     @property
     def altitude(self):
@@ -35,23 +46,53 @@ class TimeOfFlightSensor:
 
     def _get_current_ToF_measurement(self):
         # TODO: add code to get measurement from sensor
-        ToF_reading = 20  # dummy reading
-        return ToF_reading
+        ToF_distance_reading = self.tof.get_distance()
+        return ToF_distance_reading
 
     def _update_ToF(self):
-        ToF_reading = self._get_current_ToF_measurement()  # dummy value for now, actually should have a proper value
-        self._travel_time_readings_list[self._travel_time_readings_list_current_index] = ToF_reading
-        if 0 <= self._travel_time_readings_list_current_index < self._num_latest_readings_to_keep - 1:
-            self._travel_time_readings_list_current_index += 1
+        ToF_distance_reading = self._get_current_ToF_measurement()  # dummy value for now, actually should have a proper value
+        if ToF_distance_reading < 0:
+            return -1
+        self._altitude_readings_list[self._altitude_readings_list_current_index] = ToF_distance_reading
+        if 0 <= self._altitude_readings_list_current_index < self._num_latest_readings_to_keep - 1:
+            self._altitude_readings_list_current_index += 1
         else:
-            self._travel_time_readings_list_current_index = 0
-        self._current_travel_time = median_filter(self._travel_time_readings_list, self._num_latest_readings_to_keep)
-
-    def _calculate_altitude_from_ToF(self):
-        # TODO: add code to calculate altitude from time of flight
-        self._current_altitude = self._current_travel_time
+            self._altitude_readings_list_current_index = 0
+        self._current_altitude = median_filter(self._altitude_readings_list, self._num_latest_readings_to_keep)
 
     def update_altitude(self):
-        self._update_ToF()
-        self._calculate_altitude_from_ToF()       
+        if not self.use_sleep:
+            if time_ns() - self._last_update_time > self.timing*1000:
+                temp = self._current_altitude
+                if self._update_ToF() != -1:
+                    self._previous_altitude = temp
+                else:
+                    print("ToF sensor returning -ve distance....\nretrying....")
+                self._last_update_time = time_ns()
+        else:
+            temp = self._current_altitude
+            if self._update_ToF() != -1:
+                self._previous_altitude = temp
+            else:
+                print("ToF sensor returning -ve distance....\nretrying....")
+            sleep(self.timing/1000000)
+        
+    def kill_ToF(self):
+        print("Killing ToF, wait...")
+        self.tof.stop_ranging()
+        self.tof.close()
+        print("Killed Tof.")
+
+
+if __name__ == "__main__":
+    tof = TimeOfFlightSensor(use_sleep=True)
+    for i in range(100):
+        tof.update_altitude()
+        print("Altitude in mm: %d   itr: %d" %(tof.altitude, i))
+    tof.kill_ToF()
+    
+
+        
+        
+          
     
