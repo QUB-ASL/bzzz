@@ -15,3 +15,6 @@ Describe the main changes here
 - Addresses #2
 
 
+## Tests
+
+Has this been tested on the quadcopter? How? Provide details?
