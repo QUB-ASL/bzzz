@@ -134,10 +134,10 @@ class RadioDataParser:
         """
         self.switchValue = self.m_channelData[RADIO_CHANNEL_SWITCH_C]
         if self.switchValue <= 450:
-            return ThreeWaySwitch.DOWN
+            return ThreeWaySwitch.DOWN.value
         elif self.switchValue <= 1200:
-            return ThreeWaySwitch.MID
-        return ThreeWaySwitch.UP
+            return ThreeWaySwitch.MID.value
+        return ThreeWaySwitch.UP.value
 
     def switch_D(self):
         """Checks the positon of the switch D.

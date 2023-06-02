@@ -121,4 +121,3 @@ def run_thread_every_given_interval(interval,
 
 # Run the get_radio_data_parse_and_send_to_ESP funtionn @ 50Hz
 run_thread_every_given_interval(0.02, get_radio_data_parse_and_send_to_ESP)
-
