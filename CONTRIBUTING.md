@@ -127,7 +127,7 @@ You can read more about conflicts and how to resolve them at https://www.cloudbe
   <summary><sup>1</sup> See how...</summary>
   To merge `dev` into a branch, do 
 
-  ```git
+  ```bash
   # Make sure your local dev is up to date
   git checkout dev 
   git pull origin dev
