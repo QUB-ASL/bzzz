@@ -111,6 +111,40 @@ If you have been invited to review a PR
 - Use appropriate labels for your issues
 
 
+### 1.8. Conflicts
+
+Sometimes, you may see a message like this in your PR:
+
+<img width="650" alt="image" src="https://github.com/QUB-ASL/bzzz/assets/125415/a3bf550d-2d96-41cc-8c96-0e17a9d9e294">
+
+In that case, you need to merge the base branch (usually `dev`) into the branch of the PR<sup>1</sup> and **resolve the conflicts locally** before you push. On [GitHub's documentation](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/about-merge-conflicts) we read 
+
+> Merge conflicts happen when you merge branches that have **competing commits**, and Git needs your help to decide which changes to incorporate in the final merge.
+
+You can read more about conflicts and how to resolve them at https://www.cloudbees.com/blog/resolve-github-merge-conflicts.
+
+<details>
+  <summary><sup>1</sup> See how...</summary>
+  To merge `dev` into a branch, do 
+
+  ```git
+  # Make sure your local dev is up to date
+  git checkout dev 
+  git pull origin dev
+
+  # Make sure your own branch is up to date
+  git checkout fix/123-name-of-branch
+  git pull origin fix/123-name-of-branch
+
+  # Merge dev
+  git merge dev
+  ```
+
+  Needless to say, keep an eye on the messages git gives you. It's a good idea to start with a `git status` (you may have unstaged files).
+</details>
+
+
+
 ## 2. Project structure
 
 ESP32 files:
