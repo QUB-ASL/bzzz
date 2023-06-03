@@ -42,6 +42,7 @@ void setup()
    * remmber to assign all object pointers properly.
   */
  failSafes.setMotorDriverObjPtr(&motorDriver);
+ failSafes.setRadioConnectionTimeoutInMicroseconds();    // Using default of 500 ms 
 
   setupBuzzer();                                         // setup the buzzer
   Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
