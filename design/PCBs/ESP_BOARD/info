@@ -1,0 +1,205 @@
+{
+  "uuid": "d46ba9cd53881aee0c380d9e928392ed",
+  "path": "Offline/DRONE_ESP_SHIELD",
+  "name": "DRONE_ESP_SHIELD",
+  "content": "",
+  "created_at": "2023-06-03 12:58:13",
+  "updated_at": "2023-06-03 22:46:21",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "d0b8da736663ec7b3430c15961f8c2ae",
+      "title": "ESP_SCH",
+      "description": "Schematic of ESP shield for Drone. Revision 0.1. Not approved, work in progress.",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "4b005f1d63b44751a27f5a9496ef6c19": 1,
+        "6d109561f5a242e09bc08c67f514465a": 1,
+        "9737bc841dd04554b345a7b2d65912c9": 1,
+        "2d354461f6e749258fa15d897acc01d7": 1,
+        "641091b0c929407eb10d2b42a05dc169": 1,
+        "ca94e12784df45b6a15272a1faaaf127": 1,
+        "ed37d1eaf66a4df6beb9636b25247882": 1,
+        "f339ef0385d6499ba39dc2b4a11a1dd6": 1,
+        "d3f186bf6ad94887b14dd54fc0c79bcd": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "Buzzer 10mm/5V",
+          1,
+          "BUZZER 10MM [PCB]",
+          "BUZZER",
+          {
+            "BOM_Supplier": "SHIVRAM",
+            "BOM_Supplier Part": "BUZZER",
+            "BOM_Manufacturer": "SHIVRAM",
+            "BOM_Manufacturer Part": "BUZZER",
+            "puuid": "a1217bf824c84d85b7ab332dcd1189b8",
+            "uuid": "641091b0c929407eb10d2b42a05dc169"
+          }
+        ],
+        [
+          "ELyte Cap",
+          1,
+          "ELECTROLITIC CAPACITOR",
+          "C1",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "fd6e5344647f44eb8f1b01833ed57954",
+            "uuid": "2d354461f6e749258fa15d897acc01d7"
+          }
+        ],
+        [
+          "4PH latch",
+          1,
+          "HDR-TH_4P-P2.54-V-F",
+          "ESCS",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C5176037",
+            "BOM_Manufacturer": "CJT(长江连接器)",
+            "BOM_Manufacturer Part": "A2541HWV-4P",
+            "BOM_JLCPCB Part Class": "Extended Part",
+            "puuid": "8f78b31c15d54ef69278fa188fb193ea",
+            "uuid": "6d109561f5a242e09bc08c67f514465a"
+          }
+        ],
+        [
+          "ESP-WROOM-32D 38 Pins",
+          1,
+          "ESP32-WROOM-32 V4",
+          "ESP",
+          {
+            "BOM_Manufacturer": "Hiletgo",
+            "BOM_Manufacturer Part": "ESP-WROOM-32",
+            "BOM_Supplier": "Amazon",
+            "BOM_Supplier Part": "ESP-WROOM-32",
+            "puuid": "6468511141cc4b6280f3c9d53c7d329f",
+            "uuid": "4b005f1d63b44751a27f5a9496ef6c19"
+          }
+        ],
+        [
+          "MPU9250",
+          1,
+          "MPU9250 MODULE",
+          "MPU9250",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "03eca1a213cc40b2b4e442aaf5accc36",
+            "uuid": "9737bc841dd04554b345a7b2d65912c9"
+          }
+        ],
+        [
+          "EXT_PORT",
+          1,
+          "HDR-TH_13P-P2.54-V-F",
+          "PORT_1",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C3012215",
+            "BOM_Manufacturer": "HCTL(华灿天禄)",
+            "BOM_Manufacturer Part": "PZ254-1-13-Z-8.5KK",
+            "puuid": "ef4b959f78a0437b870d6189a91fb3a8",
+            "uuid": "ca94e12784df45b6a15272a1faaaf127"
+          }
+        ],
+        [
+          "HDR102",
+          1,
+          "HDR-TH_2P-P2.54-V-M-3",
+          "PORT_2",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C9900001420",
+            "BOM_Manufacturer": "null",
+            "BOM_Manufacturer Part": "HDR102",
+            "BOM_JLCPCB Part Class": "Extended Part",
+            "puuid": "c1e7930568a246c7aca1be33bf9ee5d4",
+            "uuid": "d3f186bf6ad94887b14dd54fc0c79bcd"
+          }
+        ],
+        [
+          "PZ254-1-07-Z-C",
+          1,
+          "HDR-TH_7P-P2.54-V-M",
+          "PORT_3",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C5156434",
+            "BOM_Manufacturer": "HCTL(华灿天禄)",
+            "BOM_Manufacturer Part": "PZ254-1-07-Z-C",
+            "puuid": "14a6bbd93bf647e9a25dd7681f1ee662",
+            "uuid": "f339ef0385d6499ba39dc2b4a11a1dd6"
+          }
+        ],
+        [
+          "0022285044",
+          1,
+          "HDR-TH_4P-P2.54-V-M-1",
+          "PORT_4",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C9900016049",
+            "BOM_Manufacturer": "null",
+            "BOM_Manufacturer Part": "0022285044",
+            "BOM_JLCPCB Part Class": "Extended Part",
+            "puuid": "31a453d5adfc45cea944a6450adf2918",
+            "uuid": "ed37d1eaf66a4df6beb9636b25247882"
+          }
+        ]
+      ],
+      "updateTime": 1685828781,
+      "createTime": 1685793493,
+      "histories": [],
+      "created_at": "2023-06-03 12:58:13",
+      "updated_at": "2023-06-03 22:46:21"
+    },
+    {
+      "uuid": "3a05891dda2c8b1be67d2fc60427cdfc",
+      "puuid": "d46ba9cd53881aee0c380d9e928392ed",
+      "title": "ESP_SHIELD_PCB",
+      "filename": "ESP_SHIELD_PCB.json",
+      "description": "PCB CKT design. Version 0.1. Work in progress.",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "a1217bf824c84d85b7ab332dcd1189b8": 1,
+        "6468511141cc4b6280f3c9d53c7d329f": 1,
+        "fd6e5344647f44eb8f1b01833ed57954": 1,
+        "8f78b31c15d54ef69278fa188fb193ea": 1,
+        "03eca1a213cc40b2b4e442aaf5accc36": 1,
+        "ef4b959f78a0437b870d6189a91fb3a8": 1,
+        "c1e7930568a246c7aca1be33bf9ee5d4": 1,
+        "14a6bbd93bf647e9a25dd7681f1ee662": 1,
+        "31a453d5adfc45cea944a6450adf2918": 1
+      },
+      "BOM": [],
+      "updateTime": 1685824324,
+      "createTime": 1685798951,
+      "histories": [],
+      "created_at": "2023-06-03 14:29:11",
+      "updated_at": "2023-06-03 21:32:04"
+    }
+  ],
+  "sort": [],
+  "title": "DRONE_ESP_SHIELD",
+  "foldername": "DRONE_ESP_SHIELD",
+  "schfilename": "DRONE_ESP_SHIELD.json",
+  "schfilemtime": 1685828781972
+}
