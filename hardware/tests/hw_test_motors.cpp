@@ -3,52 +3,42 @@
 #include "motors.hpp"
 #include "radio.hpp"
 
-bzzz::TorqueSystem torqueSystem;
+bzzz::MotorDriver motorDriver;
 bzzz::Radio radio;
-
-
-// Note: the following speeds may need to be modified for your particular hardware.
-#define MIN_SPEED 1040 // speed just slow enough to turn motor off
-#define MAX_SPEED 1240 // speed where my motor drew 3.6 amps at 12v.
-
-long int val; // variable to read the value from the analog pin
 
 void setup()
 {
-  Serial.begin(115200);
-  delay(1000);
-  torqueSystem.arm();
-  delay(1000); // Wait a while
+  motorDriver.attachAndArm();     // attach ESC and arm motors
+} 
 
-  // // the following loop turns on the motor slowly, so get ready
-  for (int i = 0; i < 500; i++)
-  {                                   
-    // run speed from 840 to 1190
-    int commonMotorSpeed = MIN_SPEED - 200 + i;
-    // motor starts up about half way through loop
-    torqueSystem.writeSpeedToEsc(
-      commonMotorSpeed, commonMotorSpeed, commonMotorSpeed, commonMotorSpeed);  
-    delay(20);
-  }
-} // speed will now jump to pot setting
+
+//HARDWARE TEST STOP START MOTORS
+
+// void loop()
+// {
+//   motorDriver.writeSpeedToEsc(1150, 1150, 1150, 1150); // sets the ESC speed
+//   delay(1000);                                         // Wait for a while 
+//   motorDriver.disarm();                                // Stop the ESC altogether
+//   delay(1000); 
+// }
+
+
+//HARDWARE TEST VARIABLE MOTOR SPEEDS
+
+#define PERIOD 10000. // Period milliseconds
 
 void loop()
 {
-  torqueSystem.writeSpeedToEsc(1150, 1150, 1150, 1150); // sets the ESC speed
-  delay(10);         // Wait for a while
+  for (float i = 0; i < PERIOD; i++)
+  {
+    int commonMotorSpeed = ((ABSOLUTE_MAX_PWM - ZERO_ROTOR_SPEED)/2) 
+                           * (sin(2.*PI*i*(1/PERIOD))+1) + ZERO_ROTOR_SPEED;
+    motorDriver.writeSpeedToEsc(commonMotorSpeed, commonMotorSpeed, 
+                                commonMotorSpeed, commonMotorSpeed);
+    delay(1);         // Wait for a while
+    if (i == PERIOD)
+    {
+      i=0;
+    }
+  }
 }
-
-/*
-* HARDWARE TEST FOR MOTORS CONTROLLED BY THROTTLE
-*
-*void loop()
-*{
-*  radio.readPiData();
-*  float throttlePrcntg = radio.throttleReferencePercentage();
-*  int throttleToMotors = int (throttlePrcntg * 2000);
-*  bzzz::logSerial(bzzz::LogVerbosityLevel::Severe, "throttlePrcntg = %f\n", throttlePrcntg);
-*  torqueSystem.writeSpeedToEsc(throttleToMotors, throttleToMotors, throttleToMotors, throttleToMotors);
-*  // delay(10);         // Wait for a while
-*  
-*}
-*/

@@ -13,19 +13,7 @@
 /**
  * Serial config
  */
-// uncomment the below line to use a seperate UART port for radio communication
-// this frees UART0 and the USB port for programming
-#define USE_UART2_FOR_RADIO  // UART2 is readily useable, UART1 requires more configuration as it shares pins with SPI
-#ifdef USE_UART2_FOR_RADIO
-    #include <HardwareSerial.h>
-    #define RXD2 16 //RXX2 pin
-    #define TXD2 17 //TX2 pin
-    #define SERIAL_RADIO Serial2
-#else
-    #define SERIAL_RADIO Serial
-#endif
-
-#define SERIAL_BAUD_RATE 115200
+#define SERIAL_BAUD_RATE 500000
 
 /** Sampling time */
 #define SAMPLING_TIME (0.008)
@@ -33,13 +21,13 @@
 /*
  * AHRS config
  */
-#define MAGNETOMETER_BIAS_X 222.566
-#define MAGNETOMETER_BIAS_Y 41.087
-#define MAGNETOMETER_BIAS_Z -60.268
+#define MAGNETOMETER_BIAS_X 61.733
+#define MAGNETOMETER_BIAS_Y -34.498
+#define MAGNETOMETER_BIAS_Z -611.183
 
-#define MAGNETOMETER_SCALE_X 1.050
-#define MAGNETOMETER_SCALE_Y 0.936
-#define MAGNETOMETER_SCALE_Z 1.022
+#define MAGNETOMETER_SCALE_X 1.083
+#define MAGNETOMETER_SCALE_Y 1.108
+#define MAGNETOMETER_SCALE_Z 0.852
 
 /*
  * Motors config
