@@ -42,7 +42,7 @@ void setup()
    * remmber to assign all object pointers properly.
   */
  failSafes.setMotorDriverObjPtr(&motorDriver);
- failSafes.setRadioConnectionTimeoutInMicroseconds();    // Using default of 500 ms 
+ failSafes.setRadioConnectionTimeoutInMicroseconds(TX_CONNECTION_TIMEOUT_IN_uS);    // Using default of 500 ms 
 
   setupBuzzer();                                         // setup the buzzer
   Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
@@ -86,9 +86,12 @@ void loop()
 
   // if radio data received update the last data read time.
   if(radio.readPiData()) failSafes.setLastRadioReceptionTime(micros());
-  if (radio.kill())
+  // one function to run all fail safe checks
+  failSafes.runFailSafes();
+  if (radio.kill() || failSafes.haltSystem())
   {
     motorDriver.disarm();
+    logSerial(LogVerbosityLevel::Debug, "Exit loop!");
     return; // exit the loop
   }
 
@@ -114,7 +117,6 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
   logSerial(LogVerbosityLevel::Debug, "Yr: %f Pr: %f Rr: %f Tr: %f", radio.yawRateReferenceRadSec(), radio.pitchReferenceAngleRad(), radio.rollReferenceAngleRad(), radio.throttleReferencePWM());
-  
   controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
   // Throttle from RC to throttle reference
@@ -127,7 +129,4 @@ void loop()
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
-
-  // one function to run all fail safe checks
-  failSafes.runFailSafes();
 }

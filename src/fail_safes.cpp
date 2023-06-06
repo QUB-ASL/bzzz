@@ -1,4 +1,5 @@
 #include "fail_safes.hpp"
+#include "util.hpp"
 
 
 namespace bzzz
@@ -8,31 +9,44 @@ namespace bzzz
     void FailSafes::setLastRadioReceptionTime(long long t)
     {
         // Set private variable
-        m_lastRadioReceptionTime = t;
+        this->m_lastRadioReceptionTime = t;
     }
 
-    void FailSafes::setRadioConnectionTimeoutInMicroseconds(long timeout)
+    void FailSafes::setRadioConnectionTimeoutInMicroseconds(unsigned long timeout)
     {
         //Set private variable
-        m_radioConnectionTimeoutInMicroseconds = timeout;
+        this->m_radioConnectionTimeoutInMicroseconds = timeout;
     }
 
     bool FailSafes::radioConnectionCheck()
     {
         // Check radio connection and timeout if connection had been lost for a preset amount of time.
-        if(micros() - m_lastRadioReceptionTime > m_radioConnectionTimeoutInMicroseconds)return false;
-        else return true;
+        if(micros() - this->m_lastRadioReceptionTime > this->m_radioConnectionTimeoutInMicroseconds)
+        {
+            this->m_HALT_SYSTEM = true;
+            return false;
+        }
+        else 
+        {
+            this->m_HALT_SYSTEM = false;
+            return true;
+        }
     }
 
     void FailSafes::setMotorDriverObjPtr(MotorDriver *motorDriverObj)
     {
-        motorDriver = motorDriverObj;
+        this->motorDriver = motorDriverObj;
     }
 
     void FailSafes::shutDown()
     {
         // Currently only stalls the motors
-        motorDriver->disarm();
+        this->motorDriver->disarm();
+        logSerial(LogVerbosityLevel::Severe, "[FAIL SAFE] Tx connection lost...\nSystem halted!");
+    }
+    
+    bool FailSafes::haltSystem(){
+        return this->m_HALT_SYSTEM;
     }
 
     void FailSafes::runFailSafes()

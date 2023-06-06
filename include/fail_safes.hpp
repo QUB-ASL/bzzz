@@ -9,8 +9,9 @@ namespace bzzz
         /**
          * Radio timeout variables for connection loss check
         */
-       long long m_lastRadioReceptionTime;
-       long m_radioConnectionTimeoutInMicroseconds;
+       unsigned long long m_lastRadioReceptionTime;
+       unsigned long m_radioConnectionTimeoutInMicroseconds;
+       bool m_HALT_SYSTEM = false;  // Bool to keep keep track if any fail-safe triggers a system halt.
 
        /**
         * Poiters to useful objects that are declared outside of this scope
@@ -57,7 +58,7 @@ namespace bzzz
         * @param timeout number of micro-seconds to wait till timeout
         *                Default: 500000 micro-seconds or 500 milli-seconds
        */
-       void setRadioConnectionTimeoutInMicroseconds(long timeout = 500000);
+       void setRadioConnectionTimeoutInMicroseconds(unsigned long timeout = 500000);
 
        /**
         * Set the last time in micro-seconds at which radio data was heard
@@ -74,6 +75,12 @@ namespace bzzz
         * which stalls the motors
        */
       void setMotorDriverObjPtr(MotorDriver *motorDriverObj);
+
+      
+       /**
+        * @return HALT_SYSTEM bool status
+       */
+      bool haltSystem();
 
        /**
         * Runs all of the implemented fail safe checks one by one and takes appropriate action

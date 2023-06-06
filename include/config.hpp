@@ -77,6 +77,11 @@
  */
 #define U_TO_PWM 8
 
+/**
+ * Fail-safe config
+*/
+#define TX_CONNECTION_TIMEOUT_IN_uS 500000
+
 #ifndef BZZZ_LOGGING_LEVEL
 #define BZZZ_LOGGING_LEVEL 3
 #endif
