@@ -6,10 +6,10 @@ namespace bzzz
 {
     FailSafes::FailSafes(){};
 
-    void FailSafes::setLastRadioReceptionTime(long long t)
+    void FailSafes::setLastRadioReceptionTime(long long lastRadioReceptionTime)
     {
         // Set private variable
-        this->m_lastRadioReceptionTime = t;
+        this->m_lastRadioReceptionTime = lastRadioReceptionTime;
     }
 
     void FailSafes::setRadioConnectionTimeoutInMicroseconds(unsigned long timeout)
@@ -26,11 +26,8 @@ namespace bzzz
             this->m_HALT_SYSTEM = true;
             return false;
         }
-        else 
-        {
-            this->m_HALT_SYSTEM = false;
-            return true;
-        }
+        this->m_HALT_SYSTEM = false;
+        return true;
     }
 
     void FailSafes::setMotorDriverObjPtr(MotorDriver *motorDriverObj)

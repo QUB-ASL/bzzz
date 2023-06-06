@@ -68,7 +68,7 @@ namespace bzzz
         * 
         * @param t last time in micro-seconds at which the radio was heard
        */
-       void setLastRadioReceptionTime(long long t);
+       void setLastRadioReceptionTime(long long lastRadioReceptionTime);
 
        /**
         * set the stopMotor function pointer to point to the actual function implementation 

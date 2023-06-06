@@ -18,7 +18,6 @@ Quaternion initialQuaternion;
 FailSafes failSafes;
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
-float eulerAngles[3];
 
 /**
  * Setup the AHRS
@@ -85,7 +84,10 @@ void loop()
   float controls[3];
 
   // if radio data received update the last data read time.
-  if(radio.readPiData()) failSafes.setLastRadioReceptionTime(micros());
+  if(radio.readPiData()) 
+  {
+    failSafes.setLastRadioReceptionTime(micros());
+  }
   // one function to run all fail safe checks
   failSafes.runFailSafes();
   if (radio.kill() || failSafes.haltSystem())
