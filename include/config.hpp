@@ -78,8 +78,8 @@
 #define U_TO_PWM 8
 
 /**
- * Maximum serial timeout while flying
- */
+ * Fail-safe config
+*/
 #define TX_CONNECTION_TIMEOUT_IN_uS 500000
 
 #ifndef BZZZ_LOGGING_LEVEL

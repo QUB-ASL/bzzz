@@ -14,19 +14,6 @@ namespace bzzz
         bool m_HALT_SYSTEM = false; // Bool to keep keep track if any fail-safe triggers a system halt.
 
         /**
-         * Poiters to useful objects that are declared outside of this scope
-         *
-         * Current list of objects pointer:
-         * 1. of class MotorDriver -> this is declared in main.cpp,
-         *                           used to control motors.
-         *
-         * Note: this is initialised with a null object, however,
-         *       the only constuctor is  FailSafes(MotorDriver &motorDriver)
-         *       so m_motorDriver will be properly initialised
-         */
-        MotorDriver &m_motorDriver = *(MotorDriver *)(0);
-
-        /**
          * Check the radio connection and return true if it timed out
          * as follows:
          *
@@ -38,27 +25,11 @@ namespace bzzz
          */
         bool radioConnectionCheck();
 
-        /**
-         * Shutdown the entire system
-         *
-         * Currently only stalls the motors,
-         * might need to include a proper shutdown procedure in the future
-         */
-        void shutDown();
-
-        /**
-         * Default constructor - private!
-         */
-        FailSafes();
-
     public:
         /**
-         * Construct an instance of FailSafes providing a pointer to
-         * the motor driver
-         *
-         * @param motorDrier motor driver
+         * Default constructor
          */
-        FailSafes(MotorDriver &motorDriver);
+        FailSafes();
 
         /**
          * Set timeout time for radio connection in micro-seconds
@@ -85,15 +56,6 @@ namespace bzzz
         /**
          * @return HALT_SYSTEM bool status
          */
-        bool haltSystem();
-
-        /**
-         * Runs all of the implemented fail safe checks one by one and takes appropriate action
-         * based on received triggers.
-         *
-         * Current implement mechanisms and associated actions:
-         * 1. Check radio connection, if lost and timed out shutdown the system
-         */
-        void runFailSafes();
+        bool isSerialTimeout();
     };
 }

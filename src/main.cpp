@@ -15,7 +15,7 @@ Radio radio;
 AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
-FailSafes failSafes(motorDriver);
+FailSafes failSafes;
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 
@@ -88,8 +88,7 @@ void loop()
     failSafes.setLastRadioReceptionTime(micros());
   }
   // one function to run all fail safe checks
-  failSafes.runFailSafes();
-  if (radio.kill() || failSafes.haltSystem())
+  if (radio.kill() || failSafes.isSerialTimeout())
   {
     motorDriver.disarm();
     logSerial(LogVerbosityLevel::Debug, "Exit loop!");
