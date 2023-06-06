@@ -1,6 +1,9 @@
 #include "config.hpp"
 #include "motors.hpp"
 
+#ifndef FAIL_SAFES_H
+#define FAIL_SAFES_H
+
 namespace bzzz
 {
     class FailSafes
@@ -44,3 +47,5 @@ namespace bzzz
         bool isSerialTimeout();
     };
 }
+
+#endif /* end FAIL_SAFES_H */
