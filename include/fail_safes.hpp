@@ -19,8 +19,12 @@ namespace bzzz
          * Current list of objects pointer:
          * 1. of class MotorDriver -> this is declared in main.cpp,
          *                           used to control motors.
+         *
+         * Note: this is initialised with a null object, however,
+         *       the only constuctor is  FailSafes(MotorDriver &motorDriver)
+         *       so m_motorDriver will be properly initialised
          */
-        MotorDriver *m_motorDriver;
+        MotorDriver &m_motorDriver = *(MotorDriver *)(0);
 
         /**
          * Check the radio connection and return true if it timed out
@@ -43,7 +47,7 @@ namespace bzzz
         void shutDown();
 
         /**
-         * Default constructor
+         * Default constructor - private!
          */
         FailSafes();
 
@@ -54,7 +58,7 @@ namespace bzzz
          *
          * @param motorDrier motor driver
          */
-        FailSafes(MotorDriver *motorDriver);
+        FailSafes(MotorDriver &motorDriver);
 
         /**
          * Set timeout time for radio connection in micro-seconds

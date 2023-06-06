@@ -5,45 +5,45 @@ namespace bzzz
 {
     FailSafes::FailSafes(){};
 
-    FailSafes::FailSafes(MotorDriver *motorDriver)
+    FailSafes::FailSafes(MotorDriver &motorDriver)
     {
-        this->m_motorDriver = motorDriver;
+        m_motorDriver = motorDriver;
     }
 
     void FailSafes::setLastRadioReceptionTime(long long lastRadioReceptionTime)
     {
         // Set private variable
-        this->m_lastRadioReceptionTime = lastRadioReceptionTime;
+        m_lastRadioReceptionTime = lastRadioReceptionTime;
     }
 
     void FailSafes::setRadioConnectionTimeoutInMicroseconds(unsigned long timeout)
     {
         // Set private variable
-        this->m_radioConnectionTimeoutInMicroseconds = timeout;
+        m_radioConnectionTimeoutInMicroseconds = timeout;
     }
 
     bool FailSafes::radioConnectionCheck()
     {
         // Check radio connection and timeout if connection had been lost for a preset amount of time.
-        if (micros() - this->m_lastRadioReceptionTime > this->m_radioConnectionTimeoutInMicroseconds)
+        if (micros() - m_lastRadioReceptionTime > m_radioConnectionTimeoutInMicroseconds)
         {
-            this->m_HALT_SYSTEM = true;
+            m_HALT_SYSTEM = true;
             return false;
         }
-        this->m_HALT_SYSTEM = false;
+        m_HALT_SYSTEM = false;
         return true;
     }
 
     void FailSafes::shutDown()
     {
         // Currently only stalls the motors
-        this->m_motorDriver->disarm();
+        m_motorDriver.disarm();
         logSerial(LogVerbosityLevel::Severe, "[FAIL SAFE] Tx connection lost...\nSystem halted!");
     }
 
     bool FailSafes::haltSystem()
     {
-        return this->m_HALT_SYSTEM;
+        return m_HALT_SYSTEM;
     }
 
     void FailSafes::runFailSafes()

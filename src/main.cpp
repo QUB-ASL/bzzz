@@ -15,7 +15,7 @@ Radio radio;
 AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
-FailSafes failSafes(&motorDriver);
+FailSafes failSafes(motorDriver);
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 
