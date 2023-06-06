@@ -3,7 +3,10 @@
 
 namespace bzzz
 {
-    FailSafes::FailSafes(){};
+    FailSafes::FailSafes(unsigned long timeout)
+    {
+        m_radioConnectionTimeoutInMicroseconds = timeout;
+    }
 
     void FailSafes::setLastRadioReceptionTime(long long lastRadioReceptionTime)
     {
@@ -11,27 +14,10 @@ namespace bzzz
         m_lastRadioReceptionTime = lastRadioReceptionTime;
     }
 
-    void FailSafes::setRadioConnectionTimeoutInMicroseconds(unsigned long timeout)
-    {
-        // Set private variable
-        m_radioConnectionTimeoutInMicroseconds = timeout;
-    }
-
-    bool FailSafes::radioConnectionCheck()
-    {
-        // Check radio connection and timeout if connection had been lost for a preset amount of time.
-        if (micros() - m_lastRadioReceptionTime > m_radioConnectionTimeoutInMicroseconds)
-        {
-            m_HALT_SYSTEM = true;
-            return false;
-        }
-        m_HALT_SYSTEM = false;
-        return true;
-    }
-
     bool FailSafes::isSerialTimeout()
     {
-        return m_HALT_SYSTEM;
+        unsigned long elapsedTime = micros() - m_lastRadioReceptionTime;
+        return elapsedTime > m_radioConnectionTimeoutInMicroseconds;
     }
 
 }

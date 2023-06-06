@@ -15,7 +15,7 @@ Radio radio;
 AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
-FailSafes failSafes;
+FailSafes failSafes(TX_CONNECTION_TIMEOUT_IN_uS);
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 
@@ -35,13 +35,6 @@ void setupAHRS()
  */
 void setup()
 {
-
-  /**
-   * Fail safes setup,
-   * remmber to assign all object pointers properly.
-   */
-  failSafes.setRadioConnectionTimeoutInMicroseconds(TX_CONNECTION_TIMEOUT_IN_uS); // Using default of 500 ms
-
   setupBuzzer();                                         // setup the buzzer
   Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
   setupAHRS();                                           // setup the IMU and AHRS
@@ -53,7 +46,7 @@ void setup()
   buzz(4);           // 4 beeps => RPi+RC connected
   logSerial(LogVerbosityLevel::Info, "waiting for arm...");
   radio.waitForArmCommand(); // wait for the RC to send an arming command
-  logSerial(LogVerbosityLevel::Info, "armed...");
+  logSerial(LogVerbosityLevel::Info, "arming...");
   buzz(2, 400);               // two long beeps => preparation for arming
   motorDriver.attachAndArm(); // attach ESC and arm motors
   buzz(6);                    // 6 beeps => motors armed; keep clear!
