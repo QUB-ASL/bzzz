@@ -15,7 +15,7 @@ Radio radio;
 AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
-FailSafes failSafes;
+FailSafes failSafes(&motorDriver);
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 
@@ -39,9 +39,8 @@ void setup()
   /**
    * Fail safes setup,
    * remmber to assign all object pointers properly.
-  */
- failSafes.setMotorDriverObjPtr(&motorDriver);
- failSafes.setRadioConnectionTimeoutInMicroseconds(TX_CONNECTION_TIMEOUT_IN_uS);    // Using default of 500 ms 
+   */
+  failSafes.setRadioConnectionTimeoutInMicroseconds(TX_CONNECTION_TIMEOUT_IN_uS); // Using default of 500 ms
 
   setupBuzzer();                                         // setup the buzzer
   Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
@@ -50,14 +49,14 @@ void setup()
   ahrs.averageAngularVelocities(initialAngularVelocity); // determine initial attitude
   buzz(2);                                               // 2 beeps => AHRS setup complete
   logSerial(LogVerbosityLevel::Info, "waiting for PiSerial...");
-  waitForPiSerial();                                     // wait for the RPi and the RC to connect
-  buzz(4);                                               // 4 beeps => RPi+RC connected
+  waitForPiSerial(); // wait for the RPi and the RC to connect
+  buzz(4);           // 4 beeps => RPi+RC connected
   logSerial(LogVerbosityLevel::Info, "waiting for arm...");
-  radio.waitForArmCommand();                             // wait for the RC to send an arming command
+  radio.waitForArmCommand(); // wait for the RC to send an arming command
   logSerial(LogVerbosityLevel::Info, "armed...");
-  buzz(2, 400);                                          // two long beeps => preparation for arming
-  motorDriver.attachAndArm();                            // attach ESC and arm motors
-  buzz(6);                                               // 6 beeps => motors armed; keep clear!
+  buzz(2, 400);               // two long beeps => preparation for arming
+  motorDriver.attachAndArm(); // attach ESC and arm motors
+  buzz(6);                    // 6 beeps => motors armed; keep clear!
 }
 
 /**
@@ -84,7 +83,7 @@ void loop()
   float controls[3];
 
   // if radio data received update the last data read time.
-  if(radio.readPiData()) 
+  if (radio.readPiData())
   {
     failSafes.setLastRadioReceptionTime(micros());
   }
