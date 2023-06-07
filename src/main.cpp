@@ -90,11 +90,16 @@ void loop()
   angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
   angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
 
-  if (radio.yawRateReferenceRadSec() > 0.1) {
-    yawReferenceRad += (radio.yawRateReferenceRadSec() - 0.1) * SAMPLING_TIME;
-  } else if (radio.yawRateReferenceRadSec() < -0.1) {
-    yawReferenceRad += (radio.yawRateReferenceRadSec() + 0.1) * SAMPLING_TIME;
+  float yawRateRC = radio.yawRateReferenceRadSec();
+  float deadZoneYawRate = 0.017; 
+  float yawRateUpdate = 0.;
+  if (yawRateRC >= deadZoneYawRate) {
+    yawRateUpdate = yawRateRC - deadZoneYawRate;
+  } else if (yawRateRC <= -deadZoneYawRate) {
+    yawRateUpdate = yawRateRC + deadZoneYawRate;
   }
+  yawReferenceRad += yawRateUpdate * SAMPLING_TIME;
+  
 
   Quaternion referenceQuaternion(
       yawReferenceRad,
@@ -105,7 +110,8 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  logSerial(LogVerbosityLevel::Debug, "Yr: %f Pr: %f Rr: %f Tr: %f", radio.yawRateReferenceRadSec(), radio.pitchReferenceAngleRad(), radio.rollReferenceAngleRad(), radio.throttleReferencePWM());
+  logSerial(LogVerbosityLevel::Debug, "YrRC: %f Yaw: %f", 
+      yawRateRC, yawReferenceRad);
   
   controller.controlAction(attitudeError, angularVelocityCorrected, controls);
 
