@@ -64,13 +64,13 @@
 #define RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN 100.
 
 /** Trimmer B on RC - maximum quaternion Z gain */
-#define RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN 20.
+#define RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN 100.
 
 /** Trimmer C on RC - maximum omega xy gain */
 #define RADIO_TRIMMER_MAX_OMEGA_XY_GAIN 0.5
 
 /** Trimmer E on RC - maximum omega z gain */
-#define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 0.05
+#define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 0.5
 
 /**
  * Control action to PWM scaling factor

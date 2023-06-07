@@ -119,7 +119,7 @@ namespace bzzz
 
     bool Radio::kill()
     {
-        return m_encodedSwitchesData & RADIO_SWITCH_A_BIT;
+        return m_encodedSwitchesData & RADIO_SWITCH_C_BITS;//RADIO_SWITCH_A_BIT;
     }
 
     ThreeWaySwitch Radio::switchC()
