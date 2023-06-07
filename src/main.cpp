@@ -90,7 +90,11 @@ void loop()
   angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
   angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
 
-  yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
+  if (radio.yawRateReferenceRadSec() > 0.1) {
+    yawReferenceRad += (radio.yawRateReferenceRadSec() - 0.1) * SAMPLING_TIME;
+  } else if (radio.yawRateReferenceRadSec() < -0.1) {
+    yawReferenceRad += (radio.yawRateReferenceRadSec() + 0.1) * SAMPLING_TIME;
+  }
 
   Quaternion referenceQuaternion(
       yawReferenceRad,
