@@ -127,6 +127,12 @@ namespace bzzz
             size_t windowLength = 50,
             size_t numDiscardMeasurements = 100); 
 
+        /**
+         * Get the current yaw in radians
+         * @return the current yaw in radians 
+        */
+        float currentYawRad();
+
 /*
  * While flying we will not need to access the Euler angles,
  * so the following is available only in debug mode.

@@ -98,8 +98,10 @@ void loop()
   } else if (yawRateRC <= -deadZoneYawRate) {
     yawRateUpdate = yawRateRC + deadZoneYawRate;
   }
-  yawReferenceRad += yawRateUpdate * SAMPLING_TIME;
-  
+  // take the current Yaw angle as reference, this means that we are not correcting the Yaw.
+  yawReferenceRad = ahrs.currentYawRad();
+  // Now we command a Yaw rate to correct/ change the Yaw
+  angularVelocityCorrected[2] = yawRateUpdate - angularVelocityCorrected[2];
 
   Quaternion referenceQuaternion(
       yawReferenceRad,

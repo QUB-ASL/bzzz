@@ -136,6 +136,17 @@ namespace bzzz
         averageAngularVelocity[2] /= (float)windowLength;
     }
 
+    float AHRS::currentYawRad()
+    {
+        // copied from below
+        float q[4] = {0};
+        quaternion(q);
+
+        float sinr_cosp = 2 * (q[0] * q[1] + q[2] * q[3]);
+        float cosr_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
+        return std::atan2(sinr_cosp, cosr_cosp);
+    }
+
 #ifdef BZZZ_DEBUG
     void AHRS::eulerAngles(float *euler)
     {
