@@ -67,21 +67,26 @@ class RadioDataParser:
         self.rawRatePercentage = None
         self.switchValue = None
 
-    def __map_radio_to_angle(self, x):
+    def __radio_calib(self):
+        """Takes 
+        """
+        pass
+
+    def __map_radio_to_angle(self, x, stick_min=RADIO_STICK_MIN, stick_max=RADIO_STICK_MAX):
         """Maps radio stick positions to corresponding angles in radians linearly.
 
         :param x: Stick position data.
         :return: angle in radians.
         """
-        return -PITCH_MAX_RAD + (x - RADIO_STICK_MIN) / (RADIO_STICK_MAX - RADIO_STICK_MIN) * 2 * PITCH_MAX_RAD
+        return -PITCH_MAX_RAD + (x - stick_min) / (stick_max - stick_min) * 2 * PITCH_MAX_RAD
 
-    def __map_trimmer_to_percentage(self, x):
+    def __map_trimmer_to_percentage(self, x, stick_min = RADIO_STICK_MIN, stick_max = RADIO_STICK_MAX):
         """Linearly maps radio timmer or stick data to percentage [0, 1].
 
         :param x: Stick or trimmer position data.
         :return: Percentage in range [0, 1].
         """
-        percentage = (x - RADIO_STICK_MIN) / (RADIO_STICK_MAX - RADIO_STICK_MIN)
+        percentage = (x - stick_min) / (stick_max - stick_min)
         return max(min(percentage, 1), 0)
 
     def pitch_reference_angle_rad(self):
