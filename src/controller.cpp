@@ -23,7 +23,7 @@ namespace bzzz
         float yawRateError =  angularVelocity[2] - angularVelocityYawRef;
 
 
-        control[2] += m_angularVelocityGain[2] * yawRateError;
+        control[2] = m_angularVelocityGain[2] * yawRateError;
         // logSerial(LogVerbosityLevel::Debug, "error: %.3f, control: %.3f, attErr_z: %.3f", 
         //     yawRateError, control[2], m_angularVelocityGain[2]);   
     }
