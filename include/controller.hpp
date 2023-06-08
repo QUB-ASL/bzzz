@@ -38,12 +38,17 @@ the RC.
         /**
          * Set the gains of the quaternion
          */
-        void setQuaternionGains(float gainXY, float gainZ);
+        void setQuaternionGain(float gainXY);
+
+        /**
+         * Set the gains of omega_x and omega_y
+         */
+        void setAngularVelocityXYGain(float gainOmegaXY);
 
         /**
          * Set the gains of the angular velocity
          */
-        void setAngularVelocityGains(float gainXY, float gainZ);
+        void setYawAngularVelocityGain(float gainOmegaZ);
 #endif /* BZZZ_DEBUG */
 
         /**
@@ -57,6 +62,7 @@ the RC.
         void controlAction(
             Quaternion &attitudeError,
             const float *angularVelocity,
+            float angularVelocityYawRef,
             float *control);
 
         /**
@@ -76,6 +82,7 @@ the RC.
         void motorPwmSignals(
             Quaternion &attitudeError,
             const float *angularVelocity,
+            float angularVelocityYawRef,
             float throttle,
             int &motorFL,
             int &motorFR,

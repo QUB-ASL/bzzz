@@ -55,12 +55,12 @@ void setup()
  */
 void setGainsFromRcTrimmers()
 {
-  controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN,
-      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN);
-  controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN,
-      -radio.trimmerVREPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+  controller.setQuaternionGain(
+      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
+  controller.setAngularVelocityXYGain(
+      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
+  controller.setYawAngularVelocityGain(
+      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 }
 
 /**
@@ -71,7 +71,6 @@ void loop()
   float quaternionImuData[4];
   float measuredAngularVelocity[3];
   float angularVelocityCorrected[3];
-  float controls[3];
 
   radio.readPiData();
   if (radio.kill())
@@ -92,16 +91,15 @@ void loop()
 
   float yawRateRC = radio.yawRateReferenceRadSec();
   float deadZoneYawRate = 0.017; 
-  float yawRateUpdate = 0.;
+  float yawRateReference = 0.;
   if (yawRateRC >= deadZoneYawRate) {
-    yawRateUpdate = yawRateRC - deadZoneYawRate;
+    yawRateReference = yawRateRC - deadZoneYawRate;
   } else if (yawRateRC <= -deadZoneYawRate) {
-    yawRateUpdate = yawRateRC + deadZoneYawRate;
+    yawRateReference = yawRateRC + deadZoneYawRate;
   }
+
   // take the current Yaw angle as reference, this means that we are not correcting the Yaw.
   yawReferenceRad = ahrs.currentYawRad();
-  // Now we command a Yaw rate to correct/ change the Yaw
-  angularVelocityCorrected[2] = yawRateUpdate - angularVelocityCorrected[2];
 
   Quaternion referenceQuaternion(
       yawReferenceRad,
@@ -112,10 +110,8 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  logSerial(LogVerbosityLevel::Debug, "YrRC: %f Yaw: %f", 
-      yawRateRC, yawReferenceRad);
-  
-  controller.controlAction(attitudeError, angularVelocityCorrected, controls);
+  // logSerial(LogVerbosityLevel::Debug, "YrRC: %.3f YrU: %.3f Yref: %.3f Y: %.3f", 
+      // yawRateRC, yawRateReference, yawReferenceRad, ahrs.currentYawRad());      
 
   // Throttle from RC to throttle reference
   float throttleRef = radio.throttleReferencePWM();
@@ -124,7 +120,12 @@ void loop()
   int motorFL, motorFR, motorBL, motorBR;
   controller.motorPwmSignals(attitudeError,
                              angularVelocityCorrected,
+                             yawRateReference,
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
+
+  
+  logSerial(LogVerbosityLevel::Debug, "FR: %d FL: %d BL: %d BR: %d", 
+       motorFR, motorFL, motorBL, motorBR);
 }

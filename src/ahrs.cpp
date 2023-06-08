@@ -59,7 +59,7 @@ namespace bzzz
     {
         w[0] = m_imu.getGyroX();
         w[1] = m_imu.getGyroY();
-        w[2] = m_imu.getGyroZ();
+        w[2] = -m_imu.getGyroZ();
     }
 
     bool AHRS::update()

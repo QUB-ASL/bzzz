@@ -70,7 +70,7 @@
 #define RADIO_TRIMMER_MAX_OMEGA_XY_GAIN 0.5
 
 /** Trimmer E on RC - maximum omega z gain */
-#define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 0.5
+#define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 10
 
 /**
  * Control action to PWM scaling factor

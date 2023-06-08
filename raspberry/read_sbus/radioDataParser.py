@@ -10,7 +10,7 @@ RADIO_STICK_MIN = 300
 RADIO_STICK_MAX = 1700
 
 # Maximum yaw rate (rad/s) 10 deg/s = 0.1745 rad/s
-RADIO_MAX_YAW_RATE_RAD_SEC = 0.1745*3
+RADIO_MAX_YAW_RATE_RAD_SEC = 0.1745*100
 
 # Trimmer A on RC - maximum quaternion XY gain
 RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN = 100.
