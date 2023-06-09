@@ -4,7 +4,7 @@
   "name": "DRONE_ESP_SHIELD",
   "content": "",
   "created_at": "2023-06-03 12:58:13",
-  "updated_at": "2023-06-09 13:45:36",
+  "updated_at": "2023-06-09 18:03:56",
   "stick": "",
   "documents": [
     {
@@ -23,7 +23,8 @@
         "ca94e12784df45b6a15272a1faaaf127": 1,
         "ed37d1eaf66a4df6beb9636b25247882": 1,
         "f339ef0385d6499ba39dc2b4a11a1dd6": 1,
-        "d3f186bf6ad94887b14dd54fc0c79bcd": 1
+        "d3f186bf6ad94887b14dd54fc0c79bcd": 1,
+        "7bb7a5bde0004fd5b7cd4951382a0a9f": 1
       },
       "BOM": [
         [
@@ -161,13 +162,28 @@
             "puuid": "31a453d5adfc45cea944a6450adf2918",
             "uuid": "ed37d1eaf66a4df6beb9636b25247882"
           }
+        ],
+        [
+          "220Ω",
+          1,
+          "RES-TH_BD2.5-L6.5-P10.50-D0.6",
+          "U1",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C2979794",
+            "BOM_Manufacturer": "VISHAY(威世)",
+            "BOM_Manufacturer Part": "MRS25000C1001FCT00",
+            "BOM_JLCPCB Part Class": "Extended Part",
+            "puuid": "f6ffa34674dd47c09fdfebb09b99661e",
+            "uuid": "7bb7a5bde0004fd5b7cd4951382a0a9f"
+          }
         ]
       ],
-      "updateTime": 1685828781,
+      "updateTime": 1686329336,
       "createTime": 1685793493,
       "histories": [],
       "created_at": "2023-06-03 12:58:13",
-      "updated_at": "2023-06-03 22:46:21"
+      "updated_at": "2023-06-09 17:48:56"
     },
     {
       "uuid": "3a05891dda2c8b1be67d2fc60427cdfc",
@@ -179,6 +195,7 @@
       "master": "",
       "thumb": "/images/thumb-default.png",
       "components": {
+        "f6ffa34674dd47c09fdfebb09b99661e": 1,
         "03eca1a213cc40b2b4e442aaf5accc36": 1,
         "a1217bf824c84d85b7ab332dcd1189b8": 1,
         "6468511141cc4b6280f3c9d53c7d329f": 1,
@@ -190,16 +207,16 @@
         "31a453d5adfc45cea944a6450adf2918": 1
       },
       "BOM": [],
-      "updateTime": 1686314736,
+      "updateTime": 1686330236,
       "createTime": 1685798951,
       "histories": [],
       "created_at": "2023-06-03 14:29:11",
-      "updated_at": "2023-06-09 13:45:36"
+      "updated_at": "2023-06-09 18:03:56"
     }
   ],
   "sort": [],
   "title": "DRONE_ESP_SHIELD",
   "foldername": "DRONE_ESP_SHIELD",
   "schfilename": "DRONE_ESP_SHIELD.json",
-  "schfilemtime": 1685828781972
+  "schfilemtime": 1686329336476
 }
