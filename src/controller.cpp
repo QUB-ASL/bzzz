@@ -1,5 +1,6 @@
 #include "controller.hpp"
 #include <math.h>
+#include "util.hpp"
 
 namespace bzzz
 {
@@ -9,13 +10,20 @@ namespace bzzz
     void Controller::controlAction(
         Quaternion &attitudeError,
         const float *angularVelocity,
+        float angularVelocityYawRef,
         float *control)
     {
-
-        for (int i = 0; i < 3; i++)
-        {
-            control[i] = m_quaternionGain[i] * attitudeError[i + 1] + m_angularVelocityGain[i] * angularVelocity[i];
-        }
+        /*
+         * ux = Kqx * qx + Kwx * wx
+         * uy = Kqy * qy + Kwy * wy
+         * uz = Kwz * err_wz
+         */
+        control[0] = m_quaternionGain[0] * attitudeError[1];             // qx
+        control[1] = m_quaternionGain[1] * attitudeError[2];             // qy
+        control[0] += m_angularVelocityGain[0] * angularVelocity[0];     // wx
+        control[1] += m_angularVelocityGain[1] * angularVelocity[1];     // wy
+        float yawRateError = angularVelocity[2] - angularVelocityYawRef; //
+        control[2] = m_angularVelocityGain[2] * yawRateError;            // u_z = Kz * err_wz
     }
 
     template <typename _Tp>
@@ -28,6 +36,7 @@ namespace bzzz
     void Controller::motorPwmSignals(
         Quaternion &attitudeError,
         const float *angularVelocity,
+        float angularVelocityYawRef,
         float throttle,
         int &motorFL,
         int &motorFR,
@@ -39,7 +48,7 @@ namespace bzzz
     {
         float controls[3];
         // compute control actions (LQR)
-        controlAction(attitudeError, angularVelocity, controls);
+        controlAction(attitudeError, angularVelocity, angularVelocityYawRef, controls);
         // compute motor signals from control actions (and cast float as int)
         int mFL = throttle + controlToPwmScaling * (controls[0] + controls[1] + controls[2]);
         int mFR = throttle + controlToPwmScaling * (-controls[0] + controls[1] - controls[2]);
@@ -53,18 +62,20 @@ namespace bzzz
     }
 
 #ifdef BZZZ_DEBUG
-    void Controller::setQuaternionGains(float gainXY, float gainZ)
+    void Controller::setQuaternionGain(float gainXY)
     {
         m_quaternionGain[0] = gainXY;
         m_quaternionGain[1] = gainXY;
-        m_quaternionGain[2] = gainZ;
     }
 
-    void Controller::setAngularVelocityGains(float gainXY, float gainZ)
+    void Controller::setAngularVelocityXYGain(float gainOmegaXY)
     {
-        m_angularVelocityGain[0] = gainXY;
-        m_angularVelocityGain[1] = gainXY;
-        m_angularVelocityGain[2] = gainZ;
+        m_angularVelocityGain[0] = gainOmegaXY;
+        m_angularVelocityGain[1] = gainOmegaXY;
+    }
+    void Controller::setYawAngularVelocityGain(float gainOmegaZ)
+    {
+        m_angularVelocityGain[2] = gainOmegaZ;
     }
 #endif /* BZZZ_DEBUG */
 

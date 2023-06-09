@@ -35,17 +35,7 @@
 namespace bzzz
 {
     Radio::Radio(){};
-
-    float mapRadioToAngle(int x)
-    {
-        return -PITCH_MAX_RAD + (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN)) * 2 * PITCH_MAX_RAD;
-    }
-
-    float mapTrimmerToPercentage(int x)
-    {
-        return (float)(x - RADIO_STICK_MIN) / ((float)(RADIO_STICK_MAX - RADIO_STICK_MIN));
-    }
-
+    
     bool Radio::readPiData(void)
     {
         String allDataFromPi;
@@ -59,7 +49,7 @@ namespace bzzz
             // cut the channelData string after the first occurence of a comma
             allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
 
-            for (int i = 0; i < NUM_RADIO_CHANNELS || allDataFromPi != ""; i++, data_count++)
+            for (int i = 0; i < NUM_RADIO_CHANNELS && allDataFromPi != ""; i++, data_count++)
             {
                 // take the substring from the start to the first occurence of a comma,
                 // convert it to int and save it in the array
@@ -129,7 +119,7 @@ namespace bzzz
 
     bool Radio::kill()
     {
-        return m_encodedSwitchesData & RADIO_SWITCH_A_BIT;
+        return m_encodedSwitchesData & RADIO_SWITCH_D_BIT;
     }
 
     ThreeWaySwitch Radio::switchC()
