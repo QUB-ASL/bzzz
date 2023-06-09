@@ -20,12 +20,9 @@ namespace bzzz
         }
         control[0] += m_angularVelocityGain[0] * angularVelocity[0];
         control[1] += m_angularVelocityGain[1] * angularVelocity[1];
-        float yawRateError =  angularVelocity[2] - angularVelocityYawRef;
-
+        float yawRateError = angularVelocity[2] - angularVelocityYawRef;
 
         control[2] = m_angularVelocityGain[2] * yawRateError;
-        // logSerial(LogVerbosityLevel::Debug, "error: %.3f, control: %.3f, attErr_z: %.3f", 
-        //     yawRateError, control[2], m_angularVelocityGain[2]);   
     }
 
     template <typename _Tp>
@@ -70,12 +67,13 @@ namespace bzzz
         m_quaternionGain[1] = gainXY;
     }
 
-    void Controller::setAngularVelocityXYGain(float gainOmegaXY) {
-       m_angularVelocityGain[0] = gainOmegaXY; 
-       m_angularVelocityGain[1] = gainOmegaXY;
+    void Controller::setAngularVelocityXYGain(float gainOmegaXY)
+    {
+        m_angularVelocityGain[0] = gainOmegaXY;
+        m_angularVelocityGain[1] = gainOmegaXY;
     }
     void Controller::setYawAngularVelocityGain(float gainOmegaZ)
-    {        
+    {
         m_angularVelocityGain[2] = gainOmegaZ;
     }
 #endif /* BZZZ_DEBUG */

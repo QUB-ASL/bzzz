@@ -4,9 +4,6 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-// I have the impression that "#pragma once" is not
-// supported on ESP32
-
 namespace bzzz
 {
 
@@ -70,6 +67,7 @@ the RC.
          *
          * @param attitudeError attitude error quaternion
          * @param angularVelocity angular velocity (from IMU)
+         * @param angularVelocityYawRef angular velocity (yaw) reference
          * @param throttle throttle signal (between 1000 and 2000)
          * @param motorFL signal to front left motor
          * @param motorFR signal to front right motor

@@ -40,18 +40,22 @@ void setup()
   ahrs.averageAngularVelocities(initialAngularVelocity); // determine initial attitude
   buzz(2);                                               // 2 beeps => AHRS setup complete
   logSerial(LogVerbosityLevel::Info, "waiting for PiSerial...");
-  waitForPiSerial();                                     // wait for the RPi and the RC to connect
-  buzz(4);                                               // 4 beeps => RPi+RC connected
+  waitForPiSerial(); // wait for the RPi and the RC to connect
+  buzz(4);           // 4 beeps => RPi+RC connected
   logSerial(LogVerbosityLevel::Info, "waiting for arm...");
-  radio.waitForArmCommand();                             // wait for the RC to send an arming command
+  radio.waitForArmCommand(); // wait for the RC to send an arming command
   logSerial(LogVerbosityLevel::Info, "armed...");
-  buzz(2, 400);                                          // two long beeps => preparation for arming
-  motorDriver.attachAndArm();                            // attach ESC and arm motors
-  buzz(6);                                               // 6 beeps => motors armed; keep clear!
+  buzz(2, 400);               // two long beeps => preparation for arming
+  motorDriver.attachAndArm(); // attach ESC and arm motors
+  buzz(6);                    // 6 beeps => motors armed; keep clear!
 }
 
 /**
  * Set controller gain values from RC trimmers
+ *
+ * Trimmer A - X/Y quaternion gain
+ * Trimmer B - X/Y angular velocity gain
+ * Trimmer C - Yaw angular velocity gain
  */
 void setGainsFromRcTrimmers()
 {
@@ -90,11 +94,14 @@ void loop()
   angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
 
   float yawRateRC = radio.yawRateReferenceRadSec();
-  float deadZoneYawRate = 0.017; 
+  float deadZoneYawRate = 0.017;
   float yawRateReference = 0.;
-  if (yawRateRC >= deadZoneYawRate) {
+  if (yawRateRC >= deadZoneYawRate)
+  {
     yawRateReference = yawRateRC - deadZoneYawRate;
-  } else if (yawRateRC <= -deadZoneYawRate) {
+  }
+  else if (yawRateRC <= -deadZoneYawRate)
+  {
     yawRateReference = yawRateRC + deadZoneYawRate;
   }
 
@@ -110,9 +117,6 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  // logSerial(LogVerbosityLevel::Debug, "YrRC: %.3f YrU: %.3f Yref: %.3f Y: %.3f", 
-      // yawRateRC, yawRateReference, yawReferenceRad, ahrs.currentYawRad());      
-
   // Throttle from RC to throttle reference
   float throttleRef = radio.throttleReferencePWM();
 
@@ -125,7 +129,6 @@ void loop()
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
 
-  
-  logSerial(LogVerbosityLevel::Debug, "FR: %d FL: %d BL: %d BR: %d", 
-       motorFR, motorFL, motorBL, motorBR);
+  logSerial(LogVerbosityLevel::Debug, "FR: %d FL: %d BL: %d BR: %d",
+            motorFR, motorFL, motorBL, motorBR);
 }
