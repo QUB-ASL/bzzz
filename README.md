@@ -13,3 +13,4 @@ The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (
 ## Videos 
 
 [![Watch the video](https://img.youtube.com/vi/7mFDusj9uvs/hqdefault.jpg)](https://youtu.be/7mFDusj9uvs)
+[![Watch the video](https://img.youtube.com/vi/eGNW_-LX130/hqdefault.jpg)](https://youtu.be/eGNW_-LX130)
