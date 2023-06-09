@@ -13,16 +13,17 @@ namespace bzzz
         float angularVelocityYawRef,
         float *control)
     {
-
-        for (int i = 0; i < 2; i++)
-        {
-            control[i] = m_quaternionGain[i] * attitudeError[i + 1];
-        }
-        control[0] += m_angularVelocityGain[0] * angularVelocity[0];
-        control[1] += m_angularVelocityGain[1] * angularVelocity[1];
-        float yawRateError = angularVelocity[2] - angularVelocityYawRef;
-
-        control[2] = m_angularVelocityGain[2] * yawRateError;
+        /*
+         * ux = Kqx * qx + Kwx * wx
+         * uy = Kqy * qy + Kwy * wy
+         * uz = Kwz * err_wz
+         */
+        control[0] = m_quaternionGain[0] * attitudeError[1];             // qx
+        control[1] = m_quaternionGain[1] * attitudeError[2];             // qy
+        control[0] += m_angularVelocityGain[0] * angularVelocity[0];     // wx
+        control[1] += m_angularVelocityGain[1] * angularVelocity[1];     // wy
+        float yawRateError = angularVelocity[2] - angularVelocityYawRef; //
+        control[2] = m_angularVelocityGain[2] * yawRateError;            // u_z = Kz * err_wz
     }
 
     template <typename _Tp>

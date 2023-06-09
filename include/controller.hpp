@@ -20,6 +20,20 @@ namespace bzzz
          */
         float m_angularVelocityGain[3] = {-1.4, -1.55, -1.08};
 
+        /**
+         * @brief computes control action
+         *
+         * @param attitudeError attitude error quaternion
+         * @param angularVelocity angular velocity (from IMU)
+         * @param control control actions (3-array)
+         *
+         */
+        void controlAction(
+            Quaternion &attitudeError,
+            const float *angularVelocity,
+            float angularVelocityYawRef,
+            float *control);
+
     public:
         /**
          * Constructs a new instance of Controller
@@ -48,21 +62,7 @@ the RC.
         void setYawAngularVelocityGain(float gainOmegaZ);
 #endif /* BZZZ_DEBUG */
 
-        /**
-         * @brief computes control action
-         *
-         * @param attitudeError attitude error quaternion
-         * @param angularVelocity angular velocity (from IMU)
-         * @param control control actions (3-array)
-         *
-         */
-        void controlAction(
-            Quaternion &attitudeError,
-            const float *angularVelocity,
-            float angularVelocityYawRef,
-            float *control);
-
-        /**
+                /**
          * @brief PWM signals to the four motors
          *
          * @param attitudeError attitude error quaternion
