@@ -59,7 +59,7 @@ namespace bzzz
     {
         w[0] = m_imu.getGyroX();
         w[1] = m_imu.getGyroY();
-        w[2] = m_imu.getGyroZ();
+        w[2] = -m_imu.getGyroZ();
     }
 
     bool AHRS::update()
@@ -134,6 +134,17 @@ namespace bzzz
         averageAngularVelocity[0] /= (float)windowLength;
         averageAngularVelocity[1] /= (float)windowLength;
         averageAngularVelocity[2] /= (float)windowLength;
+    }
+
+    float AHRS::currentYawRad()
+    {
+        // copied from below
+        float q[4] = {0};
+        quaternion(q);
+
+        float sinr_cosp = 2 * (q[0] * q[1] + q[2] * q[3]);
+        float cosr_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
+        return std::atan2(sinr_cosp, cosr_cosp);
     }
 
 #ifdef BZZZ_DEBUG

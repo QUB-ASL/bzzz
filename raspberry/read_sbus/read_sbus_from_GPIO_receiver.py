@@ -86,8 +86,9 @@ def get_radio_data_parse_and_send_to_ESP():
     """
     try:
         _is_connected, _packet_age, channel_data = get_radio_data()
-        channel_data = parse_radio_data(channel_data)
-        send_data_to_ESP(channel_data)
+        if _is_connected:
+            channel_data = parse_radio_data(channel_data)
+            send_data_to_ESP(channel_data)
     except KeyboardInterrupt:
         # cleanup cleanly after ctrl-c
         reader.end_listen()
