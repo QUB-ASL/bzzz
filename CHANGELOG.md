@@ -45,6 +45,7 @@ The following subsections are used:
 <!-- ---------------------
       v0.2.0
      --------------------- -->
+
 ## [v0.2.0] - 13 June 2023
 
 ### Added
