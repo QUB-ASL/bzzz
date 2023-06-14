@@ -1,3 +1,5 @@
+import numpy as np
+
 class AltitudeDynamics:
     """The discrete time altitude dynamics of a quad-rotor
     """
@@ -30,9 +32,10 @@ class AltitudeDynamics:
         :param Tref_t: Reference thrust/ thrust produced by the quad-rotor along the global z-axis, current thrust.
         :return: altitude, velocity, and accleration updates
         """
-        z_t_1 = z_t + self.Ts*vz_t
+        w_z_t, w_vz_t =   np.random.normal(loc=0, scale=0.05, size=2)
+        z_t_1 = z_t + self.Ts*vz_t + w_z_t
         az_t = self.alpha*Tref_t + self.c
-        vz_t_1 = vz_t + self.Ts*az_t
+        vz_t_1 = vz_t + self.Ts*az_t + w_vz_t
         return z_t_1, vz_t_1, az_t
     
     def simulate(self, Tref_t: float):
