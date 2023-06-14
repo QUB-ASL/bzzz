@@ -12,6 +12,29 @@ The following subsections are used:
 - **Changed**: other code changes
 
 <!-- ---------------------
+      v0.2.0
+     --------------------- -->
+
+## [v0.2.0] - 14 June 2023
+
+### Added
+
+- A fail-safe to shut down the drone when the receiver connection is timed-out due to a possible loss of connection.
+- Yaw rate based controller.
+
+### Fixed
+
+- Fixed the unnecessary Yawing of the drone. The drone now Yaws only when commanded.
+
+### Changed
+
+- Implemented the fail-safe on `fail_safes.hpp` and `fail_safes.cpp`
+- Added configurable fail-safe time-out macro to `config.cpp`
+- Changed `read_sbus_from_GPIO_receiver.py` to stop sending data to ESP when the radio connection is lost.
+- Modified `main.cpp` to utilize the fail-safe.
+
+
+<!-- ---------------------
       v0.1.0
      --------------------- -->
 ## [v0.1.0] - 1 June 2023
@@ -41,27 +64,4 @@ The following subsections are used:
 - Update hardware tests
 
 [v0.1.0]: https://github.com/QUB-ASL/bzzz/releases/tag/v0.1.1
-
-<!-- ---------------------
-      v0.2.0
-     --------------------- -->
-
-## [v0.2.0] - 13 June 2023
-
-### Added
-
-- A fail-safe to shut down the drone when the receiver connection is timed-out due to a possible loss of connection.
-- Yaw rate based controller.
-
-### Fixed
-
-- Fixed the unnecessary Yawing of the drone. The drone now Yaws only when commanded.
-
-### Changed
-
-- Implemented the fail-safe on `fail_safes.hpp` and `fail_safes.cpp`
-- Added configurable fail-safe time-out macro to `config.cpp`
-- Changed `read_sbus_from_GPIO_receiver.py` to stop sending data to ESP when the radio connection is lost.
-- Modified `main.cpp` to utilize the fail-safe.
-
 [v0.2.0]: https://github.com/QUB-ASL/bzzz/releases/tag/v0.2.0
