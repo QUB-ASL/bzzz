@@ -21,15 +21,15 @@ The following subsections are used:
 
 - A fail-safe to shut down the drone when the receiver connection is timed-out due to a possible loss of connection.
 - Yaw rate based controller.
+- Schematics for electronic board with ESP32
+- Added configurable fail-safe time-out macro to `config.cpp`
 
 ### Fixed
 
-- Fixed the unnecessary Yawing of the drone. The drone now Yaws only when commanded.
+- Fixed the unnecessary yawing of the drone (the drone now yaws only when commanded)
 
 ### Changed
 
-- Implemented the fail-safe on `fail_safes.hpp` and `fail_safes.cpp`
-- Added configurable fail-safe time-out macro to `config.cpp`
 - Changed `read_sbus_from_GPIO_receiver.py` to stop sending data to ESP when the radio connection is lost.
 - Modified `main.cpp` to utilize the fail-safe.
 
