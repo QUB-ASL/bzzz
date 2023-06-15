@@ -3,16 +3,16 @@
 from sensors.pressure_sensor import PressureSensor as PS
 from sensors.time_of_flight_sensor import TimeOfFlightSensor as ToF
 from standard_controllers import PD_controller
+from altitude_LQR import LQR
 
 class AltitudeHoldController:
-    def __init__(self, update_frequency, kp, kd):
+    def __init__(self, update_frequency, initial_alpha_t, initial_beta_t):
         self.pressure_sensor = PS(num_latest_readings_to_keep=5)
         self.time_of_flight_sensor = ToF(num_latest_readings_to_keep=5)
         self.update_frequency = update_frequency
         self.sampling_time = 1/self.update_frequency
         
-        self._kp = kp
-        self._kd = kd
+        self._LQR = LQR(sampling_frequency=update_frequency, initial_alpha_t=initial_alpha_t, initial_beta_t=initial_beta_t)
 
         self._current_altitude = None
         self._previous_altitude = None
@@ -47,8 +47,9 @@ class AltitudeHoldController:
     def thrust(self):
         return self._calculated_upward_thrust
     
-    def get_control_action_thrust(self, altitude_ref, altitude_dot_ref):
-        control_action_thrust = PD_controller(self._kp, self._kd, altitude_ref, self._current_altitude, altitude_dot_ref, self._altitude_dot)
+    def get_control_action_thrust(self, current_states_z_and_vz, alpha_t=1, beta_t=-9.81, reference_altitude_mts=1, recalculate_dynamics=True):
+        control_action_thrust = LQR.control_action(current_states_z_and_vz=current_states_z_and_vz, alpha_t=alpha_t, beta_t=beta_t,
+                                                    reference_altitude_mts=reference_altitude_mts, recalculate_dynamics=recalculate_dynamics)
         return control_action_thrust
 
 
