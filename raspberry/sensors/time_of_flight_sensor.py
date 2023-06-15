@@ -3,8 +3,10 @@
 # NOTE: for now, we are just passing dummy values
 
 from filters import median_filter
-from time import time_ns, sleep
+from time import time_ns, sleep, time
+from datetime import datetime
 import VL53L0X
+import os 
 
 class TimeOfFlightSensor:
     def __init__(self, num_latest_readings_to_keep: int = 5, use_sleep=False):
@@ -86,13 +88,11 @@ class TimeOfFlightSensor:
 
 if __name__ == "__main__":
     tof = TimeOfFlightSensor(use_sleep=True)
-    for i in range(100):
-        tof.update_altitude()
-        print("Altitude in mm: %d   itr: %d" %(tof.altitude, i))
-    tof.kill_ToF()
-    
+    with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
+        for i in range(100):
+            tof.update_altitude()
+            print("Altitude in mm: %d   itr: %d" %(tof.altitude, i))
+            file.write("%f, %f\n"%(i, tof.altitude))
+    tof.kill_ToF()  
 
-        
-        
-          
     
