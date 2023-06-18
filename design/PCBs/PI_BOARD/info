@@ -4,7 +4,7 @@
   "name": "DRONE_RPI_SHIELD",
   "content": "Raspberry Pi shield for connecting Tof, Sonar, Pressure, Camera, and GPS sensors. Made as a part of the Bzzz drone project. ",
   "created_at": "2023-06-04 11:49:57",
-  "updated_at": "2023-06-18 19:47:01",
+  "updated_at": "2023-06-18 20:20:05",
   "stick": "",
   "documents": [
     {
@@ -103,11 +103,11 @@
           }
         ]
       ],
-      "updateTime": 1687113839,
+      "updateTime": 1687114491,
       "createTime": 1685875798,
       "histories": [],
       "created_at": "2023-06-04 11:49:58",
-      "updated_at": "2023-06-18 19:43:59"
+      "updated_at": "2023-06-18 19:54:51"
     },
     {
       "uuid": "4dfe44328869f0b97689f89b6724c485",
@@ -126,11 +126,11 @@
         "9e4a1655fce44826888447e81a22baa7": 1
       },
       "BOM": [],
-      "updateTime": 1687114021,
+      "updateTime": 1687116005,
       "createTime": 1685878063,
       "histories": [],
       "created_at": "2023-06-04 12:27:43",
-      "updated_at": "2023-06-18 19:47:01"
+      "updated_at": "2023-06-18 20:20:05"
     }
   ],
   "sort": [
@@ -140,5 +140,5 @@
   "title": "DRONE_RPI_SHIELD",
   "foldername": "DRONE_RPI_SHIELD",
   "schfilename": "DRONE_RPI_SHIELD.json",
-  "schfilemtime": 1687113839378
+  "schfilemtime": 1687114491478
 }
