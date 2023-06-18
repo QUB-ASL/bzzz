@@ -1,0 +1,144 @@
+{
+  "uuid": "0ad49ac35c6d28a11264cbf05422b4c4",
+  "path": "Offline/DRONE_RPI_SHIELD",
+  "name": "DRONE_RPI_SHIELD",
+  "content": "Raspberry Pi shield for connecting Tof, Sonar, Pressure, Camera, and GPS sensors. Made as a part of the Bzzz drone project. ",
+  "created_at": "2023-06-04 11:49:57",
+  "updated_at": "2023-06-18 19:47:01",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "1102440f53dab0e0b9180f8aaeeb0584",
+      "title": "PI_SCH",
+      "description": "Schematic of Raspberry Pi shield for Drone. Revision 0.1. Not approved, work in progress.",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "3ce9eb8ce1bd4cb393cf6e656503f508": 1,
+        "57bfa5d70b43466c8f835cb42a9ad95e": 2,
+        "0784ba83d94141cf9a89f4c8caa2b29c": 1,
+        "fc5b561920bd4ee6bb74f1b360404bca": 1,
+        "0dd8d1f94a6e4bc8aefc55bdbab7ea3b": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "HYC12-HDMIA19-610B",
+          1,
+          "HDMI-TH_HYC12-HDMIA19-61",
+          "CN1",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C711354",
+            "BOM_Manufacturer": "华宇创",
+            "BOM_Manufacturer Part": "HYC12-HDMIA19-610B",
+            "BOM_JLCPCB Part Class": "Extended Part",
+            "puuid": "9e4a1655fce44826888447e81a22baa7",
+            "uuid": "0dd8d1f94a6e4bc8aefc55bdbab7ea3b"
+          }
+        ],
+        [
+          "HEADER-MALE-2.54_1X6",
+          2,
+          "HDR-TH_6P-P2.54-V",
+          "PORT_1,PORT_4",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "BOOMELE",
+            "BOM_Manufacturer Part": "Header-Male-2.54_1x6",
+            "BOM_Supplier Part": "C37208",
+            "puuid": "fd9fc9865419407ab6a588b47dec0227",
+            "uuid": "57bfa5d70b43466c8f835cb42a9ad95e"
+          }
+        ],
+        [
+          "PZ254V-11-05P",
+          1,
+          "HDR-TH_5P-P2.54-V-M",
+          "PORT_3",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C492404",
+            "BOM_Manufacturer": "XFCN",
+            "BOM_Manufacturer Part": "PZ254V-11-05P",
+            "BOM_JLCPCB Part Class": "Extended Part",
+            "puuid": "7198a63e8f354fc899147ba3afe0aa6d",
+            "uuid": "fc5b561920bd4ee6bb74f1b360404bca"
+          }
+        ],
+        [
+          "PZ254V-11-04P",
+          1,
+          "HDR-TH_4P-P2.54-V-M",
+          "RADIO",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C492403",
+            "BOM_Manufacturer": "XFCN",
+            "BOM_Manufacturer Part": "PZ254V-11-04P",
+            "BOM_JLCPCB Part Class": "Extended Part",
+            "puuid": "d2c6f1d28d284f90a4924ff396444390",
+            "uuid": "0784ba83d94141cf9a89f4c8caa2b29c"
+          }
+        ],
+        [
+          "Raspberry PI 4",
+          1,
+          "RASPBERRY PI 4",
+          "U1",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "8ceac78df16643c58f1cf73db75042ba",
+            "uuid": "3ce9eb8ce1bd4cb393cf6e656503f508"
+          }
+        ]
+      ],
+      "updateTime": 1687113839,
+      "createTime": 1685875798,
+      "histories": [],
+      "created_at": "2023-06-04 11:49:58",
+      "updated_at": "2023-06-18 19:43:59"
+    },
+    {
+      "uuid": "4dfe44328869f0b97689f89b6724c485",
+      "puuid": "0ad49ac35c6d28a11264cbf05422b4c4",
+      "title": "PCB_DRONE_RPI_SHIELD",
+      "filename": "PCB_DRONE_RPI_SHIELD.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "fd9fc9865419407ab6a588b47dec0227": 2,
+        "8ceac78df16643c58f1cf73db75042ba": 1,
+        "d2c6f1d28d284f90a4924ff396444390": 1,
+        "7198a63e8f354fc899147ba3afe0aa6d": 1,
+        "9e4a1655fce44826888447e81a22baa7": 1
+      },
+      "BOM": [],
+      "updateTime": 1687114021,
+      "createTime": 1685878063,
+      "histories": [],
+      "created_at": "2023-06-04 12:27:43",
+      "updated_at": "2023-06-18 19:47:01"
+    }
+  ],
+  "sort": [
+    "1102440f53dab0e0b9180f8aaeeb0584",
+    "ce87e4ceb5f418c4a8fee2272c7d182f"
+  ],
+  "title": "DRONE_RPI_SHIELD",
+  "foldername": "DRONE_RPI_SHIELD",
+  "schfilename": "DRONE_RPI_SHIELD.json",
+  "schfilemtime": 1687113839378
+}
