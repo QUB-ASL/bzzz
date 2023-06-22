@@ -3,13 +3,13 @@
 # NOTE: for now, we are just passing dummy values
 
 from filters import median_filter
-from time import time_ns, sleep, time
+from time import time_ns, sleep
 from datetime import datetime
 import VL53L0X
 import os 
 
 class TimeOfFlightSensor:
-    def __init__(self, num_latest_readings_to_keep: int = 5, use_sleep=False):
+    def __init__(self, num_latest_readings_to_keep: int = 3, use_sleep=False):
         self._current_altitude = None
         self._altitude_readings_list = None
         self._altitude_readings_list_current_index = None
@@ -20,7 +20,7 @@ class TimeOfFlightSensor:
         self.use_sleep = use_sleep
         self._init_ToF_sensor()
 
-    def _init_ToF_sensor(self, address=0x29, mode=VL53L0X.Vl53l0xAccuracyMode.BEST):
+    def _init_ToF_sensor(self, address=0x29, mode=VL53L0X.Vl53l0xAccuracyMode.HIGH_SPEED):
         print("Init ToF, wait.....")
         self.tof = VL53L0X.VL53L0X(i2c_bus=1,i2c_address=address)        
         self.tof.open()
@@ -88,11 +88,12 @@ class TimeOfFlightSensor:
 
 if __name__ == "__main__":
     tof = TimeOfFlightSensor(use_sleep=True)
+    time_before_loop_starts = time_ns()
     with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
         for i in range(100):
             tof.update_altitude()
             print("Altitude in mm: %d   itr: %d" %(tof.altitude, i))
-            file.write("%f, %f\n"%(i, tof.altitude))
+            file.write("%f, %f, %f\n"%((time_ns() - time_before_loop_starts)/1000000, i, tof.altitude))
     tof.kill_ToF()  
 
     
