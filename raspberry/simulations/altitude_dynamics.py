@@ -3,23 +3,23 @@ import numpy as np
 class AltitudeDynamics:
     """The discrete time altitude dynamics of a quad-rotor
     """
-    def __init__(self, sampling_time: float = 0.01, z0: float = 0, vz_0: float = 0, az_0: float = 0, alpha: float = 1, c: float = -9.81):
+    def __init__(self, sampling_time: float = 0.01, initial_altitude: float = 0, vz_0: float = 0, az_0: float = 0, alpha: float = 1, c: float = -9.81):
         """Instantiate altitude dynamics class.
         :param sampling_time: Sampling time of the discrete time system in seconds, defaults to 0.01.
-        :param z0: Initial altitude of the quad-rotor in meters, defaults to 0.
+        :param initial_altitude: Initial altitude of the quad-rotor in meters, defaults to 0.
         :param vz_0: Initial velocity along global z-axis of the quad-rotor in m/s, defaults to 0.
         :param az_0: Initial accleration along global z-axis of the quad-rotor in m/s^2, defaults to 0.
         :param alpha: constant of multipilcation to convert reference thrust into accleration in Kg^-1, defaults to 1.
         :param c: Any constant accleration on the drone along the global z-axis (like accleration due to gravity), defaults to -9.81.
         """
         self.Ts = sampling_time
-        self.z0 = z0
+        self.initial_altitude = initial_altitude
         self.vz_0 = vz_0
         self.az_0 = az_0
         self.alpha = alpha
         self.c = c
 
-        self.z = [z0, ]
+        self.z = [initial_altitude, ]
         self.vz = [vz_0, ]
         self.az = [az_0, ]
 
