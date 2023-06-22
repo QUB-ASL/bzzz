@@ -13,17 +13,17 @@ time_stamps = [i*sampling_time for i in range(num_data_points_collected)]
 
 # Simulate the dynamics and fake the measurement data for testing the least squares estimations
 dynamics = AltitudeDynamics(sampling_time=sampling_time)
-Tref_t = [20*np.sin(0.1*t) + 20*np.cos(1*t) for t in range(num_data_points_collected)]
+thrust_ref_t = [20*np.sin(0.1*t) + 20*np.cos(1*t) for t in range(num_data_points_collected)]
 for i in range(num_data_points_collected - 1):
-    dynamics.simulate(Tref_t=Tref_t[i])
+    dynamics.simulate(thrust_ref_t=thrust_ref_t[i])
 
 
-kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=Tref_t[0], cache_values=True)
+kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=thrust_ref_t[0], cache_values=True)
 
 y_t = np.zeros(num_data_points_collected)
 for i in range(num_data_points_collected):
-    y_t[i] = dynamics.z[i] + np.random.normal(0, 0.1)
-    kf.run(Tref_t[i], y_t[i]).reshape(4, )
+    y_t[i] = dynamics.altitude_cache[i] + np.random.normal(0, 0.1)
+    kf.run(thrust_ref_t[i], y_t[i]).reshape(4, )
 
 
 x_hat_t, _ = kf.MU_cache()
