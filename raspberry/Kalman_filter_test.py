@@ -18,7 +18,7 @@ for i in range(num_data_points_collected - 1):
     dynamics.simulate(Tref_t=Tref_t[i])
 
 
-kf = KalmanFilter(initial_Tt=Tref_t[0], cache_values=True)
+kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=Tref_t[0], cache_values=True)
 
 y_t = np.zeros(num_data_points_collected)
 for i in range(num_data_points_collected):
