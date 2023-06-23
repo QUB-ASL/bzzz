@@ -9,7 +9,7 @@ import VL53L0X
 import os 
 
 class TimeOfFlightSensor:
-    def __init__(self, num_latest_readings_to_keep: int = 3, use_sleep=False):
+    def __init__(self, num_latest_readings_to_keep: int = 3, use_sleep=False, cache_altitude = False):
         self._current_altitude = None
         self._altitude_readings_list = None
         self._altitude_readings_list_current_index = None
@@ -19,6 +19,9 @@ class TimeOfFlightSensor:
         self._last_update_time = None
         self.use_sleep = use_sleep
         self._init_ToF_sensor()
+
+        self.cache_altitude = cache_altitude
+        self._altitude_cache = []
 
     def _init_ToF_sensor(self, address=0x29, mode=VL53L0X.Vl53l0xAccuracyMode.HIGH_SPEED):
         print("Init ToF, wait.....")
@@ -41,10 +44,13 @@ class TimeOfFlightSensor:
     def altitude(self):
         self.update_altitude()
         return self._current_altitude
-    
+
     @altitude.setter
     def altitude(self, val):
         self._current_altitude = val
+
+    def altitude_cache(self):
+        return self._altitude_cache
 
     def _get_current_ToF_measurement(self):
         # TODO: add code to get measurement from sensor
@@ -68,6 +74,8 @@ class TimeOfFlightSensor:
                 temp = self._current_altitude
                 if self._update_ToF() != -1:
                     self._previous_altitude = temp
+                    if self.cache_altitude:
+                        self._altitude_cache.append(self._current_altitude)
                 else:
                     print("ToF sensor returning -ve distance....\nretrying....")
                 self._last_update_time = time_ns()
@@ -75,6 +83,8 @@ class TimeOfFlightSensor:
             temp = self._current_altitude
             if self._update_ToF() != -1:
                 self._previous_altitude = temp
+                if self.cache_altitude:
+                    self._altitude_cache.append(self._current_altitude)
             else:
                 print("ToF sensor returning -ve distance....\nretrying....")
             sleep(self.timing/1000000)
@@ -84,6 +94,8 @@ class TimeOfFlightSensor:
         self.tof.stop_ranging()
         self.tof.close()
         print("Killed Tof.")
+
+
 
 
 if __name__ == "__main__":

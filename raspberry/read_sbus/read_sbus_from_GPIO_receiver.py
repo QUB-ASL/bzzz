@@ -2,7 +2,6 @@ import read_sbus_from_GPIO
 import time
 import serial
 from radioDataParser import RadioDataParser
-import threading
 
 
 SBUS_PIN = 25  # pin where sbus wire is plugged in
@@ -81,7 +80,7 @@ def print_receive_data_from_ESP():
         print(received_data)
 
 
-def get_radio_data_parse_and_send_to_ESP():
+def get_radio_data_parse_and_send_to_ESP(return_channel_date = False):
     """Read the radio data, process it, format it into a string, and send it via UART.
     """
     try:
@@ -89,6 +88,8 @@ def get_radio_data_parse_and_send_to_ESP():
         if _is_connected:
             channel_data = parse_radio_data(channel_data)
             send_data_to_ESP(channel_data)
+            if return_channel_date: 
+                return channel_data
     except KeyboardInterrupt:
         # cleanup cleanly after ctrl-c
         reader.end_listen()
@@ -98,28 +99,3 @@ def get_radio_data_parse_and_send_to_ESP():
         reader.end_listen()
         raise
 
-
-def run_thread_every_given_interval(interval,
-                                    function_to_run,
-                                    num_times_to_run=0):
-    """
-    Create a thread of the given function, attach a timer 
-    to it and run it everytime the interval is elapsed.
-
-    :param interval: Interval between each run in seconds. 
-        Note: the given interval must be larger than worst 
-        execution time of the given function.
-    :param function_to_run: Function handle which is to be run.
-    :param num_times_to_run: Number of times to run the thread before killing it
-        0 means that the thread is called as long as the program doesn't 
-        terminate, defaults to 0.
-    """
-    if num_times_to_run != 1:
-        threading.Timer(interval, run_thread_every_given_interval, [
-                        interval, function_to_run, num_times_to_run if num_times_to_run else 0]).start()
-    function_to_run()
-
-
-# Run the get_radio_data_parse_and_send_to_ESP funtionn @ 50Hz
-run_thread_every_given_interval(0.02, get_radio_data_parse_and_send_to_ESP)
-run_thread_every_given_interval(0.02, print_receive_data_from_ESP)
