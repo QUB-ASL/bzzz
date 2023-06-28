@@ -2,7 +2,7 @@
 # TODO: add proper Doc strings
 # NOTE: for now, we are just passing dummy values
 
-from filters import median_filter
+from bzzz.sensors.filters import median_filter
 from time import time_ns, sleep
 from datetime import datetime
 import VL53L0X
