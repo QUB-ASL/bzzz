@@ -18,10 +18,11 @@ class TimeOfFlightSensor:
         self._previous_altitude = None
         self._last_update_time = None
         self.use_sleep = use_sleep
-        self._init_ToF_sensor()
 
         self.cache_altitude = cache_altitude
         self._altitude_cache = []
+
+        self._init_ToF_sensor()
 
     def _init_ToF_sensor(self, address=0x29, mode=VL53L0X.Vl53l0xAccuracyMode.HIGH_SPEED):
         print("Init ToF, wait.....")
