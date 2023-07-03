@@ -13,16 +13,16 @@ img_ctr_y = None
 while True:
     start = time_ns()
     ret, image = vid.read()
-    img_h, img_w, img_ch = image.shape
-    x_max = img_w//2
-    y_max = img_h//2
-    # cv2.imwrite("raspberry/controllers/tape.png", image)
-
-    # image = cv2.imread('raspberry/controllers/tape.png')
-
-    decodedText, points, _ = qrCodeDetector.detectAndDecode(image)
 
     try:
+        img_h, img_w, img_ch = image.shape
+        x_max = img_w//2
+        y_max = img_h//2
+        # cv2.imwrite("raspberry/controllers/tape.png", image)
+
+        # image = cv2.imread('raspberry/controllers/tape.png')
+
+        decodedText, points, _ = qrCodeDetector.detectAndDecode(image)
         x_tl, y_tl = points[0, 0]
         x_tr, y_tr = points[0, 1]
         x_br, y_br = points[0, 2]
