@@ -17,6 +17,7 @@ def run_thread_every_given_interval(interval,
     """
     if num_times_to_run != 1:
         thread = threading.Timer(interval, run_thread_every_given_interval, [
-                        interval, function_to_run, num_times_to_run if num_times_to_run else 0]).start()
+                        interval, function_to_run, num_times_to_run if num_times_to_run else 0])
+        thread.start()
     function_to_run()
     return thread

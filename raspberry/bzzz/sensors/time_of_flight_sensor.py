@@ -70,8 +70,20 @@ class TimeOfFlightSensor:
         self._current_altitude = median_filter(self._altitude_readings_list, self._num_latest_readings_to_keep)
 
     def update_altitude(self):
+        time_now = time_ns()
+        if self.use_sleep == -1:
+            temp = self._current_altitude
+            if self._update_ToF() != -1:
+                self._previous_altitude = temp
+                if self.cache_altitude:
+                    self._altitude_cache.append(self._current_altitude)
+            else:
+                print("ToF sensor returning -ve distance....\nretrying....")
+            self._last_update_time = time_now
+            return
+
         if not self.use_sleep:
-            if time_ns() - self._last_update_time > self.timing*1000:
+            if time_now - self._last_update_time > self.timing*1000:
                 temp = self._current_altitude
                 if self._update_ToF() != -1:
                     self._previous_altitude = temp
@@ -79,7 +91,7 @@ class TimeOfFlightSensor:
                         self._altitude_cache.append(self._current_altitude)
                 else:
                     print("ToF sensor returning -ve distance....\nretrying....")
-                self._last_update_time = time_ns()
+                self._last_update_time = time_now
         else:
             temp = self._current_altitude
             if self._update_ToF() != -1:

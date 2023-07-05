@@ -16,8 +16,8 @@ class RC:
         self.reader.begin_listen()
 
         # wait until connection is established
-        while (not self.reader.is_connected()):
-            time.sleep(.2)
+        # while (not self.reader.is_connected()):
+        #     time.sleep(.2)
 
         # Note that there will be nonsense data for the first 10ms or so of connection
         # until the first packet comes in.
@@ -74,15 +74,16 @@ class RC:
             return None
 
 
-    def print_receive_data_from_ESP(self):
+    def print_receive_data_from_ESP(self, return_data=False):
         """Read data from ESP32 via UART and print iff data is received.
         """
         received_data = self.receive_data_from_ESP()
         if received_data is not None:
             print(received_data)
+            return received_data
 
 
-    def get_radio_data_parse_and_send_to_ESP(self, return_channel_date = False):
+    def get_radio_data_parse_and_send_to_ESP(self, return_channel_date = False, force_send_fake_data=False, fake_data=""):
         """Read the radio data, process it, format it into a string, and send it via UART.
         """
         try:
@@ -92,6 +93,8 @@ class RC:
                 self.send_data_to_ESP(channel_data)
                 if return_channel_date: 
                     return channel_data
+            if force_send_fake_data:
+                self.send_data_to_ESP(fake_data)
         except KeyboardInterrupt:
             # cleanup cleanly after ctrl-c
             self.reader.end_listen()
