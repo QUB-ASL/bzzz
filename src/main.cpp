@@ -18,6 +18,7 @@ Quaternion initialQuaternion;
 FailSafes failSafes(TX_CONNECTION_TIMEOUT_IN_uS);
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
+float eulerAngles[3];
 
 /**
  * Setup the AHRS
@@ -136,7 +137,7 @@ void loop()
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
-
-  logSerial(LogVerbosityLevel::Debug, "FR: %d FL: %d BL: %d BR: %d",
-            motorFR, motorFL, motorBL, motorBR);
+  ahrs.eulerAngles(eulerAngles);
+  logSerial(LogVerbosityLevel::Debug, "PR: %f %f\n",
+            eulerAngles[1], eulerAngles[2]);
 }
