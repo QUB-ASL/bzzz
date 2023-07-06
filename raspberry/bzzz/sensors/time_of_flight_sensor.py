@@ -9,7 +9,7 @@ import VL53L0X
 import os 
 
 class TimeOfFlightSensor:
-    def __init__(self, num_latest_readings_to_keep: int = 3, use_sleep=False, cache_altitude = False):
+    def __init__(self, num_latest_readings_to_keep: int = 3, use_sleep=False, cache_altitude = False, use_outlier_detection = False, abs_outlier_diff_thres = 500):
         self._current_altitude = None
         self._altitude_readings_list = None
         self._altitude_readings_list_current_index = None
@@ -21,6 +21,9 @@ class TimeOfFlightSensor:
 
         self.cache_altitude = cache_altitude
         self._altitude_cache = []
+
+        self.use_outlier_detection = use_outlier_detection
+        self.__abs_outlier_diff_thres = abs_outlier_diff_thres
 
         self._init_ToF_sensor()
 
@@ -41,6 +44,14 @@ class TimeOfFlightSensor:
         self.update_altitude()
         print("Init ToF, Done!")
 
+    @property
+    def abs_outlier_diff_thres(self):
+        return self.__abs_outlier_diff_thres
+
+    @abs_outlier_diff_thres.setter
+    def abs_outlier_diff_thres(self, threshold):
+        self.__abs_outlier_diff_thres = threshold
+        
     @property
     def altitude(self):
         self.update_altitude()
