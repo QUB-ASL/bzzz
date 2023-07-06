@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from math import pi
 
@@ -12,7 +12,7 @@ from time import time_ns
 from bzzz.scheduler import Scheduler
 
 if __name__ == '__main__':
-    tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=5, cache_altitude=True)
+    tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=1, cache_altitude=True)
     rc = bzzz.read_sbus.RC()
 
     scheduler = Scheduler(use_threading=False)
@@ -57,7 +57,7 @@ if __name__ == '__main__':
                     pitch_cache.append(float(pr_data[1]))
                     roll_cache.append(float(pr_data[2]))
                     temp = tof.altitude
-                    print(temp)
+                    print(temp, float(pr_data[1])*180/pi, float(pr_data[2])*180/pi)
                     time_cache.append((time_ns() - time_before_thread_starts)/1000000)
                 except:
                     pass
@@ -87,9 +87,10 @@ if __name__ == '__main__':
             plts[0].set_ylabel("altitude Z")
             plts[1].set_ylabel("Pitch")
             plts[2].set_ylabel("Roll")
-            plt.show()
+            plt.savefig("ToF_data_plot_with_pitch_and_roll.svg")
+            # plt.show()
+            tof.kill_ToF()
             break
-            # tof.kill_ToF()
 
     
     
