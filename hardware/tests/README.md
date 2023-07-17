@@ -18,6 +18,7 @@ In this test the operator will hear a series of beeps from the buzzer:
 - 4 beeps = RC and RaspberryPi connected.
 - 2 long beeps = Prepered for arming.
 - 6 beeps = Motors armed.
+  
 [comment]: <> (This is a comment, it will not be included)
 To run the test, copy and paste the `hw_test_motors_with_arm_kill.cpp` into main.
 
