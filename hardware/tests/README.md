@@ -19,7 +19,7 @@ In this test the operator will hear a series of beeps from the buzzer:
   3. 2 long beeps = Prepered for arming.
   4. 6 beeps = Motors armed.
 </a>
-To run the test, copy and paste the ``hw_test_motors_with_arm_kill.cpp`` into main.
+To run the test, copy and paste the `hw_test_motors_with_arm_kill.cpp` into main.
 
 ## Motor test with RC
 In this test the motors respond to the throttle commands from the RC.
