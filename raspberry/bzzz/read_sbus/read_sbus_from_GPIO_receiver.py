@@ -78,9 +78,11 @@ class RC:
         """Read data from ESP32 via UART and print iff data is received.
         """
         received_data = self.receive_data_from_ESP()
+        if return_data:
+            return received_data
+
         if received_data is not None:
             print(received_data)
-            return received_data
 
 
     def get_radio_data_parse_and_send_to_ESP(self, return_channel_date = False, force_send_fake_data=False, fake_data=""):

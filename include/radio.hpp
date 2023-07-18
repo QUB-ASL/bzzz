@@ -75,10 +75,15 @@ namespace bzzz
 
         /**
          * @brief Read the receiver data sent from Pi
-         *
+         * @param q1
+         * @param q2
+         * @param q3
+         * @param ax
+         * @param ay
+         * @param az
          * @return true iff new data was received from RPi
          */
-        bool readPiData(float *IMUData);
+        bool readPiData(float q1, float q2, float q3, float ax, float ay, float az);
 
         /**
          * @brief pitch reference from RC in rad
@@ -152,9 +157,15 @@ namespace bzzz
         void waitForArmCommand();
 
         /**
-         * 
+         * @brief send IMU data quaternions and acclerometer values to Pi
+         * @param q1
+         * @param q2
+         * @param q3
+         * @param ax
+         * @param ay
+         * @param az
         */
-        void sendIMUDataToPi(float *IMUData);
+        void sendIMUDataToPi(float q1, float q2, float q3, float ax, float ay, float az);
 
     }; /* end of class Radio */
 

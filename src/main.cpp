@@ -80,7 +80,7 @@ void loop()
   float angularVelocityCorrected[3];
 
   // if radio data received update the last data read time.
-  if (radio.readPiData(IMUData))
+  if (radio.readPiData(IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5]))
   {
     failSafes.setLastRadioReceptionTime(micros());
   }
@@ -126,13 +126,24 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
+  Serial.println(relativeQuaternion[1]);
   IMUData[0] = relativeQuaternion[1];
   IMUData[1] = relativeQuaternion[2];
   IMUData[2] = relativeQuaternion[3];
-  IMUData[3] = angularVelocityCorrected[0];
-  IMUData[4] = angularVelocityCorrected[1];
-  IMUData[5] = angularVelocityCorrected[2];
+  ahrs.getAcclerometerValues(IMUData + 3);
 
+  // Serial.print("FD: ");
+  // Serial.print(IMUData[0]);
+  // Serial.print(' ');
+  // Serial.print(IMUData[1]);
+  // Serial.print(' ');
+  // Serial.print(IMUData[2]);
+  // Serial.print(' ');
+  // Serial.print(IMUData[3]);
+  // Serial.print(' ');
+  // Serial.print(IMUData[4]);
+  // Serial.print(' ');
+  // Serial.println(IMUData[5]);
   // Throttle from RC to throttle reference
   float throttleRef = radio.throttleReferencePWM();
 

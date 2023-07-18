@@ -38,7 +38,7 @@ namespace bzzz
         this->m_replyWithIMUData = replyWithIMUData;
     };
     
-    bool Radio::readPiData(float *IMUData)
+    bool Radio::readPiData(float q1, float q2, float q3, float ax, float ay, float az)
     {
         String allDataFromPi;
         int data_count = 0;
@@ -81,17 +81,31 @@ namespace bzzz
                 return false;
             }
             m_encodedSwitchesData = m_rawEncodedSwtchsData;
-            this->sendIMUDataToPi(IMUData);
+            if(this->m_replyWithIMUData){
+                this->sendIMUDataToPi(q1, q2, q3, ax, ay, az);
+            }
             return true;
         }
         return false;
     }
 
-    void Radio::sendIMUDataToPi(float *IMUData)
+    void Radio::sendIMUDataToPi(float q1, float q2, float q3, float ax, float ay, float az)
     {
-        String flightData = "FD: " + String(IMUData[0]) + " " + String(IMUData[0]) + " " + String(IMUData[0])
-                            + " " + String(IMUData[0]) + " " + String(IMUData[0]) + " " + String(IMUData[0]); 
-        Serial.println(flightData);
+        Serial.print("FD: ");
+        Serial.print(q1);
+        Serial.print(' ');
+        Serial.print(q2);
+        Serial.print(' ');
+        Serial.print(q3);
+        Serial.print(' ');
+        Serial.print(ax);
+        Serial.print(' ');
+        Serial.print(ay);
+        Serial.print(' ');
+        Serial.println(az);
+        // String flightData = "FD: " + String(q1) + " " + String(q2) + " " + String(q3)
+        //                    + " " + String(ax) + " " + String(ay) + " " + String(az); 
+        // Serial.println(flightData);
     }
 
     float Radio::pitchReferenceAngleRad()
@@ -175,11 +189,11 @@ namespace bzzz
     void Radio::waitForArmCommand()
     {
         float temp[6];
-        readPiData(temp);
+        readPiData(0, 0, 0, 0, 0, 0);
         delay(20);
         while (!armed())
         {
-            readPiData(temp);
+            readPiData(0, 0, 0, 0, 0, 0);
         }
     }
 

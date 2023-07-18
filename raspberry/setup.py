@@ -35,7 +35,7 @@ setup(name=NAME,
     #       exclude=["icasadi", "templates"]),
       include_package_data=True,
       install_requires=[
-          'smbus', 'pigpio', 'bitarray', 'pyserial', 'VL53L0X'
+          'smbus', 'pigpio', 'bitarray', 'pyserial', 'VL53L0X', 'pandas', 'numpy'
       ],
        dependency_links = [
          "git+https://github.com/pimoroni/VL53L0X-python.git",
