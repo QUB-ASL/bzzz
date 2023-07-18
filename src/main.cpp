@@ -11,14 +11,14 @@
 using namespace bzzz;
 
 MotorDriver motorDriver;
-Radio radio;
+Radio radio(true);
 AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
 FailSafes failSafes(TX_CONNECTION_TIMEOUT_IN_uS);
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
-float eulerAngles[3];
+float IMUData[6];
 
 /**
  * Setup the AHRS
@@ -80,7 +80,7 @@ void loop()
   float angularVelocityCorrected[3];
 
   // if radio data received update the last data read time.
-  if (radio.readPiData())
+  if (radio.readPiData(IMUData))
   {
     failSafes.setLastRadioReceptionTime(micros());
   }
@@ -126,6 +126,13 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
+  IMUData[0] = relativeQuaternion[1];
+  IMUData[1] = relativeQuaternion[2];
+  IMUData[2] = relativeQuaternion[3];
+  IMUData[3] = angularVelocityCorrected[0];
+  IMUData[4] = angularVelocityCorrected[1];
+  IMUData[5] = angularVelocityCorrected[2];
+
   // Throttle from RC to throttle reference
   float throttleRef = radio.throttleReferencePWM();
 
@@ -137,7 +144,7 @@ void loop()
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
-  ahrs.eulerAngles(eulerAngles);
+
   logSerial(LogVerbosityLevel::Debug, "PR: %f %f\n",
-            eulerAngles[1], eulerAngles[2]);
+            IMUData[1], IMUData[2]);
 }

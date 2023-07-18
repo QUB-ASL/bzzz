@@ -34,9 +34,11 @@
 
 namespace bzzz
 {
-    Radio::Radio(){};
+    Radio::Radio(bool replyWithIMUData /*=flase*/){
+        this->m_replyWithIMUData = replyWithIMUData;
+    };
     
-    bool Radio::readPiData(void)
+    bool Radio::readPiData(float *IMUData)
     {
         String allDataFromPi;
         int data_count = 0;
@@ -79,9 +81,17 @@ namespace bzzz
                 return false;
             }
             m_encodedSwitchesData = m_rawEncodedSwtchsData;
+            this->sendIMUDataToPi(IMUData);
             return true;
         }
         return false;
+    }
+
+    void Radio::sendIMUDataToPi(float *IMUData)
+    {
+        String flightData = "FD: " + String(IMUData[0]) + " " + String(IMUData[0]) + " " + String(IMUData[0])
+                            + " " + String(IMUData[0]) + " " + String(IMUData[0]) + " " + String(IMUData[0]); 
+        Serial.println(flightData);
     }
 
     float Radio::pitchReferenceAngleRad()
@@ -164,11 +174,12 @@ namespace bzzz
 
     void Radio::waitForArmCommand()
     {
-        readPiData();
+        float temp[6];
+        readPiData(temp);
         delay(20);
         while (!armed())
         {
-            readPiData();
+            readPiData(temp);
         }
     }
 

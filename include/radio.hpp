@@ -64,15 +64,21 @@ namespace bzzz
          */
         int m_encodedSwitchesData;
 
+        /**
+         * Boolean to enable sending IMU data to Pi whenever ESP receives radio data
+         * if True: replies with IMU data;  
+        */
+       bool m_replyWithIMUData;
+
     public:
-        Radio();
+        Radio(bool replyWithIMUData = false);
 
         /**
          * @brief Read the receiver data sent from Pi
          *
          * @return true iff new data was received from RPi
          */
-        bool readPiData(void);
+        bool readPiData(float *IMUData);
 
         /**
          * @brief pitch reference from RC in rad
@@ -144,6 +150,11 @@ namespace bzzz
          * Wait until the arm switch is at the ON position
          */
         void waitForArmCommand();
+
+        /**
+         * 
+        */
+        void sendIMUDataToPi(float *IMUData);
 
     }; /* end of class Radio */
 
