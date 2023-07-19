@@ -13,12 +13,12 @@ from time import time_ns
 from bzzz.scheduler import Scheduler
 
 if __name__ == '__main__':
-    tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=1, cache_altitude=True)
+    tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=1, cache_altitude=True, use_outlier_detection=True, abs_outlier_diff_thres=500)
     rc = bzzz.read_sbus.RC()
 
     scheduler = Scheduler(use_threading=False)
 
-    num_run = [10]
+    num_run = [500]
     time_cache = []
 
     quat_cache = []
@@ -98,20 +98,20 @@ if __name__ == '__main__':
                     yaw_cache.append(euler[0])
                     pitch_cache.append(euler[1])
                     roll_cache.append(euler[2])
-                    
-
-                    accelrometer_cache.append(acc)
+                    accelrometer_cache.append(acc[:])
 
                     temp = tof.altitude
+                    if temp == -1:
+                        print("ToF outlier or -ve distance detected, discarded the measurement.")
                     time_cache.append((time_ns() - time_before_thread_starts)/1000000)
                 except Exception as e:
-                    print(e)
+                    print("Exception in main.py: ", e)
                     pass
     def rad2deg(lst):
         return [i*180/pi for i in lst]
     time_before_thread_starts = time_ns()
-    scheduler.schedule("print_ESP_data", print_ESP_data, 10, 10000)
-    scheduler.schedule("process_radio_data", process_radio_data, 10, 10000)
+    scheduler.schedule("print_ESP_data", print_ESP_data, function_call_frequency=50, function_call_count=10000)
+    scheduler.schedule("process_radio_data", process_radio_data, function_call_frequency=50, function_call_count=10000)
     while True:
         # print_ESP_data()
         # process_radio_data()
@@ -148,7 +148,7 @@ if __name__ == '__main__':
             plts[2, 0].set_ylabel("Pitch")
             plts[3, 0].set_ylabel("Roll")
 
-            plts[0, 1].plot(time_cache, tof.altitude_cache()[:len(time_cache)])
+            plts[0, 1].plot(time_cache[:len(tof.altitude_cache())], tof.altitude_cache()[:-1])
             plts[1, 1].plot(time_cache, accelrometer_cache[:len(time_cache), 0])
             plts[2, 1].plot(time_cache, accelrometer_cache[:len(time_cache), 1])
             plts[3, 1].plot(time_cache, accelrometer_cache[:len(time_cache), 2])

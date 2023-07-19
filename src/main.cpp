@@ -126,7 +126,6 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  Serial.println(relativeQuaternion[1]);
   IMUData[0] = relativeQuaternion[1];
   IMUData[1] = relativeQuaternion[2];
   IMUData[2] = relativeQuaternion[3];

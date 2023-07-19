@@ -149,9 +149,9 @@ namespace bzzz
     
     void AHRS::getAcclerometerValues(float *accValues)
     {
-        accValues[0] = m_imu.getLinearAccX();
-        accValues[1] = m_imu.getLinearAccY();
-        accValues[2] = m_imu.getLinearAccZ();
+        accValues[0] = m_imu.getAccX();
+        accValues[1] = m_imu.getAccY();
+        accValues[2] = m_imu.getAccZ();
     }
 
 #ifdef BZZZ_DEBUG
