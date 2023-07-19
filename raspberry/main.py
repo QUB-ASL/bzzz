@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     scheduler = Scheduler(use_threading=False)
 
-    num_run = [500]
+    num_run = [9000]
     time_cache = []
 
     quat_cache = []
@@ -34,6 +34,8 @@ if __name__ == '__main__':
     quat = [0., 0., 0.]
     acc = [0., 0., 0.]
     euler = [0., 0., 0.]
+
+    is_data_saved = False
 
     _, plts = plt.subplots(4, 2)
 
@@ -57,9 +59,9 @@ if __name__ == '__main__':
 
         return euler
 
-    def process_radio_data():
-        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0")
-        throttle_ref_cache.append(channel_data.strip().split(',')[3])
+    # def process_radio_data():
+        # channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0")
+        # throttle_ref_cache.append(channel_data.strip().split(',')[3])
         # if rc.parser.kill():
             # altitude_cache_df = pd.DataFrame([[t, Tr, alt] for t, Tr, alt in zip(time_cache, throttle_ref_cache, tof.altitude_cache())])
             # altitude_cache_df.to_csv("/home/bzzz/Desktop/data_log.csv", index=False, header=False)
@@ -70,13 +72,18 @@ if __name__ == '__main__':
             # scheduler.kill("process_radio_data")
             # exit(0)
     
-    def print_ESP_data():
+    def process_data():
+        # process radio data
+        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0")
+
+        # process ESP data
         flight_data = rc.print_receive_data_from_ESP(return_data=True)
         # print(flight_data)
         if flight_data is not None and "FD:" in flight_data:
             flight_data = flight_data.strip().split()
             if len(flight_data) == 7:
                 try:
+                    throttle_ref_cache.append(channel_data.strip().split(',')[3])
                     q1 = float(flight_data[1])
                     q2 = float(flight_data[2])
                     q3 = float(flight_data[3])
@@ -110,27 +117,28 @@ if __name__ == '__main__':
     def rad2deg(lst):
         return [i*180/pi for i in lst]
     time_before_thread_starts = time_ns()
-    scheduler.schedule("print_ESP_data", print_ESP_data, function_call_frequency=50, function_call_count=10000)
-    scheduler.schedule("process_radio_data", process_radio_data, function_call_frequency=50, function_call_count=10000)
+    # scheduler.schedule("print_ESP_data", print_ESP_data, function_call_frequency=50, function_call_count=10000)
+    scheduler.schedule("process_data", process_data, function_call_frequency=50, function_call_count=10000)
     while True:
         # print_ESP_data()
         # process_radio_data()
         scheduler.run()
-        if num_run[0] == 0:
-            accelrometer_cache = np.array(accelrometer_cache)
+        if not is_data_saved and num_run[0] == 0:
+            is_data_saved = True
+            accelrometer_cache_ = np.array(accelrometer_cache)
             # altitude_logger_thread = bzzz.thread_this.run_thread_every_given_interval(0.02, run)
-            scheduler.kill("process_radio_data")
-            scheduler.kill("print_ESP_data")
+            # scheduler.kill("process_radio_data")
+            # scheduler.kill("process_data")
 
             data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az] for t, Tr, y, p, r, alt, ax, ay, az 
                                           in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache, 
-                                                 tof.altitude_cache(), accelrometer_cache[:, 0], accelrometer_cache[:, 1], accelrometer_cache[:, 2])])
+                                                 tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[:, 1], accelrometer_cache_[:, 2])])
             data_cache_df.to_csv("/home/bzzz/Desktop/data_log.csv", index=False, header=False)
             # with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
             #    file.write("time_stamps = %f,\n\n\n Throttle_reference = %f,\n\n\n altitude_cache = %f\n"%(time_cache, throttle_ref_cache, tof.altitude_cache()))
             
-            print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelrometer_cache}")
-            plts[0, 0].plot(time_cache, throttle_ref_cache[:len(time_cache)])
+            print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelrometer_cache_}")
+            """plts[0, 0].plot(time_cache, throttle_ref_cache[:len(time_cache)])
             plts[1, 0].plot(time_cache, rad2deg(yaw_cache[:len(time_cache)+1]))
             plts[2, 0].plot(time_cache, rad2deg(pitch_cache[:len(time_cache)+1]))
             plts[3, 0].plot(time_cache, rad2deg(roll_cache[:len(time_cache)+1]))
@@ -149,9 +157,9 @@ if __name__ == '__main__':
             plts[3, 0].set_ylabel("Roll")
 
             plts[0, 1].plot(time_cache[:len(tof.altitude_cache())], tof.altitude_cache()[:-1])
-            plts[1, 1].plot(time_cache, accelrometer_cache[:len(time_cache), 0])
-            plts[2, 1].plot(time_cache, accelrometer_cache[:len(time_cache), 1])
-            plts[3, 1].plot(time_cache, accelrometer_cache[:len(time_cache), 2])
+            plts[1, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 0])
+            plts[2, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 1])
+            plts[3, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 2])
             
             plts[0, 1].legend(["Altitude mm"])
             plts[1, 1].legend(["Acc_x  g"])
@@ -166,11 +174,11 @@ if __name__ == '__main__':
             plts[2, 1].set_ylabel("Acc_y")
             plts[3, 1].set_ylabel("Acc_z")
 
-            plt.savefig("ToF_data_plot_with_pitch_and_roll.svg")
+            plt.savefig("ToF_data_plot_with_pitch_and_roll.svg")"""
             # plt.show()
             tof.kill_ToF()
 
-            break
+            # break
 
     
     
