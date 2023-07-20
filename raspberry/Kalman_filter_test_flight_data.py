@@ -10,7 +10,7 @@ from estimators.altitude_Kalman_filter import KalmanFilter
 
 # load collected flight data
 flight_data = pd.read_csv("total_flight_data.csv", header=None).to_numpy(copy=True)
-Tref_t = flight_data[:, 1]
+Tref_t = (flight_data[:, 1] - 1000)/1000
 altitude_measurements_t = flight_data[:, 5]
 
 num_data_points_collected = len(Tref_t)
