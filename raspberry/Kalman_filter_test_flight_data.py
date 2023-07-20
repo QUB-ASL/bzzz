@@ -18,7 +18,7 @@ sampling_frequency = 50
 sampling_time = 1./sampling_frequency
 time_stamps = [i*sampling_time for i in range(num_data_points_collected)]
 
-kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=Tref_t[0], x_tilde_0=np.array([[0], [0], [-0.001], [1.534]]), cache_values=True)
+kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=Tref_t[0], x_tilde_0=np.array([[0], [0], [-0.938], [0.403]]), cache_values=True)
 
 y_t = np.zeros(num_data_points_collected)
 for i in range(num_data_points_collected):
