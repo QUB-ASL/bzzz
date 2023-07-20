@@ -13,9 +13,9 @@ class KalmanFilter:
         self.__C = np.array([[1, 0, 0, 0]])
 
         # Process noise
-        self.__Q = np.eye(4, 4)*10**-5
+        self.__Q = np.diagflat([1e-4, 1, 0, 0])
         # Measurement noise
-        self.__R = 10**-3
+        self.__R = 9
 
         # initial conditions
         self.__x_hat_0_minus1 = x_tilde_0
