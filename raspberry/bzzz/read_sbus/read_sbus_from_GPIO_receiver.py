@@ -93,10 +93,10 @@ class RC:
             if _is_connected:
                 channel_data = self.parse_radio_data(channel_data)
                 self.send_data_to_ESP(channel_data)
-                if return_channel_date: 
-                    return channel_data
             if force_send_fake_data:
                 self.send_data_to_ESP(fake_data)
+            if return_channel_date: 
+                return channel_data
         except KeyboardInterrupt:
             # cleanup cleanly after ctrl-c
             self.reader.end_listen()

@@ -4,6 +4,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from math import pi, atan2, sqrt
 import numpy as np
+from datetime import datetime
 
 
 import bzzz.thread_this
@@ -36,6 +37,7 @@ if __name__ == '__main__':
     euler = [0., 0., 0.]
 
     is_data_saved = False
+    is_data_log_kill = [False]
 
     _, plts = plt.subplots(4, 2)
 
@@ -83,7 +85,9 @@ if __name__ == '__main__':
             flight_data = flight_data.strip().split()
             if len(flight_data) == 7:
                 try:
+                    is_data_log_kill[0] = rc.parser.kill()
                     throttle_ref_cache.append(channel_data.strip().split(',')[3])
+			print(throttle_ref_cache[-1])
                     q1 = float(flight_data[1])
                     q2 = float(flight_data[2])
                     q3 = float(flight_data[3])
@@ -123,17 +127,18 @@ if __name__ == '__main__':
         # print_ESP_data()
         # process_radio_data()
         scheduler.run()
-        if not is_data_saved and num_run[0] == 0:
+        if not is_data_saved and (num_run[0] == 0 or is_data_log_kill[0]):
+            print("saving data wait....")
             is_data_saved = True
             accelrometer_cache_ = np.array(accelrometer_cache)
             # altitude_logger_thread = bzzz.thread_this.run_thread_every_given_interval(0.02, run)
             # scheduler.kill("process_radio_data")
             # scheduler.kill("process_data")
-
+            date_time_now = datetime.now()
             data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az] for t, Tr, y, p, r, alt, ax, ay, az 
                                           in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache, 
                                                  tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[:, 1], accelrometer_cache_[:, 2])])
-            data_cache_df.to_csv("/home/bzzz/Desktop/data_log.csv", index=False, header=False)
+            data_cache_df.to_csv(f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_{date_time_now.hour}:{date_time_now.minute}:{date_time_now.second}.csv", index=False, header=False)
             # with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
             #    file.write("time_stamps = %f,\n\n\n Throttle_reference = %f,\n\n\n altitude_cache = %f\n"%(time_cache, throttle_ref_cache, tof.altitude_cache()))
             
@@ -177,7 +182,7 @@ if __name__ == '__main__':
             plt.savefig("ToF_data_plot_with_pitch_and_roll.svg")"""
             # plt.show()
             tof.kill_ToF()
-
+            print("Saving done!")
             # break
 
     
