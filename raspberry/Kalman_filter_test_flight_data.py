@@ -10,11 +10,11 @@ from estimators.altitude_Kalman_filter import KalmanFilter
 
 # load collected flight data
 flight_data = pd.read_csv("testdata.csv", header=None).to_numpy(copy=True)
-Tref_t = (flight_data[:, 1] - 1000)/1000
-altitude_measurements_t = flight_data[:, 5]
+Tref_t = (flight_data[:, 1] - 1000)/850
+altitude_measurements_t = flight_data[:, 5]/1000
 acc_imu = flight_data[:, -1]
 
-indices_of_actual_flight = altitude_measurements_t > 300 
+indices_of_actual_flight = altitude_measurements_t > 0.01
 
 Tref_t = Tref_t[indices_of_actual_flight]
 altitude_measurements_t = altitude_measurements_t[indices_of_actual_flight]
@@ -25,7 +25,7 @@ sampling_frequency = 50
 sampling_time = 1./sampling_frequency
 time_stamps = [i*sampling_time for i in range(num_data_points_collected)]
 
-kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=Tref_t[0], x_tilde_0=np.array([[0], [0], [-447.849087], [189.015980]]), cache_values=True)
+kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=Tref_t[0], x_tilde_0=np.array([[0], [0], [3], [-2]]), cache_values=True)
 
 y_t = np.zeros(num_data_points_collected)
 for i in range(num_data_points_collected):

@@ -13,7 +13,7 @@ class KalmanFilter:
         self.__C = np.array([[1, 0, 0, 0]])
 
         # Process noise
-        self.__Q = np.diagflat([1e-4, 1, 0, 0])
+        self.__Q = np.diagflat([1e-4, 1, 3*9.8, 9.8])
         # Measurement noise
         self.__R = 9
 
@@ -56,8 +56,10 @@ class KalmanFilter:
             self.__cache_TU_values()
 
     def __update_At(self):
+        k_t = 0.5*self.__Ts**2
+
         self.__At = np.array([
-            [1, self.__Ts, 0, 0],
+            [1, self.__Ts, 0.5*k_t*self.__Tt, k_t],
             [0, 1, self.__Ts*self.__Tt, self.__Ts],
             [0, 0, 1, 0],
             [0, 0, 0, 1]
