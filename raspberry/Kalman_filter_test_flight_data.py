@@ -12,12 +12,16 @@ from estimators.altitude_Kalman_filter import KalmanFilter
 flight_data = pd.read_csv("testdata.csv", header=None).to_numpy(copy=True)
 Tref_t = (flight_data[:, 1] - 1000)/850
 altitude_measurements_t = flight_data[:, 5]/1000
+pitch_measurements = flight_data[:, 3]
+roll_measurements = flight_data[:, 4]
 acc_imu = flight_data[:, -1]
 
 indices_of_actual_flight = altitude_measurements_t > 0.01
 
 Tref_t = Tref_t[indices_of_actual_flight]
 altitude_measurements_t = altitude_measurements_t[indices_of_actual_flight]
+pitch_measurements = pitch_measurements[indices_of_actual_flight]
+roll_measurements = roll_measurements[indices_of_actual_flight]
 acc_imu = acc_imu[indices_of_actual_flight]
 
 num_data_points_collected = len(Tref_t)
@@ -37,7 +41,7 @@ x_hat_t, _ = kf.MU_cache()
 x_hat_t = np.array(x_hat_t).reshape((num_data_points_collected, 4))
 print("alpha hat = %f"%x_hat_t[-1, 2], "\nc hat = %f"%x_hat_t[-1, 3])
 
-fig, sub_plts = plt.subplots(4)
+fig, sub_plts = plt.subplots(5)
 
 sub_plts[0].plot(time_stamps, x_hat_t[:, 0])
 sub_plts[0].plot(time_stamps, y_t)
@@ -62,6 +66,13 @@ sub_plts[3].plot(time_stamps, Tref_t)
 sub_plts[3].set_xlabel("time s")
 sub_plts[3].set_ylabel("Tref_t")
 sub_plts[3].grid(True)
+
+sub_plts[4].plot(time_stamps, pitch_measurements)
+sub_plts[4].plot(time_stamps, roll_measurements)
+sub_plts[4].legend([r"pitch ", r"roll"])
+sub_plts[4].set_xlabel("time s")
+sub_plts[4].set_ylabel("angle m")
+sub_plts[4].grid(True)
 
 # delta_v_t1 = x_hat_t[1:, 1] - x_hat_t[:-1, 1]
 # sub_plts.scatter(Tref_t[:-1], delta_v_t1)
