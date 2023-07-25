@@ -11,13 +11,14 @@
 using namespace bzzz;
 
 MotorDriver motorDriver;
-Radio radio;
+Radio radio(true);
 AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
 FailSafes failSafes(TX_CONNECTION_TIMEOUT_IN_uS);
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
+float IMUData[6];
 
 /**
  * Setup the AHRS
@@ -79,7 +80,7 @@ void loop()
   float angularVelocityCorrected[3];
 
   // if radio data received update the last data read time.
-  if (radio.readPiData())
+  if (radio.readPiData(IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5]))
   {
     failSafes.setLastRadioReceptionTime(micros());
   }
@@ -125,6 +126,24 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
+  Serial.println(relativeQuaternion[1]);
+  IMUData[0] = relativeQuaternion[1];
+  IMUData[1] = relativeQuaternion[2];
+  IMUData[2] = relativeQuaternion[3];
+  ahrs.getAcclerometerValues(IMUData + 3);
+
+  // Serial.print("FD: ");
+  // Serial.print(IMUData[0]);
+  // Serial.print(' ');
+  // Serial.print(IMUData[1]);
+  // Serial.print(' ');
+  // Serial.print(IMUData[2]);
+  // Serial.print(' ');
+  // Serial.print(IMUData[3]);
+  // Serial.print(' ');
+  // Serial.print(IMUData[4]);
+  // Serial.print(' ');
+  // Serial.println(IMUData[5]);
   // Throttle from RC to throttle reference
   float throttleRef = radio.throttleReferencePWM();
 
@@ -137,6 +156,6 @@ void loop()
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
 
-  logSerial(LogVerbosityLevel::Debug, "FR: %d FL: %d BL: %d BR: %d",
-            motorFR, motorFL, motorBL, motorBR);
+  logSerial(LogVerbosityLevel::Debug, "PR: %f %f\n",
+            IMUData[1], IMUData[2]);
 }

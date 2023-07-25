@@ -2,12 +2,14 @@
 # TODO: add proper Doc strings
 # NOTE: for now, we are just passing dummy values
 
-from filters import median_filter
+from bzzz.sensors.filters import median_filter
 from time import time_ns, sleep
+from datetime import datetime
 import VL53L0X
+import os 
 
 class TimeOfFlightSensor:
-    def __init__(self, num_latest_readings_to_keep: int = 5, use_sleep=False):
+    def __init__(self, num_latest_readings_to_keep: int = 3, use_sleep=False, cache_altitude = False, use_outlier_detection = False, abs_outlier_diff_thres = 500):
         self._current_altitude = None
         self._altitude_readings_list = None
         self._altitude_readings_list_current_index = None
@@ -16,9 +18,16 @@ class TimeOfFlightSensor:
         self._previous_altitude = None
         self._last_update_time = None
         self.use_sleep = use_sleep
+
+        self.cache_altitude = cache_altitude
+        self._altitude_cache = []
+
+        self.use_outlier_detection = use_outlier_detection
+        self.__abs_outlier_diff_thres = abs_outlier_diff_thres
+
         self._init_ToF_sensor()
 
-    def _init_ToF_sensor(self, address=0x29, mode=VL53L0X.Vl53l0xAccuracyMode.BEST):
+    def _init_ToF_sensor(self, address=0x29, mode=VL53L0X.Vl53l0xAccuracyMode.HIGH_SPEED):
         print("Init ToF, wait.....")
         self.tof = VL53L0X.VL53L0X(i2c_bus=1,i2c_address=address)        
         self.tof.open()
@@ -36,13 +45,24 @@ class TimeOfFlightSensor:
         print("Init ToF, Done!")
 
     @property
+    def abs_outlier_diff_thres(self):
+        return self.__abs_outlier_diff_thres
+
+    @abs_outlier_diff_thres.setter
+    def abs_outlier_diff_thres(self, threshold):
+        self.__abs_outlier_diff_thres = threshold
+        
+    @property
     def altitude(self):
         self.update_altitude()
         return self._current_altitude
-    
+
     @altitude.setter
     def altitude(self, val):
         self._current_altitude = val
+
+    def altitude_cache(self):
+        return self._altitude_cache
 
     def _get_current_ToF_measurement(self):
         # TODO: add code to get measurement from sensor
@@ -61,18 +81,34 @@ class TimeOfFlightSensor:
         self._current_altitude = median_filter(self._altitude_readings_list, self._num_latest_readings_to_keep)
 
     def update_altitude(self):
+        time_now = time_ns()
+        if self.use_sleep == -1:
+            temp = self._current_altitude
+            if self._update_ToF() != -1:
+                self._previous_altitude = temp
+                if self.cache_altitude:
+                    self._altitude_cache.append(self._current_altitude)
+            else:
+                print("ToF sensor returning -ve distance....\nretrying....")
+            self._last_update_time = time_now
+            return
+
         if not self.use_sleep:
-            if time_ns() - self._last_update_time > self.timing*1000:
+            if time_now - self._last_update_time > self.timing*1000:
                 temp = self._current_altitude
                 if self._update_ToF() != -1:
                     self._previous_altitude = temp
+                    if self.cache_altitude:
+                        self._altitude_cache.append(self._current_altitude)
                 else:
                     print("ToF sensor returning -ve distance....\nretrying....")
-                self._last_update_time = time_ns()
+                self._last_update_time = time_now
         else:
             temp = self._current_altitude
             if self._update_ToF() != -1:
                 self._previous_altitude = temp
+                if self.cache_altitude:
+                    self._altitude_cache.append(self._current_altitude)
             else:
                 print("ToF sensor returning -ve distance....\nretrying....")
             sleep(self.timing/1000000)
@@ -84,15 +120,16 @@ class TimeOfFlightSensor:
         print("Killed Tof.")
 
 
+
+
 if __name__ == "__main__":
     tof = TimeOfFlightSensor(use_sleep=True)
-    for i in range(100):
-        tof.update_altitude()
-        print("Altitude in mm: %d   itr: %d" %(tof.altitude, i))
-    tof.kill_ToF()
-    
+    time_before_loop_starts = time_ns()
+    with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
+        for i in range(100):
+            tof.update_altitude()
+            print("Altitude in mm: %d   itr: %d" %(tof.altitude, i))
+            file.write("%f, %f, %f\n"%((time_ns() - time_before_loop_starts)/1000000, i, tof.altitude))
+    tof.kill_ToF()  
 
-        
-        
-          
     

@@ -3,9 +3,9 @@ import numpy as np
 import pandas as pd
 from math import pi
 
-from simulations.altitude_dynamics import AltitudeDynamics
-from estimators.altitude_Kalman_filter import KalmanFilter
-from controllers.altitude_LQR import LQR
+from bzzz.simulations.altitude_dynamics import AltitudeDynamics
+from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
+from bzzz.controllers.altitude_LQR import LQR
 
 
 
