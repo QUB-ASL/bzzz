@@ -37,6 +37,9 @@ if __name__ == '__main__':
     accelrometer_cache = []
     time_before_thread_starts = 0
 
+    throttle_ref_from_LQR = [0]
+    use_altitude_hold = [False]
+
 
     quat = [0., 0., 0.]
     acc = [0., 0., 0.]
@@ -65,7 +68,11 @@ if __name__ == '__main__':
         return euler
 
     def process_radio_data():
-        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0")
+        if rc.parser.switch_C() == 1:
+            use_altitude_hold = True
+        else:
+            use_altitude_hold = False
+        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0] if use_altitude_hold else -1)
         throttle_ref_cache.append(channel_data.strip().split(',')[3])
         # if rc.parser.kill():
             # altitude_cache_df = pd.DataFrame([[t, Tr, alt] for t, Tr, alt in zip(time_cache, throttle_ref_cache, tof.altitude_cache())])
@@ -84,6 +91,7 @@ if __name__ == '__main__':
             flight_data = flight_data.strip().split()
             if len(flight_data) == 7:
                 try:
+                    Tref_t = float(flight_data[0])
                     q1 = float(flight_data[1])
                     q2 = float(flight_data[2])
                     q3 = float(flight_data[3])
@@ -98,7 +106,7 @@ if __name__ == '__main__':
                     acc[1] = ay
                     acc[2] = az
                     euler = euler_angles([sqrt(1 - quat[0]**2 - quat[1]**2 - quat[2]**2)] + quat)
-                    num_run[0] -= 1
+                    # num_run[0] -= 1
                     print(num_run)
 
                     quat_cache.append(quat)
@@ -107,7 +115,17 @@ if __name__ == '__main__':
                     roll_cache.append(euler[2])
                     accelrometer_cache.append(acc[:])
 
+
                     temp = tof.altitude
+                    
+                    x_est = kf.run(Tref_t, euler[1], euler[2], np.nan if temp == -1 else temp)
+                    z_hat = x_est[0]
+                    v_hat = x_est[1]
+                    alpha_hat = x_est[2]
+                    beta_hat = x_est[3]
+
+                    throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=1, recalculate_dynamics=True)                       
+
                     if temp == -1:
                         print("ToF outlier or -ve distance detected, discarded the measurement.")
                     time_cache.append((time_ns() - time_before_thread_starts)/1000000)

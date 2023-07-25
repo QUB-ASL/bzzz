@@ -34,10 +34,13 @@ class RC:
         return is_connected, packet_age, channel_data
 
 
-    def parse_radio_data(self, channel_data):
+    def parse_radio_data(self, channel_data, over_write_throttle_ref_to=-1):
         # check if data is in range [1000, 2000]
         self.parser.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (
             2000 if int(x) > 2000 else int(x)), channel_data.strip().split(",")))
+        
+        if over_write_throttle_ref_to != -1:
+            self.parser.m_channelData[2] = over_write_throttle_ref_to
         # process and encapsulate the data
         # the output data packet format will be as follows
         # Y_radPs, P_rad, R_rad, T_PWM_MIN2MAX, % trimA, % trimB, % trimC, % trimE, encodedSwitchesData
@@ -85,13 +88,13 @@ class RC:
             print(received_data)
 
 
-    def get_radio_data_parse_and_send_to_ESP(self, return_channel_date = False, force_send_fake_data=False, fake_data=""):
+    def get_radio_data_parse_and_send_to_ESP(self, return_channel_date = False, force_send_fake_data=False, fake_data="", over_write_throttle_ref_to=-1):
         """Read the radio data, process it, format it into a string, and send it via UART.
         """
         try:
             _is_connected, _packet_age, channel_data = self.get_radio_data()
             if _is_connected:
-                channel_data = self.parse_radio_data(channel_data)
+                channel_data = self.parse_radio_data(channel_data, over_write_throttle_ref_to=over_write_throttle_ref_to)
                 self.send_data_to_ESP(channel_data)
                 if return_channel_date: 
                     return channel_data
