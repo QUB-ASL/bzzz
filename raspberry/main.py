@@ -72,7 +72,11 @@ if __name__ == '__main__':
         return euler
 
     def process_radio_data():
-        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0")
+        if rc.parser.switch_C() == 1:
+            use_altitude_hold = True
+        else:
+            use_altitude_hold = False
+        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0] if use_altitude_hold else -1)
         throttle_ref_cache.append(channel_data.strip().split(',')[3])
         # if rc.parser.kill():
             # altitude_cache_df = pd.DataFrame([[t, Tr, alt] for t, Tr, alt in zip(time_cache, throttle_ref_cache, tof.altitude_cache())])
@@ -86,8 +90,14 @@ if __name__ == '__main__':
     
     def process_data():
         # process radio data
-        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0")
-
+        if rc.parser.switch_C() == 1:
+            use_altitude_hold = True
+        else:
+            use_altitude_hold = False
+        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0] if use_altitude_hold else -1)
+        throttle_ref_cache.append(channel_data.strip().split(',')[3])
+        
+        Tref_t = throttle_ref_cache[-1]
         # process ESP data
         flight_data = rc.print_receive_data_from_ESP(return_data=True)
         # print(flight_data)
@@ -120,7 +130,6 @@ if __name__ == '__main__':
 
 
                     temp = tof.altitude
-                    
                     x_est = kf.run(Tref_t, euler[1], euler[2], np.nan if temp == -1 else temp)
                     z_hat = x_est[0]
                     v_hat = x_est[1]
