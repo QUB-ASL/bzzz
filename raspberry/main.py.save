@@ -85,9 +85,8 @@ if __name__ == '__main__':
             flight_data = flight_data.strip().split()
             if len(flight_data) == 7:
                 try:
-                    is_data_log_kill[0] = rc.parser.kill()
-                    throttle_ref_cache.append(channel_data.strip().split(',')[3])
-                    print(throttle_ref_cache[-1])
+                    is_data_log_kill[0] = rc.parser.kill()                    throttle_ref_cache.append(channel_data.strip().split(',')[3])
+		    print(throttle_ref_cache[-1])
                     q1 = float(flight_data[1])
                     q2 = float(flight_data[2])
                     q3 = float(flight_data[3])
