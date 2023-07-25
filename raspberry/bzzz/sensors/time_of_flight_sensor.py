@@ -54,7 +54,9 @@ class TimeOfFlightSensor:
         
     @property
     def altitude(self):
-        self.update_altitude()
+        status = self.update_altitude()
+        if status == -1:
+            return -1
         return self._current_altitude
 
     @altitude.setter
@@ -71,7 +73,7 @@ class TimeOfFlightSensor:
 
     def _update_ToF(self):
         ToF_distance_reading = self._get_current_ToF_measurement()  # dummy value for now, actually should have a proper value
-        if ToF_distance_reading < 0:
+        if ToF_distance_reading < 0 or (self.use_outlier_detection and (abs(ToF_distance_reading - (self._current_altitude if self._current_altitude is not None else 500)) > self.__abs_outlier_diff_thres)):
             return -1
         self._altitude_readings_list[self._altitude_readings_list_current_index] = ToF_distance_reading
         if 0 <= self._altitude_readings_list_current_index < self._num_latest_readings_to_keep - 1:
@@ -90,6 +92,7 @@ class TimeOfFlightSensor:
                     self._altitude_cache.append(self._current_altitude)
             else:
                 print("ToF sensor returning -ve distance....\nretrying....")
+                return -1
             self._last_update_time = time_now
             return
 
@@ -102,6 +105,7 @@ class TimeOfFlightSensor:
                         self._altitude_cache.append(self._current_altitude)
                 else:
                     print("ToF sensor returning -ve distance....\nretrying....")
+                    return -1
                 self._last_update_time = time_now
         else:
             temp = self._current_altitude
@@ -111,6 +115,7 @@ class TimeOfFlightSensor:
                     self._altitude_cache.append(self._current_altitude)
             else:
                 print("ToF sensor returning -ve distance....\nretrying....")
+                return -1
             sleep(self.timing/1000000)
         
     def kill_ToF(self):

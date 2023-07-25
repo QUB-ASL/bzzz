@@ -189,11 +189,11 @@ namespace bzzz
     void Radio::waitForArmCommand()
     {
         float temp[6];
-        readPiData(0, 0, 0, 0, 0, 0);
+        readPiData(-1, -1, -1, -1, -1, -1);
         delay(20);
         while (!armed())
         {
-            readPiData(0, 0, 0, 0, 0, 0);
+            readPiData(-1, -1, -1, -1, -1, -1);
         }
     }
 
