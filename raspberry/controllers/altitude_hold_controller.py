@@ -2,7 +2,7 @@
 
 from sensors.pressure_sensor import PressureSensor as PS
 from sensors.time_of_flight_sensor import TimeOfFlightSensor as ToF
-from standard_controllers import PD_controller
+# from standard_controllers import PD_controller
 from altitude_LQR import LQR
 
 class AltitudeHoldController:

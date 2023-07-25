@@ -16,12 +16,12 @@ class LQR:
             [0, 1]
         ])
         self.__B_t = np.array([
-            [0],
+            [0.5*(self.__Ts**2)*self.__alpha_t],
             [self.__Ts*self.__alpha_t]
         ])
         self.__C = np.array([[1, 0]])
         self.__d_t = np.array([
-            [0],
+            [0.5*(self.__Ts**2)*self.__beta_t],
             [self.__Ts*self.__beta_t]
         ])
 
@@ -48,12 +48,12 @@ class LQR:
             [0, 1]
         ])
         self.__B_t = np.array([
-            [0],
+            [0.5*(self.__Ts**2)*self.__alpha_t],
             [self.__Ts*self.__alpha_t]
         ])
         self.__C = np.array([[1, 0]])
         self.__d_t = np.array([
-            [0],
+            [0.5*(self.__Ts**2)*self.__beta_t],
             [self.__Ts*self.__beta_t]
         ])
 
