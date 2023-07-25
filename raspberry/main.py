@@ -72,12 +72,11 @@ if __name__ == '__main__':
         return euler
 
     def process_radio_data():
-        if rc.parser.switch_C() == 1:
-            use_altitude_hold = True
-        else:
-            use_altitude_hold = False
         channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0] if use_altitude_hold else -1)
-        throttle_ref_cache.append(channel_data.strip().split(',')[3])
+        channel_data = channel_data.strip().split(',')
+        throttle_ref_cache.append(channel_data[3])
+        use_altitude_hold = int(channel_data[7]) == 1
+            
         # if rc.parser.kill():
             # altitude_cache_df = pd.DataFrame([[t, Tr, alt] for t, Tr, alt in zip(time_cache, throttle_ref_cache, tof.altitude_cache())])
             # altitude_cache_df.to_csv("/home/bzzz/Desktop/data_log.csv", index=False, header=False)
@@ -90,60 +89,62 @@ if __name__ == '__main__':
     
     def process_data():
         # process radio data
-        if rc.parser.switch_C() == 1:
-            use_altitude_hold = True
-        else:
-            use_altitude_hold = False
-        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0] if use_altitude_hold else -1)
-        throttle_ref_cache.append(channel_data.strip().split(',')[3])
-        
-        Tref_t = throttle_ref_cache[-1]
+        use_altitude_hold[0] = False
+        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0][0][0] if use_altitude_hold[0] else -1)
+        print(f">> {channel_data}")
+        channel_data = channel_data.strip().split(',')
+        throttle_ref_cache.append(channel_data[3])
+        use_altitude_hold[0] = bin(int(channel_data[-1]))[-3] 
+        # print(use_altitude_hold[0])
+    
+        Tref_t = float(channel_data[3])
         # process ESP data
         flight_data = rc.print_receive_data_from_ESP(return_data=True)
         # print(flight_data)
         if flight_data is not None and "FD:" in flight_data:
             flight_data = flight_data.strip().split()
             if len(flight_data) == 7:
-                try:
-                    q1 = float(flight_data[1])
-                    q2 = float(flight_data[2])
-                    q3 = float(flight_data[3])
-                    ax = float(flight_data[4])
-                    ay = float(flight_data[5])
-                    az = float(flight_data[6])
+                # try:
+                q1 = float(flight_data[1])
+                q2 = float(flight_data[2])
+                q3 = float(flight_data[3])
+                ax = float(flight_data[4])
+                ay = float(flight_data[5])
+                az = float(flight_data[6])
 
-                    quat[0] = q1
-                    quat[1] = q2
-                    quat[2] = q3
-                    acc[0] = ax
-                    acc[1] = ay
-                    acc[2] = az
-                    euler = euler_angles([sqrt(1 - quat[0]**2 - quat[1]**2 - quat[2]**2)] + quat)
-                    # num_run[0] -= 1
-                    print(num_run)
+                quat[0] = q1
+                quat[1] = q2
+                quat[2] = q3
+                acc[0] = ax
+                acc[1] = ay
+                acc[2] = az
+                euler = euler_angles([sqrt(1 - quat[0]**2 - quat[1]**2 - quat[2]**2)] + quat)
+                # num_run[0] -= 1
+                print(num_run)
 
-                    quat_cache.append(quat)
-                    yaw_cache.append(euler[0])
-                    pitch_cache.append(euler[1])
-                    roll_cache.append(euler[2])
-                    accelrometer_cache.append(acc[:])
+                quat_cache.append(quat)
+                yaw_cache.append(euler[0])
+                pitch_cache.append(euler[1])
+                roll_cache.append(euler[2])
+                accelrometer_cache.append(acc[:])
 
 
-                    temp = tof.altitude
-                    x_est = kf.run(Tref_t, euler[1], euler[2], np.nan if temp == -1 else temp)
-                    z_hat = x_est[0]
-                    v_hat = x_est[1]
-                    alpha_hat = x_est[2]
-                    beta_hat = x_est[3]
+                temp = tof.altitude
+                print(type(Tref_t))
+                x_est = kf.run(Tref_t, euler[1], euler[2], np.nan if temp == -1 else temp)
+                z_hat = x_est[0][0]
+                v_hat = x_est[1][0]
+                alpha_hat = x_est[2][0]
+                beta_hat = x_est[3][0]
 
-                    throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=1, recalculate_dynamics=True)                       
+                throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=1, recalculate_dynamics=True)                       
 
-                    if temp == -1:
-                        print("ToF outlier or -ve distance detected, discarded the measurement.")
-                    time_cache.append((time_ns() - time_before_thread_starts)/1000000)
-                except Exception as e:
-                    print("Exception in main.py: ", e)
-                    pass
+                if temp == -1:
+                    print("ToF outlier or -ve distance detected, discarded the measurement.")
+                time_cache.append((time_ns() - time_before_thread_starts)/1000000)
+                # except Exception as e:
+                #     print("Exception in main.py: ", e)
+                #     pass
     def rad2deg(lst):
         return [i*180/pi for i in lst]
     time_before_thread_starts = time_ns()

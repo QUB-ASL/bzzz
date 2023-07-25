@@ -1,6 +1,6 @@
 # TODO: Documentation
 import numpy as np
-from math import cos
+import math
 
 class KalmanFilter:
     def __init__(self, sampling_frequency=10, initial_Tt=0., x_tilde_0=np.zeros((4, 1)), P_0=np.eye(4, 4)*100, cache_values=False) -> None:
@@ -67,7 +67,7 @@ class KalmanFilter:
         ])
 
     def __update_Tt(self, Tt, pitch_rad, roll_rad):
-        self.__Tt = cos(pitch_rad)*cos(roll_rad)*Tt
+        self.__Tt = math.cos(pitch_rad) * math.cos(roll_rad) * float(Tt)
 
     def MU_cache(self):
         return self.__x_MU_cache, self.__sigma_MU_cache
@@ -91,6 +91,8 @@ class KalmanFilter:
 
     def run(self, Tt, pitch_rad, roll_rad, y_t):
         is_yt_not_nan = not np.isnan(y_t)
+        print(":)")
+        print(Tt, pitch_rad, roll_rad)
         self.__update_Tt(Tt, pitch_rad, roll_rad)
         self.__update_At()
         if is_yt_not_nan:
