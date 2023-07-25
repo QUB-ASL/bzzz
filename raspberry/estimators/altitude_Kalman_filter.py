@@ -1,5 +1,6 @@
 # TODO: Documentation
 import numpy as np
+from math import cos
 
 class KalmanFilter:
     def __init__(self, sampling_frequency=10, initial_Tt=0., x_tilde_0=np.zeros((4, 1)), P_0=np.eye(4, 4)*100, cache_values=False) -> None:
@@ -13,7 +14,7 @@ class KalmanFilter:
         self.__C = np.array([[1, 0, 0, 0]])
 
         # Process noise
-        self.__Q = np.diagflat([1e-4, 1, 3*9.8, 9.8])
+        self.__Q = np.diagflat([1e-4, 1, 9.8, 0])
         # Measurement noise
         self.__R = 9
 
@@ -59,14 +60,14 @@ class KalmanFilter:
         k_t = 0.5*self.__Ts**2
 
         self.__At = np.array([
-            [1, self.__Ts, 0.5*k_t*self.__Tt, k_t],
+            [1, self.__Ts, k_t*self.__Tt, k_t],
             [0, 1, self.__Ts*self.__Tt, self.__Ts],
             [0, 0, 1, 0],
             [0, 0, 0, 1]
         ])
 
-    def __update_Tt(self, Tt):
-        self.__Tt = Tt
+    def __update_Tt(self, Tt, pitch_rad, roll_rad):
+        self.__Tt = cos(pitch_rad)*cos(roll_rad)*Tt
 
     def MU_cache(self):
         return self.__x_MU_cache, self.__sigma_MU_cache
@@ -88,8 +89,8 @@ class KalmanFilter:
         self.__sigma_TU = self.__At@self.__sigma_MU@self.__At.T + self.__Q
         self.__cache_TU_values()
 
-    def run(self, Tt, y_t):
-        self.__update_Tt(Tt)
+    def run(self, Tt, pitch_rad, roll_rad, y_t):
+        self.__update_Tt(Tt, pitch_rad, roll_rad)
         self.__update_At()
         self.__measurement_update(y_t)
         self.__time_update()
