@@ -31,21 +31,38 @@ namespace bzzz
          * 5          % trim B
          * 6          % trim C
          * 7          % trim E
+         *
+         * A substitute variable to load the read data from Raspberry Pi.
+         * This data is tested for corruption before copying to the actual variable.
          */
-        float m_dummyRefData[8];
+        float m_rawRefData[8];
+
+        /**
+         * The actual variable to store un-corrupt data.
+         * This data will be used as reference for the flight controller.
+         */
         float m_refData[8];
 
         /**
-         * The last part of the radio data from R-Pi is a 5-bit data encoding 
+         * The last part of the radio data from R-Pi is a 5-bit data encoding
          * the positions of switches as follows
          * bit index    Variable
          * 4(MSB)     Switch B (Arm switch  ){1 if switch_is_on else 0}
          * 3          Switch A (Kill switch ){1 if switch_is_on else 0}
-         * 2, 1       Switch C (3-way switch){00 for position DOWN, 01 for position MID, 10 for position UP}
+         * 2, 1       Switch C (3-way switch){00 for position DOWN, 01
+         *            for position MID, 10 for position UP}
          * 0(LSB)     Switch D (2-way switch){1 if switch_is_on else 0}
-        */
-        int m_dummyEncodedSwtchsData, m_encodedSwitchesData;
+         *
+         * A substitute variable to load the encoded switch read data from Raspberry Pi.
+         * This data is tested for corruption before copying to the actual variable.
+         */
+        int m_rawEncodedSwtchsData;
 
+        /**
+         * The actual variable to store un-corrupt data.
+         * This is the data that will be used to take the some associated logial decisions.
+         */
+        int m_encodedSwitchesData;
 
     public:
         Radio();
@@ -76,7 +93,7 @@ namespace bzzz
          * @brief throttle reference as a percentage (0-1)
          */
         float throttleReferencePercentage();
-        
+
         /**
          * @brief yaw rate in rad/s
          *

@@ -5,6 +5,7 @@
 #include "radio.hpp"
 #include "ahrs.hpp"
 #include "controller.hpp"
+#include "fail_safes.hpp"
 #include "util.hpp"
 
 using namespace bzzz;
@@ -14,6 +15,7 @@ Radio radio;
 AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
+FailSafes failSafes(TX_CONNECTION_TIMEOUT_IN_uS);
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 
@@ -39,28 +41,32 @@ void setup()
   ahrs.averageQuaternion(initialQuaternion);             // determine initial attitude
   ahrs.averageAngularVelocities(initialAngularVelocity); // determine initial attitude
   buzz(2);                                               // 2 beeps => AHRS setup complete
-  Serial.println("waiting for PiSerial...");
-  waitForPiSerial();                                     // wait for the RPi and the RC to connect
-  buzz(4);                                               // 4 beeps => RPi+RC connected
-  Serial.println("waiting for arm...");
-  radio.waitForArmCommand();                             // wait for the RC to send an arming command
-  Serial.println("armed...");
-  buzz(2, 400);                                          // two long beeps => preparation for arming
-  motorDriver.attachAndArm();                            // attach ESC and arm motors
-  buzz(6);                                               // 6 beeps => motors armed; keep clear!
+  logSerial(LogVerbosityLevel::Info, "waiting for PiSerial...");
+  waitForPiSerial(); // wait for the RPi and the RC to connect
+  buzz(4);           // 4 beeps => RPi+RC connected
+  logSerial(LogVerbosityLevel::Info, "waiting for arm...");
+  radio.waitForArmCommand(); // wait for the RC to send an arming command
+  logSerial(LogVerbosityLevel::Info, "arming...");
+  buzz(2, 400);               // two long beeps => preparation for arming
+  motorDriver.attachAndArm(); // attach ESC and arm motors
+  buzz(6);                    // 6 beeps => motors armed; keep clear!
 }
 
 /**
  * Set controller gain values from RC trimmers
+ *
+ * Trimmer A - X/Y quaternion gain
+ * Trimmer B - X/Y angular velocity gain
+ * Trimmer C - Yaw angular velocity gain
  */
 void setGainsFromRcTrimmers()
 {
-  controller.setQuaternionGains(
-      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN,
-      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN);
-  controller.setAngularVelocityGains(
-      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN,
-      -radio.trimmerVREPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+  controller.setQuaternionGain(
+      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
+  controller.setAngularVelocityXYGain(
+      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
+  controller.setYawAngularVelocityGain(
+      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 }
 
 /**
@@ -71,12 +77,17 @@ void loop()
   float quaternionImuData[4];
   float measuredAngularVelocity[3];
   float angularVelocityCorrected[3];
-  float controls[3];
 
-  radio.readPiData();
-  if (radio.kill())
+  // if radio data received update the last data read time.
+  if (radio.readPiData())
+  {
+    failSafes.setLastRadioReceptionTime(micros());
+  }
+  // one function to run all fail safe checks
+  if (radio.kill() || failSafes.isSerialTimeout())
   {
     motorDriver.disarm();
+    logSerial(LogVerbosityLevel::Debug, "Exit loop!");
     return; // exit the loop
   }
 
@@ -90,8 +101,20 @@ void loop()
   angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
   angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
 
-  // !!!deactivate for testing!!!
-  // yawReferenceRad += radio.yawRateReferenceRadSec() * SAMPLING_TIME;
+  float yawRateRC = radio.yawRateReferenceRadSec();
+  float deadZoneYawRate = 0.017;
+  float yawRateReference = 0.;
+  if (yawRateRC >= deadZoneYawRate)
+  {
+    yawRateReference = yawRateRC - deadZoneYawRate;
+  }
+  else if (yawRateRC <= -deadZoneYawRate)
+  {
+    yawRateReference = yawRateRC + deadZoneYawRate;
+  }
+
+  // take the current Yaw angle as reference, this means that we are not correcting the Yaw.
+  yawReferenceRad = ahrs.currentYawRad();
 
   Quaternion referenceQuaternion(
       yawReferenceRad,
@@ -102,19 +125,18 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
-  Serial.println("Yr: " + String(radio.yawRateReferenceRadSec()) + " Pr: " + String(radio.pitchReferenceAngleRad()) + " Rr: " + String(radio.rollReferenceAngleRad()) + " Tr: " + String(radio.throttleReferencePWM()));
-  
-  controller.controlAction(attitudeError, angularVelocityCorrected, controls);
-
   // Throttle from RC to throttle reference
-  // float throttlePrcntFromRc = radio.throttleReferencePercentage();
-  float throttleRef = radio.throttleReferencePWM(); // mapPrcnt(throttlePrcntFromRc, ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM);
+  float throttleRef = radio.throttleReferencePWM();
 
   // Compute control actions and send them to the motors
   int motorFL, motorFR, motorBL, motorBR;
   controller.motorPwmSignals(attitudeError,
                              angularVelocityCorrected,
+                             yawRateReference,
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
+
+  logSerial(LogVerbosityLevel::Debug, "FR: %d FL: %d BL: %d BR: %d",
+            motorFR, motorFL, motorBL, motorBR);
 }

@@ -4,9 +4,6 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-// I have the impression that "#pragma once" is not
-// supported on ESP32
-
 namespace bzzz
 {
 
@@ -23,6 +20,20 @@ namespace bzzz
          */
         float m_angularVelocityGain[3] = {-1.4, -1.55, -1.08};
 
+        /**
+         * @brief computes control action
+         *
+         * @param attitudeError attitude error quaternion
+         * @param angularVelocity angular velocity (from IMU)
+         * @param control control actions (3-array)
+         *
+         */
+        void controlAction(
+            Quaternion &attitudeError,
+            const float *angularVelocity,
+            float angularVelocityYawRef,
+            float *control);
+
     public:
         /**
          * Constructs a new instance of Controller
@@ -38,32 +49,25 @@ the RC.
         /**
          * Set the gains of the quaternion
          */
-        void setQuaternionGains(float gainXY, float gainZ);
+        void setQuaternionGain(float gainXY);
+
+        /**
+         * Set the gains of omega_x and omega_y
+         */
+        void setAngularVelocityXYGain(float gainOmegaXY);
 
         /**
          * Set the gains of the angular velocity
          */
-        void setAngularVelocityGains(float gainXY, float gainZ);
+        void setYawAngularVelocityGain(float gainOmegaZ);
 #endif /* BZZZ_DEBUG */
 
-        /**
-         * @brief computes control action
-         *
-         * @param attitudeError attitude error quaternion
-         * @param angularVelocity angular velocity (from IMU)
-         * @param control control actions (3-array)
-         *
-         */
-        void controlAction(
-            Quaternion &attitudeError,
-            const float *angularVelocity,
-            float *control);
-
-        /**
+                /**
          * @brief PWM signals to the four motors
          *
          * @param attitudeError attitude error quaternion
          * @param angularVelocity angular velocity (from IMU)
+         * @param angularVelocityYawRef angular velocity (yaw) reference
          * @param throttle throttle signal (between 1000 and 2000)
          * @param motorFL signal to front left motor
          * @param motorFR signal to front right motor
@@ -76,6 +80,7 @@ the RC.
         void motorPwmSignals(
             Quaternion &attitudeError,
             const float *angularVelocity,
+            float angularVelocityYawRef,
             float throttle,
             int &motorFL,
             int &motorFR,
