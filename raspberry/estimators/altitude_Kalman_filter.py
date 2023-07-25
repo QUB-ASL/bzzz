@@ -14,9 +14,9 @@ class KalmanFilter:
         self.__C = np.array([[1, 0, 0, 0]])
 
         # Process noise
-        self.__Q = np.diagflat([1e-4, 1, 9.8, 0])
+        self.__Q = np.diagflat([1e-4, 1, 9.8, 1e-3])
         # Measurement noise
-        self.__R = 9
+        self.__R = 0.1
 
         # initial conditions
         self.__x_hat_0_minus1 = x_tilde_0
@@ -90,9 +90,11 @@ class KalmanFilter:
         self.__cache_TU_values()
 
     def run(self, Tt, pitch_rad, roll_rad, y_t):
+        is_yt_not_nan = not np.isnan(y_t)
         self.__update_Tt(Tt, pitch_rad, roll_rad)
         self.__update_At()
-        self.__measurement_update(y_t)
+        if is_yt_not_nan:
+            self.__measurement_update(y_t)
         self.__time_update()
-        return self.__x_MU
+        return self.__x_MU if is_yt_not_nan else self.__x_TU
  
