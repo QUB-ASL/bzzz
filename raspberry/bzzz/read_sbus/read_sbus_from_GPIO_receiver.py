@@ -24,6 +24,9 @@ class RC:
         time.sleep(.1)
         self.parser = bzzz.read_sbus.radioDataParser.RadioDataParser()
 
+        self.__parsed_data = None
+
+
     def get_radio_data(self):
         is_connected = self.reader.is_connected()
         packet_age = self.reader.get_latest_packet_age()  # milliseconds
@@ -40,6 +43,7 @@ class RC:
             2000 if int(x) > 2000 else int(x)), channel_data.strip().split(",")))
         
         if over_write_throttle_ref_to != -1:
+            # TODO: check if channel 2 is throttle data
             self.parser.m_channelData[2] = over_write_throttle_ref_to
         # process and encapsulate the data
         # the output data packet format will be as follows
@@ -51,7 +55,7 @@ class RC:
         # bit-3: 1-bit info of Switch A: 1 if kill_on else 0
         # bits 2 and 1: 2-bit info of switch C: 00 for position DOWN, 01 for position MID, 10 for position UP
         # bit-0: 1-bit info of switch D: 1 if D_on else 0
-        channel_data = self.parser.format_radio_data_for_sending()
+        self.__parsed_data, channel_data = self.parser.format_radio_data_for_sending()
         return channel_data
 
 
@@ -76,18 +80,6 @@ class RC:
         else:
             return None
 
-
-    def print_receive_data_from_ESP(self, return_data=False):
-        """Read data from ESP32 via UART and print iff data is received.
-        """
-        received_data = self.receive_data_from_ESP()
-        if return_data:
-            return received_data
-
-        if received_data is not None:
-            print(received_data)
-
-
     def get_radio_data_parse_and_send_to_ESP(self, return_channel_date = False, force_send_fake_data=False, fake_data="", over_write_throttle_ref_to=-1):
         """Read the radio data, process it, format it into a string, and send it via UART.
         """
@@ -95,9 +87,9 @@ class RC:
             _is_connected, _packet_age, channel_data = self.get_radio_data()
             if _is_connected:
                 channel_data = self.parse_radio_data(channel_data, over_write_throttle_ref_to=over_write_throttle_ref_to)
+                if force_send_fake_data:
+                    channel_data = fake_data
                 self.send_data_to_ESP(channel_data)
-            if force_send_fake_data:
-                self.send_data_to_ESP(fake_data)
             if return_channel_date: 
                 return channel_data
         except KeyboardInterrupt:
@@ -109,6 +101,41 @@ class RC:
             self.reader.end_listen()
             raise
 
+    def yaw_rate_reference_rad_sec(self)->float:
+        return self.__parsed_data[0]
+    
+    def pitch_reference_angle_rad(self)->float:
+        return self.__parsed_data[1]
+    
+    def roll_reference_angle_rad(self)->float:
+        return self.__parsed_data[2]
+    
+    def throttle_reference_percentage(self)->float:
+        return self.__parsed_data[3]
+    
+    def trimmer_VRA_percentage(self):
+        return self.__parsed_data[4]
+    
+    def trimmer_VRB_percentage(self):
+        return self.__parsed_data[5]
+    
+    def trimmer_VRC_percentage(self):
+        return self.__parsed_data[6]
+    
+    def trimmer_VRE_percentage(self):
+        return self.__parsed_data[7]
+    
+    def switch_B(self):
+        return self.__parsed_data[8] & 0x10
+    
+    def switch_A(self):
+        return self.__parsed_data[8] & 0x08
+    
+    def switch_C(self):
+        return self.__parsed_data[8] & 0x06
+    
+    def switch_D(self):
+        return self.__parsed_data[8] & 0x01
  
             
     # def run_thread_every_given_interval(self, 

@@ -16,31 +16,25 @@ from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
 from bzzz.controllers.altitude_LQR import LQR
 
 if __name__ == '__main__':
-    tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=1, cache_altitude=True, use_outlier_detection=True, abs_outlier_diff_thres=500)
-    rc = bzzz.read_sbus.RC()
-
-    
+    # sampling frequency of KF and LQR
     sampling_frequency = 50
+    
+    # objects declaration
     kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=0, x_tilde_0=np.array([[0], [0], [10], [-9.81]]), P_0=np.diagflat([1, 1, 1, 0.01]), cache_values=True)
     lqr = LQR(sampling_frequency=sampling_frequency, initial_alpha_t=10, initial_beta_t=-9.81)
-
+    tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=1, cache_altitude=True, use_outlier_detection=True, abs_outlier_diff_thres=500)
+    rc = bzzz.read_sbus.RC()    
     scheduler = Scheduler(use_threading=False)
 
-    num_run = [9000]
+    # data caching and logging
     time_cache = []
-
     quat_cache = []
     yaw_cache = []
     pitch_cache = []
     roll_cache = []
-
     throttle_ref_cache = []
     accelrometer_cache = []
     time_before_thread_starts = 0
-
-    throttle_ref_from_LQR = [0]
-    use_altitude_hold = [False]
-
 
     quat = [0., 0., 0.]
     acc = [0., 0., 0.]
@@ -49,10 +43,16 @@ if __name__ == '__main__':
     is_data_saved = False
     is_data_log_kill = [False]
 
+    # Altitude hold vars
+    throttle_ref_from_LQR = [0]
+    use_altitude_hold = [False]
+
     _, plts = plt.subplots(4, 2)
 
+    def rad2deg(lst):
+        return [i*180/pi for i in lst]
     
-    def euler_angles(q):
+    def euler_angles(q: list):
         euler = [0., 0., 0.]
 
         sinr_cosp = 2 * (q[0] * q[1] + q[2] * q[3])
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     
         Tref_t = float(channel_data[3])
         # process ESP data
-        flight_data = rc.print_receive_data_from_ESP(return_data=True)
+        flight_data = rc.receive_data_from_ESP()
         # print(flight_data)
         if flight_data is not None and "FD:" in flight_data:
             flight_data = flight_data.strip().split()
@@ -145,8 +145,6 @@ if __name__ == '__main__':
                 # except Exception as e:
                 #     print("Exception in main.py: ", e)
                 #     pass
-    def rad2deg(lst):
-        return [i*180/pi for i in lst]
     time_before_thread_starts = time_ns()
     # scheduler.schedule("print_ESP_data", print_ESP_data, function_call_frequency=50, function_call_count=10000)
     scheduler.schedule("process_data", process_data, function_call_frequency=50, function_call_count=10000)
