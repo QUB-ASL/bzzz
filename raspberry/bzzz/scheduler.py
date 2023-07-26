@@ -73,7 +73,7 @@ class Scheduler:
                     if (time_now - self.time_at_last_call_ns(func))*1e-9 >= 1./self.function_call_frequency(func):
                         if self.num_times_called(func) <= self.function_call_count(func):
                             self.function_obj(func)()
-                            self.num_times_called(func, increment=True)
+                            self.num_times_called(func, increment=(self.function_call_count(func)!=0))
                             self.time_at_last_call_ns(func, change=True, to_value=time_now)
 
 

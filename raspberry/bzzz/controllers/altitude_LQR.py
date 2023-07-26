@@ -2,6 +2,7 @@
 import numpy as np
 from numpy.linalg import pinv
 import control as ctrl
+from math import cos
 
 class LQR:
     def __init__(self, sampling_frequency = 10, initial_alpha_t = 0, initial_beta_t = 0) -> None:
@@ -39,9 +40,10 @@ class LQR:
 
         self.__identity_mat_2_2 = np.eye(2, 2)
 
-    def __recalculate_dynamics(self, alpha_t, beta_t):
+    def __recalculate_dynamics(self, alpha_t, beta_t, pitch_rad=0, roll_rad=0):
         self.__alpha_t = alpha_t
         self.__beta_t = beta_t
+        k_Tref = cos(pitch_rad) * cos(roll_rad)
 
         self.__A = np.array([
             [1, self.__Ts],
@@ -54,8 +56,8 @@ class LQR:
         ])
         self.__C = np.array([[1, 0]])
         self.__d_t = np.array([
-            [0.5*(self.__Ts**2)*self.__beta_t],
-            [self.__Ts*self.__beta_t]
+            [0.5*(self.__Ts**2)*self.__beta_t*k_Tref],
+            [self.__Ts*self.__beta_t*k_Tref]
         ])
 
     def __recalculate_reference_tracker_dynamics_and_matrix(self, reference_altitude_mts):
@@ -73,9 +75,9 @@ class LQR:
         _, _, kappa = ctrl.dare(self.__A, self.__B_t, self.__Q, self.__R)
         self.__kappa[:, :] = -np.copy(kappa)
 
-    def control_action(self, current_states_z_and_vz: np.array, alpha_t = 0, beta_t = 0, reference_altitude_mts = 1, recalculate_dynamics = False):
+    def control_action(self, current_states_z_and_vz: np.array, alpha_t = 0, beta_t = 0, reference_altitude_mts = 1, recalculate_dynamics = False, pitch_rad=0, roll_rad=0):
         if recalculate_dynamics:
-            self.__recalculate_dynamics(alpha_t=alpha_t, beta_t=beta_t)
+            self.__recalculate_dynamics(alpha_t=alpha_t, beta_t=beta_t, pitch_rad=pitch_rad, roll_rad=roll_rad)
             self.__recalculate_reference_tracker_dynamics_and_matrix(reference_altitude_mts=reference_altitude_mts)
             self.__calculate_x_and_u_bar()
             self.__calculate_stabilising_gain()

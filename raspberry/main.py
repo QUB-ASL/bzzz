@@ -46,6 +46,7 @@ if __name__ == '__main__':
     # Altitude hold vars
     throttle_ref_from_LQR = [0]
     use_altitude_hold = [False]
+    Tref_t = [0.0]
 
     _, plts = plt.subplots(4, 2)
 
@@ -72,10 +73,12 @@ if __name__ == '__main__':
         return euler
 
     def process_radio_data():
-        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0] if use_altitude_hold else -1)
-        channel_data = channel_data.strip().split(',')
-        throttle_ref_cache.append(channel_data[3])
-        use_altitude_hold = int(channel_data[7]) == 1
+        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0][0][0] if use_altitude_hold[0] else -1)
+        throttle_ref_cache.append(rc.throttle_reference_percentage())
+        use_altitude_hold[0] = rc.switch_C() == True
+        is_data_log_kill[0] = rc.switch_A() == True
+        Tref_t[0] = rc.throttle_reference_percentage()
+
             
         # if rc.parser.kill():
             # altitude_cache_df = pd.DataFrame([[t, Tr, alt] for t, Tr, alt in zip(time_cache, throttle_ref_cache, tof.altitude_cache())])
@@ -86,21 +89,10 @@ if __name__ == '__main__':
             # altitude_logger_thread.cancel()
             # scheduler.kill("process_radio_data")
             # exit(0)
-    
-    def process_data():
-        # process radio data
-        use_altitude_hold[0] = False
-        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0][0][0] if use_altitude_hold[0] else -1)
-        print(f">> {channel_data}")
-        channel_data = channel_data.strip().split(',')
-        throttle_ref_cache.append(channel_data[3])
-        use_altitude_hold[0] = bin(int(channel_data[-1]))[-3] 
-        # print(use_altitude_hold[0])
-    
-        Tref_t = float(channel_data[3])
+
+    def process_ESP_data():
         # process ESP data
         flight_data = rc.receive_data_from_ESP()
-        # print(flight_data)
         if flight_data is not None and "FD:" in flight_data:
             flight_data = flight_data.strip().split()
             if len(flight_data) == 7:
@@ -118,41 +110,42 @@ if __name__ == '__main__':
                 acc[0] = ax
                 acc[1] = ay
                 acc[2] = az
-                euler = euler_angles([sqrt(1 - quat[0]**2 - quat[1]**2 - quat[2]**2)] + quat)
-                # num_run[0] -= 1
-                print(num_run)
+                q0 = sqrt(1 - quat[0]**2 - quat[1]**2 - quat[2]**2)
+                full_quaternion = [q0] + quat
+                euler = euler_angles(full_quaternion)
 
                 quat_cache.append(quat)
                 yaw_cache.append(euler[0])
                 pitch_cache.append(euler[1])
                 roll_cache.append(euler[2])
                 accelrometer_cache.append(acc[:])
-
-
-                temp = tof.altitude
-                print(type(Tref_t))
-                x_est = kf.run(Tref_t, euler[1], euler[2], np.nan if temp == -1 else temp)
-                z_hat = x_est[0][0]
-                v_hat = x_est[1][0]
-                alpha_hat = x_est[2][0]
-                beta_hat = x_est[3][0]
-
-                throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=1, recalculate_dynamics=True)                       
-
-                if temp == -1:
-                    print("ToF outlier or -ve distance detected, discarded the measurement.")
-                time_cache.append((time_ns() - time_before_thread_starts)/1000000)
                 # except Exception as e:
                 #     print("Exception in main.py: ", e)
                 #     pass
+    
+    def read_ToF_run_kf_and_LQR():
+        temp = tof.altitude
+
+        x_est = kf.run(Tref_t, euler[1], euler[2], np.nan if temp == -1 else temp)
+
+        z_hat = x_est[0][0]
+        v_hat = x_est[1][0]
+        alpha_hat = x_est[2][0]
+        beta_hat = x_est[3][0]
+
+        throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=1, recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
+
+        if temp == -1:
+            print("ToF outlier or -ve distance detected, discarded the measurement.")
+        time_cache.append((time_ns() - time_before_thread_starts)/1000000)
+
     time_before_thread_starts = time_ns()
-    # scheduler.schedule("print_ESP_data", print_ESP_data, function_call_frequency=50, function_call_count=10000)
-    scheduler.schedule("process_data", process_data, function_call_frequency=50, function_call_count=10000)
+    scheduler.schedule("process_radio_data", process_radio_data, function_call_frequency=50, function_call_count=0)
+    scheduler.schedule("process_ESP_data", process_ESP_data, function_call_frequency=50, function_call_count=0)
+    scheduler.schedule("read_ToF_run_kf_and_LQR", read_ToF_run_kf_and_LQR, function_call_frequency=50, function_call_count=0)
     while True:
-        # print_ESP_data()
-        # process_radio_data()
         scheduler.run()
-        if not is_data_saved and (num_run[0] == 0 or is_data_log_kill[0]):
+        if not is_data_saved and is_data_log_kill[0]:
             print("saving data wait....")
             is_data_saved = True
             accelrometer_cache_ = np.array(accelrometer_cache)
@@ -206,7 +199,7 @@ if __name__ == '__main__':
 
             plt.savefig("ToF_data_plot_with_pitch_and_roll.svg")"""
             # plt.show()
-            tof.kill_ToF()
+            # tof.kill_ToF()
             print("Saving done!")
             # break
 

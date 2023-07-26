@@ -126,13 +126,13 @@ class RC:
         return self.__parsed_data[7]
     
     def switch_B(self):
-        return self.__parsed_data[8] & 0x10
+        return (self.__parsed_data[8] & 0x10) >> 4
     
     def switch_A(self):
-        return self.__parsed_data[8] & 0x08
+        return (self.__parsed_data[8] & 0x08) >> 3
     
     def switch_C(self):
-        return self.__parsed_data[8] & 0x06
+        return (self.__parsed_data[8] & 0x06) >> 1
     
     def switch_D(self):
         return self.__parsed_data[8] & 0x01
