@@ -155,7 +155,7 @@ if __name__ == '__main__':
         beta_hat = x_est[3][0]
 
         throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
-
+        throttle_ref_from_LQR[0] = min(throttle_ref_from_LQR[0]*500, 1) + 1000
         if temp == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
         time_cache.append((time_ns() - time_before_thread_starts)/1000000)
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     scheduler.schedule("read_ToF_run_kf_and_LQR", read_ToF_run_kf_and_LQR, function_call_frequency=50, function_call_count=0)
     while True:
         scheduler.run()
-        if not is_data_saved and is_data_log_kill[0]:
+        if not is_data_saved[0] and is_data_log_kill[0]:
             print("saving data wait....")
             is_data_saved[0] = True
             accelrometer_cache_ = np.array(accelrometer_cache)

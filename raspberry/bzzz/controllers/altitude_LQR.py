@@ -32,8 +32,8 @@ class LQR:
         self.__reference_tracker_matrix = np.zeros((3, 1))
 
         self.__Q = np.array([
-            [100, 0],
-            [0, 2]
+            [50, 0],
+            [0, 4]
         ])
         self.__R = np.array([[10]])
         self.__kappa = np.zeros((1, 2))

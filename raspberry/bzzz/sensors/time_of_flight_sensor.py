@@ -91,6 +91,8 @@ class TimeOfFlightSensor:
                 if self.cache_altitude:
                     self._altitude_cache.append(self._current_altitude)
             else:
+                if self.cache_altitude:
+                    self._altitude_cache.append(-1)
                 print("ToF sensor returning -ve distance....\nretrying....")
                 return -1
             self._last_update_time = time_now
@@ -104,6 +106,8 @@ class TimeOfFlightSensor:
                     if self.cache_altitude:
                         self._altitude_cache.append(self._current_altitude)
                 else:
+                    if self.cache_altitude:
+                        self._altitude_cache.append(-1)
                     print("ToF sensor returning -ve distance....\nretrying....")
                     return -1
                 self._last_update_time = time_now
@@ -114,6 +118,8 @@ class TimeOfFlightSensor:
                 if self.cache_altitude:
                     self._altitude_cache.append(self._current_altitude)
             else:
+                if self.cache_altitude:
+                    self._altitude_cache.append(-1)
                 print("ToF sensor returning -ve distance....\nretrying....")
                 return -1
             sleep(self.timing/1000000)
