@@ -91,8 +91,6 @@ class KalmanFilter:
 
     def run(self, Tt, pitch_rad, roll_rad, y_t):
         is_yt_not_nan = not np.isnan(y_t)
-        print(":)")
-        print(Tt, pitch_rad, roll_rad)
         self.__update_Tt(Tt, pitch_rad, roll_rad)
         self.__update_At()
         if is_yt_not_nan:

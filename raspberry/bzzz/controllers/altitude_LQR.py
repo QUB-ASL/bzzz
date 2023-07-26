@@ -49,7 +49,6 @@ class LQR:
             [1, self.__Ts],
             [0, 1]
         ])
-        print(f"alpha = {alpha_t}")
         self.__B_t = np.array([
             [0.5*(self.__Ts**2)*self.__alpha_t],
             [self.__Ts*self.__alpha_t]
@@ -61,7 +60,6 @@ class LQR:
         ])
 
     def __recalculate_reference_tracker_dynamics_and_matrix(self, reference_altitude_mts):
-        print(self.__B_t.shape)
         self.__reference_tracker_dynamics[:self.__A.shape[0], :self.__A.shape[1]] = self.__A - self.__identity_mat_2_2
         self.__reference_tracker_dynamics[:self.__A.shape[0], self.__A.shape[1]:] = self.__B_t
         self.__reference_tracker_dynamics[self.__A.shape[0]:, :self.__A.shape[1]] = self.__C

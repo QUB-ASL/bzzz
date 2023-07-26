@@ -40,13 +40,18 @@ if __name__ == '__main__':
     acc = [0., 0., 0.]
     euler = [0., 0., 0.]
 
-    is_data_saved = False
+    is_data_saved = [False]
     is_data_log_kill = [False]
 
     # Altitude hold vars
     throttle_ref_from_LQR = [0]
     use_altitude_hold = [False]
     Tref_t = [0.0]
+    altitude_ref_mts = [0.09]
+    current_altitude_snap_shot_mts = [0.0]
+    is_current_altitude_snap_shot_taken = [False]
+    var_e_RC_mid_percentage = [0.5]
+    altitude_shifter_range_mts = [0.5]
 
     _, plts = plt.subplots(4, 2)
 
@@ -54,30 +59,34 @@ if __name__ == '__main__':
         return [i*180/pi for i in lst]
     
     def euler_angles(q: list):
-        euler = [0., 0., 0.]
+        euler_ = [0., 0., 0.]
 
         sinr_cosp = 2 * (q[0] * q[1] + q[2] * q[3])
         cosr_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2])
-        euler[2] = atan2(sinr_cosp, cosr_cosp)
+        euler_[2] = atan2(sinr_cosp, cosr_cosp)
 
         # pitch (y-axis rotation)
         sinp = sqrt(1 + 2 * (q[0] * q[2] - q[1] * q[3]))
         cosp = sqrt(1 - 2 * (q[0] * q[2] - q[1] * q[3]))
-        euler[1] = 2 * atan2(sinp, cosp) - pi / 2
+        euler_[1] = 2 * atan2(sinp, cosp) - pi / 2
 
         # yaw (z-axis rotation)
         siny_cosp = 2 * (q[0] * q[3] + q[1] * q[2])
         cosy_cosp = 1 - 2 * (q[2] * q[2] + q[3] * q[3])
-        euler[0] = atan2(siny_cosp, cosy_cosp)
+        euler_[0] = atan2(siny_cosp, cosy_cosp)
 
-        return euler
+        return euler_
 
     def process_radio_data():
+        if use_altitude_hold[0]:
+            altitude_ref_mts[0] = current_altitude_snap_shot_mts[0] + (var_e_RC_mid_percentage[0] - rc.trimmer_VRE_percentage())*altitude_shifter_range_mts[0]
+            print(f"Using altitude hold: Tref_LQR = {throttle_ref_from_LQR[0]}, {altitude_ref_mts}")
         channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0][0][0] if use_altitude_hold[0] else -1)
-        throttle_ref_cache.append(rc.throttle_reference_percentage())
         use_altitude_hold[0] = rc.switch_C() == True
         is_data_log_kill[0] = rc.switch_A() == True
-        Tref_t[0] = rc.throttle_reference_percentage()
+        Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
+        throttle_ref_cache.append(Tref_t[0])
+
 
             
         # if rc.parser.kill():
@@ -110,9 +119,14 @@ if __name__ == '__main__':
                 acc[0] = ax
                 acc[1] = ay
                 acc[2] = az
+                if quat == [-1., -1., -1.]:
+                    print(f"Received quat = {quat}. Defaulting to quat = [0, 0, 0].")
+                    quat[0] = 0.
+                    quat[1] = 0.
+                    quat[2] = 0.
                 q0 = sqrt(1 - quat[0]**2 - quat[1]**2 - quat[2]**2)
                 full_quaternion = [q0] + quat
-                euler = euler_angles(full_quaternion)
+                euler[0], euler[1], euler[2] = euler_angles(full_quaternion)
 
                 quat_cache.append(quat)
                 yaw_cache.append(euler[0])
@@ -125,15 +139,22 @@ if __name__ == '__main__':
     
     def read_ToF_run_kf_and_LQR():
         temp = tof.altitude
+        if use_altitude_hold[0] and not is_current_altitude_snap_shot_taken[0]:
+            current_altitude_snap_shot_mts[0] = temp/1000
+            var_e_RC_mid_percentage[0] = rc.trimmer_VRE_percentage()
+            is_current_altitude_snap_shot_taken[0] = True
 
-        x_est = kf.run(Tref_t, euler[1], euler[2], np.nan if temp == -1 else temp)
+        if not use_altitude_hold[0]:
+            is_current_altitude_snap_shot_taken[0] = False
+
+        x_est = kf.run(Tref_t[0], euler[1], euler[2], np.nan if temp == -1 else temp/1000)
 
         z_hat = x_est[0][0]
         v_hat = x_est[1][0]
         alpha_hat = x_est[2][0]
         beta_hat = x_est[3][0]
 
-        throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=1, recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
+        throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
 
         if temp == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
@@ -147,7 +168,7 @@ if __name__ == '__main__':
         scheduler.run()
         if not is_data_saved and is_data_log_kill[0]:
             print("saving data wait....")
-            is_data_saved = True
+            is_data_saved[0] = True
             accelrometer_cache_ = np.array(accelrometer_cache)
             # altitude_logger_thread = bzzz.thread_this.run_thread_every_given_interval(0.02, run)
             # scheduler.kill("process_radio_data")
