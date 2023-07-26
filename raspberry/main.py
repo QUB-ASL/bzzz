@@ -153,8 +153,8 @@ if __name__ == '__main__':
         v_hat = x_est[1][0]
         alpha_hat = x_est[2][0]
         beta_hat = x_est[3][0]
-
-        throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
+        if use_altitude_hold[0]:
+            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
 
         if temp == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
