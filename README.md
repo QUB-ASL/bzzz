@@ -24,7 +24,7 @@ The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (
 <img width="300" src="design/PCBs/PI_BOARD/Schematic_DRONE_RPI_SHIELD_2023-06-18.png">
 
 ### Sensor Board
-<img width="300" height= "600" src="design/PCBs/SENSOR_BOARD_V2/SCHEMATICS/Sensor board layout image.png">
+<img width="300" height = "600" src="design/PCBs/SENSOR_BOARD_V3/SCHEMATICS/Sensor board layout picture.png">
 
 ### Sensor schematic
 <img width="300" src="design/PCBs/SENSOR_BOARD_V2/SCHEMATICS/Sensor board schematic image.png">
