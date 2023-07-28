@@ -52,6 +52,13 @@ if __name__ == '__main__':
     is_current_altitude_snap_shot_taken = [False]
     var_e_RC_mid_percentage = [0.5]
     altitude_shifter_range_mts = [0.5]
+    is_drone_flying_close_to_ground = [False]
+    min_altitude_to_activate_AltiHold_mts = [0.15]
+    is_KF_ran_atleast_once = [False]
+    z_hat = [0.]
+    v_hat = [0.]
+    alpha_hat = [10.]
+    beta_hat = [-9.81]
 
     _, plts = plt.subplots(4, 2)
 
@@ -138,24 +145,36 @@ if __name__ == '__main__':
                 #     pass
     
     def read_ToF_run_kf_and_LQR():
+        # NOTE: DO NOT DIVIDE temp BY 1000 here to get altitude measurements in mts. There are checks if temp == -1 in the code for outlier detection.
+        # you can run LQR even when the drone is close to ground but you cannot run KF. So, to compensate use the previous estimates of alpha and beta
+        # and the current ToF sensor readings. In this case if the ToF returns outliers send current altitude as desired altitude to LQR so it has no control.
         temp = tof.altitude
+        is_drone_flying_close_to_ground[0] = temp/1000 < min_altitude_to_activate_AltiHold_mts[0]
+        if is_drone_flying_close_to_ground[0]:
+            z_hat[0] = current_altitude_snap_shot_mts[0] if temp == -1 else temp/1000
+            print(f"Cannot activate Altitude hold. Drone is flying close to the ground at {temp/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
         if use_altitude_hold[0] and not is_current_altitude_snap_shot_taken[0]:
-            current_altitude_snap_shot_mts[0] = temp/1000
-            var_e_RC_mid_percentage[0] = rc.trimmer_VRE_percentage()
-            is_current_altitude_snap_shot_taken[0] = True
+            if not is_drone_flying_close_to_ground[0]:
+                current_altitude_snap_shot_mts[0] = temp/1000
+                var_e_RC_mid_percentage[0] = rc.trimmer_VRE_percentage()
+                is_current_altitude_snap_shot_taken[0] = True
 
         if not use_altitude_hold[0]:
             is_current_altitude_snap_shot_taken[0] = False
 
-        x_est = kf.run(Tref_t[0], euler[1], euler[2], np.nan if temp == -1 else temp/1000)
-
-        z_hat = x_est[0][0]
-        v_hat = x_est[1][0]
-        alpha_hat = x_est[2][0]
-        beta_hat = x_est[3][0]
+        if not is_drone_flying_close_to_ground[0]:
+            x_est = kf.run(Tref_t[0], euler[1], euler[2], np.nan if temp == -1 else temp/1000)
+            is_KF_ran_atleast_once[0] = True
+            z_hat[0] = x_est[0][0]
+            v_hat[0] = x_est[1][0]
+            alpha_hat[0] = x_est[2][0]
+            beta_hat[0] = x_est[3][0]
+        elif is_KF_ran_atleast_once[0]:
+            kf.reset(0 if temp == -1 else temp, initial_Tt=Tref_t[0])
+        
         if use_altitude_hold[0]:
-            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat], [v_hat]]), alpha_t=alpha_hat, beta_t=beta_hat, reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
-
+            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0], reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
+            throttle_ref_from_LQR[0] = min(1500, throttle_ref_from_LQR[0])
         if temp == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
         time_cache.append((time_ns() - time_before_thread_starts)/1000000)

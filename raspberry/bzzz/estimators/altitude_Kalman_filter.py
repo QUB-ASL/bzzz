@@ -6,6 +6,7 @@ class KalmanFilter:
     def __init__(self, sampling_frequency=10, initial_Tt=0., x_tilde_0=np.zeros((4, 1)), P_0=np.eye(4, 4)*100, cache_values=False) -> None:
         self.__fs = sampling_frequency
         self.__Ts = 1/self.__fs
+        self.__is_yt_not_nan = True
 
         # Normalized Throttle reference, range [0, 1]
         self.__Tt = initial_Tt
@@ -33,6 +34,7 @@ class KalmanFilter:
         self.__cache_MU_values = lambda : ()
         self.__cache_TU_values = lambda : ()
 
+        self.__cache_values = cache_values
         if cache_values:
             # Measurement update cache
             self.__x_MU_cache = []
@@ -89,12 +91,20 @@ class KalmanFilter:
         self.__sigma_TU = self.__At@self.__sigma_MU@self.__At.T + self.__Q
         self.__cache_TU_values()
 
+    def reset(self, y_t, initial_Tt=0):
+        x_tilde_0 = self.__x_MU if self.__is_yt_not_nan else self.__x_TU
+        # reset the altitude estimate to current measurement and velocity estimate to zero
+        x_tilde_0[0, 0] = y_t
+        x_tilde_0[1, 0] = 0
+        p_0 = self.__sigma_MU if self.__is_yt_not_nan else self.__sigma_TU
+        self.__init__(sampling_frequency=self.__fs, initial_Tt=initial_Tt, x_tilde_0=x_tilde_0, P_0=p_0, cache_values=self.__cache_values)        
+
     def run(self, Tt, pitch_rad, roll_rad, y_t):
-        is_yt_not_nan = not np.isnan(y_t)
+        self.__is_yt_not_nan = not (np.isnan(y_t) or y_t < 0)
         self.__update_Tt(Tt, pitch_rad, roll_rad)
         self.__update_At()
-        if is_yt_not_nan:
+        if self.__is_yt_not_nan:
             self.__measurement_update(y_t)
         self.__time_update()
-        return self.__x_MU if is_yt_not_nan else self.__x_TU
+        return self.__x_MU if self.__is_yt_not_nan else self.__x_TU
  
