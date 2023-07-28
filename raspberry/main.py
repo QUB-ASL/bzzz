@@ -164,6 +164,7 @@ if __name__ == '__main__':
 
         if not is_drone_flying_close_to_ground[0]:
             x_est = kf.run(Tref_t[0], euler[1], euler[2], np.nan if temp == -1 else temp/1000)
+            print(f"KF::main::x_est = {x_est}")
             is_KF_ran_atleast_once[0] = True
             z_hat[0] = x_est[0][0]
             v_hat[0] = x_est[1][0]

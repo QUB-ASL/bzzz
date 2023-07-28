@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 class KalmanFilter:
-    def __init__(self, sampling_frequency=10, initial_Tt=0., x_tilde_0=np.zeros((4, 1)), P_0=np.eye(4, 4)*100, cache_values=False) -> None:
+    def __init__(self, sampling_frequency=10, initial_Tt=0., x_tilde_0=np.zeros((4, 1)), P_0=np.eye(4, 4)*100, cache_values=False, overwrite_x_MU=None, overwrite_sigma_MU=None) -> None:
         self.__fs = sampling_frequency
         self.__Ts = 1/self.__fs
         self.__is_yt_not_nan = True
@@ -24,8 +24,8 @@ class KalmanFilter:
         self.__sigma_0_minus1 = P_0
         
         # Measurement update
-        self.__x_MU = None
-        self.__sigma_MU = None
+        self.__x_MU = overwrite_x_MU
+        self.__sigma_MU = overwrite_sigma_MU
 
         # Time update
         self.__x_TU = x_tilde_0
@@ -92,12 +92,13 @@ class KalmanFilter:
         self.__cache_TU_values()
 
     def reset(self, y_t, initial_Tt=0):
-        x_tilde_0 = self.__x_MU if self.__is_yt_not_nan else self.__x_TU
+        self.__x_MU[1, 0] = 0.
+        # x_tilde_0 = self.__x_MU if self.__is_yt_not_nan else self.__x_TU
         # reset the altitude estimate to current measurement and velocity estimate to zero
-        x_tilde_0[0, 0] = y_t
-        x_tilde_0[1, 0] = 0
-        p_0 = self.__sigma_MU if self.__is_yt_not_nan else self.__sigma_TU
-        self.__init__(sampling_frequency=self.__fs, initial_Tt=initial_Tt, x_tilde_0=x_tilde_0, P_0=p_0, cache_values=self.__cache_values)        
+        # x_tilde_0[0, 0] = y_t
+        # x_tilde_0[1, 0] = 0
+        # p_0 = self.__sigma_MU if self.__is_yt_not_nan else self.__sigma_TU
+        # self.__init__(sampling_frequency=self.__fs, initial_Tt=initial_Tt, x_tilde_0=x_tilde_0, P_0=p_0, cache_values=self.__cache_values, overwrite_x_MU=x_tilde_0, overwrite_sigma_MU=np.zeros((4, 4)))        
 
     def run(self, Tt, pitch_rad, roll_rad, y_t):
         self.__is_yt_not_nan = not (np.isnan(y_t) or y_t < 0)
