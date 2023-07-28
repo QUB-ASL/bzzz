@@ -87,7 +87,7 @@ if __name__ == '__main__':
     def process_radio_data():
         if use_altitude_hold[0]:
             altitude_ref_mts[0] = current_altitude_snap_shot_mts[0] + (var_e_RC_mid_percentage[0] - rc.trimmer_VRE_percentage())*altitude_shifter_range_mts[0]
-            print(f"Using altitude hold: Tref_LQR = {throttle_ref_from_LQR[0]}, {altitude_ref_mts}")
+            print(f"Using altitude hold: Tref_LQR = {throttle_ref_from_LQR[0]}, alt_ref={altitude_ref_mts} mts")
         channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0][0][0] if use_altitude_hold[0] else -1)
         use_altitude_hold[0] = rc.switch_C() == True
         is_data_log_kill[0] = rc.switch_A() == True
@@ -150,6 +150,7 @@ if __name__ == '__main__':
         # and the current ToF sensor readings. In this case if the ToF returns outliers send current altitude as desired altitude to LQR so it has no control.
         temp = tof.altitude
         is_drone_flying_close_to_ground[0] = temp/1000 < min_altitude_to_activate_AltiHold_mts[0]
+        print(f"curr_alt={temp/1000} mts")
         if is_drone_flying_close_to_ground[0]:
             z_hat[0] = current_altitude_snap_shot_mts[0] if temp == -1 else temp/1000
             print(f"Cannot activate Altitude hold. Drone is flying close to the ground at {temp/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
@@ -175,7 +176,7 @@ if __name__ == '__main__':
         
         if use_altitude_hold[0]:
             throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0], reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
-            throttle_ref_from_LQR[0] = min(throttle_ref_from_LQR[0]*500, 500) + 1000
+            throttle_ref_from_LQR[0] = min(throttle_ref_from_LQR[0]*600, 600) + 1000
         if temp == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
         time_cache.append((time_ns() - time_before_thread_starts)/1000000)

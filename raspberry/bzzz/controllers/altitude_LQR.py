@@ -33,7 +33,7 @@ class LQR:
 
         self.__Q = np.array([
             [50, 0],
-            [0, 4]
+            [0, 12]
         ])
         self.__R = np.array([[10]])
         self.__kappa = np.zeros((1, 2))
