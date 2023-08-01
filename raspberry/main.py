@@ -44,7 +44,7 @@ if __name__ == '__main__':
     is_data_log_kill = [False]
 
     # Altitude hold vars
-    throttle_ref_from_LQR = [0]
+    throttle_ref_from_LQR = [np.array([[0.]])]
     use_altitude_hold = [False]
     Tref_t = [0.0]
     altitude_ref_mts = [0.09]
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     var_e_RC_mid_percentage = [0.5]
     altitude_shifter_range_mts = [0.5]
     is_drone_flying_close_to_ground = [False]
-    min_altitude_to_activate_AltiHold_mts = [0.15]
+    min_altitude_to_activate_AltiHold_mts = [0.103]
     is_KF_ran_atleast_once = [False]
     z_hat = [0.]
     v_hat = [0.]
@@ -87,11 +87,13 @@ if __name__ == '__main__':
     def process_radio_data():
         if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0]:
             altitude_ref_mts[0] = current_altitude_snap_shot_mts[0] + (var_e_RC_mid_percentage[0] - rc.trimmer_VRE_percentage())*altitude_shifter_range_mts[0]
+            altitude_ref_mts[0] = max(0, altitude_ref_mts[0])
             print(f"Using altitude hold: Tref_LQR = {throttle_ref_from_LQR[0]}, alt_ref={altitude_ref_mts} mts")
-        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0][0][0] if use_altitude_hold[0] else -1)
+        channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=int((throttle_ref_from_LQR[0][0][0] - 1000)*1400/900 + 300) if use_altitude_hold[0] else -1)
         use_altitude_hold[0] = rc.switch_C() == True
         is_data_log_kill[0] = rc.switch_A() == True
         Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
+        print(f"Tref_RC:  {channel_data}")
         throttle_ref_cache.append(Tref_t[0])
 
     def process_ESP_data():
@@ -153,8 +155,8 @@ if __name__ == '__main__':
         
         if use_altitude_hold[0]:
             throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0], reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
-            throttle_ref_from_LQR[0] = np.array([[min(throttle_ref_from_LQR[0][0][0]*600, 600) + 1000]])
-            Tref_t[0] = throttle_ref_from_LQR[0][0][0]
+            throttle_ref_from_LQR[0] = np.array([[max(1000, min(throttle_ref_from_LQR[0][0][0]*900, 600) + 1000)]])
+            Tref_t[0] = (throttle_ref_from_LQR[0][0][0] - 1000)/900
         if temp == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
         time_cache.append((time_ns() - time_before_thread_starts)/1000000)
@@ -173,7 +175,7 @@ if __name__ == '__main__':
     time_before_thread_starts = time_ns()
     scheduler.schedule("process_radio_data", process_radio_data, function_call_frequency=50, function_call_count=0)
     scheduler.schedule("process_ESP_data", process_ESP_data, function_call_frequency=50, function_call_count=0)
-    scheduler.schedule("read_ToF_run_kf_and_LQR", read_ToF_run_kf_and_LQR, function_call_frequency=50, function_call_count=0)
+    scheduler.schedule("read_ToF_run_kf_and_LQR", read_ToF_run_kf_and_LQR, function_call_frequency=sampling_frequency, function_call_count=0)
     while True:
         scheduler.run()
         if not is_data_saved[0] and is_data_log_kill[0]:

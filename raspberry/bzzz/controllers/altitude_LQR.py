@@ -79,7 +79,7 @@ class LQR:
             self.__recalculate_reference_tracker_dynamics_and_matrix(reference_altitude_mts=reference_altitude_mts)
             self.__calculate_x_and_u_bar()
             self.__calculate_stabilising_gain()
-        return self.__kappa@(current_states_z_and_vz - self.__x_and_u_bar[:2, :]) + self.__x_and_u_bar[2, :]
+        return 0.1*self.__kappa@(current_states_z_and_vz - self.__x_and_u_bar[:2, :]) + self.__x_and_u_bar[2, :]
     
 
 
