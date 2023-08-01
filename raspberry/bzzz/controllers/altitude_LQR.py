@@ -32,10 +32,10 @@ class LQR:
         self.__reference_tracker_matrix = np.zeros((3, 1))
 
         self.__Q = np.array([
-            [50, 0],
-            [0, 12]
+            [5, 0],
+            [0, 3]
         ])
-        self.__R = np.array([[10]])
+        self.__R = np.array([[5000]])
         self.__kappa = np.zeros((1, 2))
 
         self.__identity_mat_2_2 = np.eye(2, 2)

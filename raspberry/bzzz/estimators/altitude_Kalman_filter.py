@@ -15,7 +15,7 @@ class KalmanFilter:
         self.__C = np.array([[1, 0, 0, 0]])
 
         # Process noise
-        self.__Q = np.diagflat([1e-4, 1, 9.8, 1e-3])
+        self.__Q = np.diagflat([1e-4, 1, 5, 1e-3])
         # Measurement noise
         self.__R = 0.1
 
