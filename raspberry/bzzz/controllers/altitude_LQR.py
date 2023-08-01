@@ -32,10 +32,10 @@ class LQR:
         self.__reference_tracker_matrix = np.zeros((3, 1))
 
         self.__Q = np.array([
-            [5, 0],
+            [20, 0],
             [0, 3]
         ])
-        self.__R = np.array([[5000]])
+        self.__R = np.array([[500]])
         self.__kappa = np.zeros((1, 2))
 
         self.__identity_mat_2_2 = np.eye(2, 2)
@@ -79,7 +79,7 @@ class LQR:
             self.__recalculate_reference_tracker_dynamics_and_matrix(reference_altitude_mts=reference_altitude_mts)
             self.__calculate_x_and_u_bar()
             self.__calculate_stabilising_gain()
-        return 0.1*self.__kappa@(current_states_z_and_vz - self.__x_and_u_bar[:2, :]) + self.__x_and_u_bar[2, :]
+        return self.__kappa@(current_states_z_and_vz - self.__x_and_u_bar[:2, :]) + self.__x_and_u_bar[2, :]
     
 
 
