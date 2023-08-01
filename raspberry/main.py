@@ -85,7 +85,7 @@ if __name__ == '__main__':
         return euler_
 
     def process_radio_data():
-        if use_altitude_hold[0]:
+        if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0]:
             altitude_ref_mts[0] = current_altitude_snap_shot_mts[0] + (var_e_RC_mid_percentage[0] - rc.trimmer_VRE_percentage())*altitude_shifter_range_mts[0]
             print(f"Using altitude hold: Tref_LQR = {throttle_ref_from_LQR[0]}, alt_ref={altitude_ref_mts} mts")
         channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=throttle_ref_from_LQR[0][0][0] if use_altitude_hold[0] else -1)
@@ -93,18 +93,6 @@ if __name__ == '__main__':
         is_data_log_kill[0] = rc.switch_A() == True
         Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
         throttle_ref_cache.append(Tref_t[0])
-
-
-            
-        # if rc.parser.kill():
-            # altitude_cache_df = pd.DataFrame([[t, Tr, alt] for t, Tr, alt in zip(time_cache, throttle_ref_cache, tof.altitude_cache())])
-            # altitude_cache_df.to_csv("/home/bzzz/Desktop/data_log.csv", index=False, header=False)
-            # with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
-            #     file.write("time_stamps = %f,\n\n\n Throttle_reference = %f,\n\n\n altitude_cache = %f\n"%(time_cache, throttle_ref_cache, tof.altitude_cache()))
-            # tof.kill_ToF()
-            # altitude_logger_thread.cancel()
-            # scheduler.kill("process_radio_data")
-            # exit(0)
 
     def process_ESP_data():
         # process ESP data
@@ -162,6 +150,14 @@ if __name__ == '__main__':
 
         if not use_altitude_hold[0]:
             is_current_altitude_snap_shot_taken[0] = False
+        
+        if use_altitude_hold[0]:
+            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0], reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
+            throttle_ref_from_LQR[0] = np.array([[min(throttle_ref_from_LQR[0][0][0]*600, 600) + 1000]])
+            Tref_t[0] = throttle_ref_from_LQR[0][0][0]
+        if temp == -1:
+            print("ToF outlier or -ve distance detected, discarded the measurement.")
+        time_cache.append((time_ns() - time_before_thread_starts)/1000000)
 
         if not is_drone_flying_close_to_ground[0]:
             x_est = kf.run(Tref_t[0], euler[1], euler[2], np.nan if temp == -1 else temp/1000)
@@ -173,13 +169,6 @@ if __name__ == '__main__':
             beta_hat[0] = x_est[3][0]
         elif is_KF_ran_atleast_once[0]:
             kf.reset(0 if temp == -1 else temp, initial_Tt=Tref_t[0])
-        
-        if use_altitude_hold[0]:
-            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0], reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
-            throttle_ref_from_LQR[0] = min(throttle_ref_from_LQR[0]*600, 600) + 1000
-        if temp == -1:
-            print("ToF outlier or -ve distance detected, discarded the measurement.")
-        time_cache.append((time_ns() - time_before_thread_starts)/1000000)
 
     time_before_thread_starts = time_ns()
     scheduler.schedule("process_radio_data", process_radio_data, function_call_frequency=50, function_call_count=0)
