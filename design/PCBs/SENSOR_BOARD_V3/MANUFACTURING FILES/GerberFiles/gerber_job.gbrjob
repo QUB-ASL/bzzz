@@ -1,7 +1,7 @@
 {
     "Header": {
         "Comment": "All values are metric (mm)",
-        "CreationDate": "2023-07-04T16:45:37Z",
+        "CreationDate": "2023-07-27T10:56:55Z",
         "GenerationSoftware": {
             "Application": "Fusion 360 Electronics",
             "Vendor": "Autodesk",
@@ -13,7 +13,7 @@
         "BoardThickness": 1.57,
         "LayerNumber": 2,
         "Name": {
-            "ProjectId": "Sensor board v4"
+            "ProjectId": "Sensor board v6"
         },
         "Owner": "Caolan Boyle <cboyle67@qub.ac.uk>",
         "Size": {
