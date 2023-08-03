@@ -63,11 +63,11 @@ void setup()
 void setGainsFromRcTrimmers()
 {
   controller.setQuaternionGain(
-      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
+      - 0.470 * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
   controller.setAngularVelocityXYGain(
-      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
+      - 0.266 * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
   controller.setYawAngularVelocityGain(
-      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+      - 0.145 * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 }
 
 /**
