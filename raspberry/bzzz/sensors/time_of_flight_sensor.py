@@ -27,7 +27,7 @@ class TimeOfFlightSensor:
 
         self._init_ToF_sensor()
 
-    def _init_ToF_sensor(self, address=0x29, mode=VL53L0X.Vl53l0xAccuracyMode.HIGH_SPEED):
+    def _init_ToF_sensor(self, address=0x29, mode=VL53L0X.Vl53l0xAccuracyMode.LONG_RANGE):
         print("Init ToF, wait.....")
         self.tof = VL53L0X.VL53L0X(i2c_bus=1,i2c_address=address)        
         self.tof.open()

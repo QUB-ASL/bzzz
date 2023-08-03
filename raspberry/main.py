@@ -59,6 +59,12 @@ if __name__ == '__main__':
     v_hat = [0.]
     alpha_hat = [10.]
     beta_hat = [-9.81]
+    LQR_Q11_gain = [0.]
+    LQR_Q22_gain = [0.]
+    LQR_R_gain = [0.]
+    LQR_Q11_GAIN_MAX = 100
+    LQR_Q22_GAIN_MAX = 100
+    LQR_R_GAIN_MAX = 100
 
     _, plts = plt.subplots(4, 2)
 
@@ -88,12 +94,15 @@ if __name__ == '__main__':
         if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0]:
             altitude_ref_mts[0] = current_altitude_snap_shot_mts[0] + (var_e_RC_mid_percentage[0] - rc.trimmer_VRE_percentage())*altitude_shifter_range_mts[0]
             altitude_ref_mts[0] = max(0, altitude_ref_mts[0])
-            print(f"Using altitude hold: Tref_LQR = {throttle_ref_from_LQR[0]}, alt_ref={altitude_ref_mts} mts")
+            # print(f"Using altitude hold: Tref_LQR = {throttle_ref_from_LQR[0]}, alt_ref={altitude_ref_mts} mts")
         channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=int((throttle_ref_from_LQR[0][0][0] - 1000)*1400/900 + 300) if use_altitude_hold[0] else -1)
         use_altitude_hold[0] = rc.switch_C() == True
         is_data_log_kill[0] = rc.switch_A() == True
+        LQR_Q11_gain[0] = rc.trimmer_VRA_percentage()*LQR_Q11_GAIN_MAX + 1
+        LQR_Q22_gain[0] = rc.trimmer_VRB_percentage()*LQR_Q22_GAIN_MAX + 1
+        LQR_R_gain[0] = rc.trimmer_VRC_percentage()*LQR_R_GAIN_MAX + 1
         Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
-        print(f"Tref_RC:  {channel_data}")
+        # print(f"Tref_RC:  {channel_data}")
         throttle_ref_cache.append(Tref_t[0])
 
     def process_ESP_data():
@@ -140,6 +149,7 @@ if __name__ == '__main__':
         # and the current ToF sensor readings. In this case if the ToF returns outliers send current altitude as desired altitude to LQR so it has no control.
         temp = tof.altitude
         is_drone_flying_close_to_ground[0] = temp/1000 < min_altitude_to_activate_AltiHold_mts[0]
+        lqr.set_Q_and_R_matrix_gains(Q11=LQR_Q11_gain[0], Q22=LQR_Q22_gain[0], R=LQR_R_gain[0])
         print(f"curr_alt={temp/1000} mts")
         if is_drone_flying_close_to_ground[0]:
             z_hat[0] = current_altitude_snap_shot_mts[0] if temp == -1 else temp/1000
@@ -163,7 +173,7 @@ if __name__ == '__main__':
 
         if not is_drone_flying_close_to_ground[0]:
             x_est = kf.run(Tref_t[0], euler[1], euler[2], np.nan if temp == -1 else temp/1000)
-            print(f"KF::main::x_est = {x_est}")
+            # print(f"KF::main::x_est = {x_est}")
             is_KF_ran_atleast_once[0] = True
             z_hat[0] = x_est[0][0]
             v_hat[0] = x_est[1][0]

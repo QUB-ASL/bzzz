@@ -32,13 +32,18 @@ class LQR:
         self.__reference_tracker_matrix = np.zeros((3, 1))
 
         self.__Q = np.array([
-            [20, 0],
-            [0, 3]
+            [1, 0],
+            [0, 1]
         ])
-        self.__R = np.array([[500]])
+        self.__R = np.array([[100]])
         self.__kappa = np.zeros((1, 2))
 
         self.__identity_mat_2_2 = np.eye(2, 2)
+
+    def set_Q_and_R_matrix_gains(self, Q11, Q22, R):
+        self.__Q[0, 0] = Q11
+        self.__Q[1, 1] = Q22
+        self.__R[0, 0] = R
 
     def __recalculate_dynamics(self, alpha_t, beta_t, pitch_rad=0, roll_rad=0):
         self.__alpha_t = alpha_t
@@ -74,6 +79,7 @@ class LQR:
         self.__kappa[:, :] = -np.copy(kappa)
 
     def control_action(self, current_states_z_and_vz: np.array, alpha_t = 0, beta_t = 0, reference_altitude_mts = 1, recalculate_dynamics = False, pitch_rad=0, roll_rad=0):
+        print(f"LQR::gains{self.__Q, self.__R}")
         if recalculate_dynamics:
             self.__recalculate_dynamics(alpha_t=alpha_t, beta_t=beta_t, pitch_rad=pitch_rad, roll_rad=roll_rad)
             self.__recalculate_reference_tracker_dynamics_and_matrix(reference_altitude_mts=reference_altitude_mts)
