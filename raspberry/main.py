@@ -62,8 +62,8 @@ if __name__ == '__main__':
     LQR_Q11_gain = [0.]
     LQR_Q22_gain = [0.]
     LQR_R_gain = [0.]
-    LQR_Q11_GAIN_MAX = 100
-    LQR_Q22_GAIN_MAX = 100
+    LQR_Q11_GAIN_MAX = 0.1 # 100
+    LQR_Q22_GAIN_MAX = 0.2 # 100
     LQR_R_GAIN_MAX = 100
 
     _, plts = plt.subplots(4, 2)
@@ -98,8 +98,8 @@ if __name__ == '__main__':
         channel_data = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0", over_write_throttle_ref_to=int((throttle_ref_from_LQR[0][0][0] - 1000)*1400/900 + 300) if use_altitude_hold[0] else -1)
         use_altitude_hold[0] = rc.switch_C() == True
         is_data_log_kill[0] = rc.switch_A() == True
-        LQR_Q11_gain[0] = rc.trimmer_VRA_percentage()*LQR_Q11_GAIN_MAX + 1
-        LQR_Q22_gain[0] = rc.trimmer_VRB_percentage()*LQR_Q22_GAIN_MAX + 1
+        LQR_Q11_gain[0] = rc.trimmer_VRA_percentage()*LQR_Q11_GAIN_MAX
+        LQR_Q22_gain[0] = rc.trimmer_VRB_percentage()*LQR_Q22_GAIN_MAX
         LQR_R_gain[0] = rc.trimmer_VRC_percentage()*LQR_R_GAIN_MAX + 1
         Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
         # print(f"Tref_RC:  {channel_data}")
@@ -149,7 +149,7 @@ if __name__ == '__main__':
         # and the current ToF sensor readings. In this case if the ToF returns outliers send current altitude as desired altitude to LQR so it has no control.
         temp = tof.altitude
         is_drone_flying_close_to_ground[0] = temp/1000 < min_altitude_to_activate_AltiHold_mts[0]
-        lqr.set_Q_and_R_matrix_gains(Q11=LQR_Q11_gain[0], Q22=LQR_Q22_gain[0], R=LQR_R_gain[0])
+        # lqr.set_Q_and_R_matrix_gains(Q11=LQR_Q11_gain[0], Q22=LQR_Q22_gain[0], R=LQR_R_gain[0])
         print(f"curr_alt={temp/1000} mts")
         if is_drone_flying_close_to_ground[0]:
             z_hat[0] = current_altitude_snap_shot_mts[0] if temp == -1 else temp/1000
@@ -164,7 +164,8 @@ if __name__ == '__main__':
             is_current_altitude_snap_shot_taken[0] = False
         
         if use_altitude_hold[0]:
-            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0], reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2])                       
+            print(f"alphan hat: {alpha_hat[0]}   beta hat: {beta_hat[0]}    k11: {-LQR_Q11_gain[0]}     k12: {-LQR_Q22_gain[0]}")
+            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0], reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2], k11=-LQR_Q11_gain[0], k12=-LQR_Q22_gain[0])                       
             throttle_ref_from_LQR[0] = np.array([[max(1000, min(throttle_ref_from_LQR[0][0][0]*900, 600) + 1000)]])
             Tref_t[0] = (throttle_ref_from_LQR[0][0][0] - 1000)/900
         if temp == -1:

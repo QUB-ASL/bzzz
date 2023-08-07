@@ -45,6 +45,12 @@ class LQR:
         self.__Q[1, 1] = Q22
         self.__R[0, 0] = R
 
+    def __set_kappa_11_and_12(self, k11, k12):
+        if k11 != None:
+            self.__kappa[0, 0] = k11
+        if k12 != None:
+            self.__kappa[0, 1] = k12
+
     def __recalculate_dynamics(self, alpha_t, beta_t, pitch_rad=0, roll_rad=0):
         self.__alpha_t = alpha_t
         self.__beta_t = beta_t
@@ -78,13 +84,14 @@ class LQR:
         _, _, kappa = ctrl.dare(self.__A, self.__B_t, self.__Q, self.__R)
         self.__kappa[:, :] = -np.copy(kappa)
 
-    def control_action(self, current_states_z_and_vz: np.array, alpha_t = 0, beta_t = 0, reference_altitude_mts = 1, recalculate_dynamics = False, pitch_rad=0, roll_rad=0):
-        print(f"LQR::gains{self.__Q, self.__R}")
+    def control_action(self, current_states_z_and_vz: np.array, alpha_t = 0, beta_t = 0, reference_altitude_mts = 1, recalculate_dynamics = False, pitch_rad=0, roll_rad=0, k11=None, k12=None):
+        # print(f"LQR::gains{self.__Q, self.__R}")
         if recalculate_dynamics:
             self.__recalculate_dynamics(alpha_t=alpha_t, beta_t=beta_t, pitch_rad=pitch_rad, roll_rad=roll_rad)
             self.__recalculate_reference_tracker_dynamics_and_matrix(reference_altitude_mts=reference_altitude_mts)
             self.__calculate_x_and_u_bar()
             self.__calculate_stabilising_gain()
+        self.__set_kappa_11_and_12(k11, k12)
         return self.__kappa@(current_states_z_and_vz - self.__x_and_u_bar[:2, :]) + self.__x_and_u_bar[2, :]
     
 
