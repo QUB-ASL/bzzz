@@ -20,9 +20,9 @@ if __name__ == '__main__':
     sampling_frequency = 50
     
     # objects declaration
-    kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=0, x_tilde_0=np.array([[0], [0], [10], [-9.81]]), P_0=np.diagflat([1, 1, 1, 0.01]), cache_values=True)
+    kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=0, x_tilde_0=np.array([[0], [0], [10], [-9.81]]), P_0=np.diagflat([1, 1, 1, 0.01]), cache_values=False)
     lqr = LQR(sampling_frequency=sampling_frequency, initial_alpha_t=10, initial_beta_t=-9.81)
-    tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=1, cache_altitude=True, use_outlier_detection=True, abs_outlier_diff_thres=500)
+    tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=1, cache_altitude=False, use_outlier_detection=True, abs_outlier_diff_thres=500)
     rc = bzzz.read_sbus.RC()    
     scheduler = Scheduler(use_threading=False)
 
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         LQR_R_gain[0] = rc.trimmer_VRC_percentage()*LQR_R_GAIN_MAX + 1
         Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
         # print(f"Tref_RC:  {channel_data}")
-        throttle_ref_cache.append(Tref_t[0])
+        # throttle_ref_cache.append(Tref_t[0])
 
     def process_ESP_data():
         # process ESP data
@@ -134,11 +134,11 @@ if __name__ == '__main__':
                 full_quaternion = [q0] + quat
                 euler[0], euler[1], euler[2] = euler_angles(full_quaternion)
 
-                quat_cache.append(quat)
-                yaw_cache.append(euler[0])
-                pitch_cache.append(euler[1])
-                roll_cache.append(euler[2])
-                accelrometer_cache.append(acc[:])
+                # quat_cache.append(quat)
+                # yaw_cache.append(euler[0])
+                # pitch_cache.append(euler[1])
+                # roll_cache.append(euler[2])
+                # accelrometer_cache.append(acc[:])
                 # except Exception as e:
                 #     print("Exception in main.py: ", e)
                 #     pass
@@ -150,7 +150,7 @@ if __name__ == '__main__':
         temp = tof.altitude
         is_drone_flying_close_to_ground[0] = temp/1000 < min_altitude_to_activate_AltiHold_mts[0]
         # lqr.set_Q_and_R_matrix_gains(Q11=LQR_Q11_gain[0], Q22=LQR_Q22_gain[0], R=LQR_R_gain[0])
-        print(f"curr_alt={temp/1000} mts")
+        # print(f"curr_alt={temp/1000} mts")
         if is_drone_flying_close_to_ground[0]:
             z_hat[0] = current_altitude_snap_shot_mts[0] if temp == -1 else temp/1000
             print(f"Cannot activate Altitude hold. Drone is flying close to the ground at {temp/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
@@ -164,13 +164,13 @@ if __name__ == '__main__':
             is_current_altitude_snap_shot_taken[0] = False
         
         if use_altitude_hold[0]:
-            print(f"alphan hat: {alpha_hat[0]}   beta hat: {beta_hat[0]}    k11: {-LQR_Q11_gain[0]}     k12: {-LQR_Q22_gain[0]}")
             throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0], reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2], k11=-LQR_Q11_gain[0], k12=-LQR_Q22_gain[0])                       
             throttle_ref_from_LQR[0] = np.array([[max(1000, min(throttle_ref_from_LQR[0][0][0]*900, 600) + 1000)]])
             Tref_t[0] = (throttle_ref_from_LQR[0][0][0] - 1000)/900
+            print(f"alphan hat: {alpha_hat[0]} beta hat: {beta_hat[0]} k11: {-LQR_Q11_gain[0]} k12: {-LQR_Q22_gain[0]} Tref_LQR: {Tref_t[0]} alt_hat: {z_hat[0]} alt_ref: {altitude_ref_mts[0]}")
         if temp == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
-        time_cache.append((time_ns() - time_before_thread_starts)/1000000)
+        # time_cache.append((time_ns() - time_before_thread_starts)/1000000)
 
         if not is_drone_flying_close_to_ground[0]:
             x_est = kf.run(Tref_t[0], euler[1], euler[2], np.nan if temp == -1 else temp/1000)
@@ -190,58 +190,58 @@ if __name__ == '__main__':
     while True:
         scheduler.run()
         if not is_data_saved[0] and is_data_log_kill[0]:
-            print("saving data wait....")
-            is_data_saved[0] = True
-            accelrometer_cache_ = np.array(accelrometer_cache)
-            # altitude_logger_thread = bzzz.thread_this.run_thread_every_given_interval(0.02, run)
-            # scheduler.kill("process_radio_data")
-            # scheduler.kill("process_data")
-            date_time_now = datetime.now()
-            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az] for t, Tr, y, p, r, alt, ax, ay, az 
-                                          in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache, 
-                                                 tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[:, 1], accelrometer_cache_[:, 2])])
-            data_cache_df.to_csv(f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_{date_time_now.hour}:{date_time_now.minute}:{date_time_now.second}.csv", index=False, header=False)
-            # with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
-            #    file.write("time_stamps = %f,\n\n\n Throttle_reference = %f,\n\n\n altitude_cache = %f\n"%(time_cache, throttle_ref_cache, tof.altitude_cache()))
+        #     print("saving data wait....")
+        #     is_data_saved[0] = True
+        #     accelrometer_cache_ = np.array(accelrometer_cache)
+        #     # altitude_logger_thread = bzzz.thread_this.run_thread_every_given_interval(0.02, run)
+        #     # scheduler.kill("process_radio_data")
+        #     # scheduler.kill("process_data")
+        #     date_time_now = datetime.now()
+        #     data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az] for t, Tr, y, p, r, alt, ax, ay, az 
+        #                                   in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache, 
+        #                                          tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[:, 1], accelrometer_cache_[:, 2])])
+        #     data_cache_df.to_csv(f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_{date_time_now.hour}:{date_time_now.minute}:{date_time_now.second}.csv", index=False, header=False)
+        #     # with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
+        #     #    file.write("time_stamps = %f,\n\n\n Throttle_reference = %f,\n\n\n altitude_cache = %f\n"%(time_cache, throttle_ref_cache, tof.altitude_cache()))
             
-            print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelrometer_cache_}")
-            """plts[0, 0].plot(time_cache, throttle_ref_cache[:len(time_cache)])
-            plts[1, 0].plot(time_cache, rad2deg(yaw_cache[:len(time_cache)+1]))
-            plts[2, 0].plot(time_cache, rad2deg(pitch_cache[:len(time_cache)+1]))
-            plts[3, 0].plot(time_cache, rad2deg(roll_cache[:len(time_cache)+1]))
+        #     print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelrometer_cache_}")
+            # plts[0, 0].plot(time_cache, throttle_ref_cache[:len(time_cache)])
+            # plts[1, 0].plot(time_cache, rad2deg(yaw_cache[:len(time_cache)+1]))
+            # plts[2, 0].plot(time_cache, rad2deg(pitch_cache[:len(time_cache)+1]))
+            # plts[3, 0].plot(time_cache, rad2deg(roll_cache[:len(time_cache)+1]))
             
-            plts[0, 0].legend(["Throttle ref"])
-            plts[1, 0].legend(["Yaw deg"])
-            plts[2, 0].legend(["Pitch deg"])
-            plts[3, 0].legend(["Roll deg"])
-            plts[0, 0].set_xlabel("time ms")
-            plts[1, 0].set_xlabel("time ms")
-            plts[2, 0].set_xlabel("time ms")
-            plts[3, 0].set_xlabel("time ms")
-            plts[0, 0].set_ylabel("Throttle Ref")
-            plts[1, 0].set_ylabel("Yaw")
-            plts[2, 0].set_ylabel("Pitch")
-            plts[3, 0].set_ylabel("Roll")
+            # plts[0, 0].legend(["Throttle ref"])
+            # plts[1, 0].legend(["Yaw deg"])
+            # plts[2, 0].legend(["Pitch deg"])
+            # plts[3, 0].legend(["Roll deg"])
+            # plts[0, 0].set_xlabel("time ms")
+            # plts[1, 0].set_xlabel("time ms")
+            # plts[2, 0].set_xlabel("time ms")
+            # plts[3, 0].set_xlabel("time ms")
+            # plts[0, 0].set_ylabel("Throttle Ref")
+            # plts[1, 0].set_ylabel("Yaw")
+            # plts[2, 0].set_ylabel("Pitch")
+            # plts[3, 0].set_ylabel("Roll")
 
-            plts[0, 1].plot(time_cache[:len(tof.altitude_cache())], tof.altitude_cache()[:-1])
-            plts[1, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 0])
-            plts[2, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 1])
-            plts[3, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 2])
+            # plts[0, 1].plot(time_cache[:len(tof.altitude_cache())], tof.altitude_cache()[:-1])
+            # plts[1, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 0])
+            # plts[2, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 1])
+            # plts[3, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 2])
             
-            plts[0, 1].legend(["Altitude mm"])
-            plts[1, 1].legend(["Acc_x  g"])
-            plts[2, 1].legend(["Acc_y g"])
-            plts[3, 1].legend(["Acc_z g"])
-            plts[0, 1].set_xlabel("time ms")
-            plts[1, 1].set_xlabel("time ms")
-            plts[2, 1].set_xlabel("time ms")
-            plts[3, 1].set_xlabel("time ms")
-            plts[0, 1].set_ylabel("Altitude Z")
-            plts[1, 1].set_ylabel("Acc_x")
-            plts[2, 1].set_ylabel("Acc_y")
-            plts[3, 1].set_ylabel("Acc_z")
+            # plts[0, 1].legend(["Altitude mm"])
+            # plts[1, 1].legend(["Acc_x  g"])
+            # plts[2, 1].legend(["Acc_y g"])
+            # plts[3, 1].legend(["Acc_z g"])
+            # plts[0, 1].set_xlabel("time ms")
+            # plts[1, 1].set_xlabel("time ms")
+            # plts[2, 1].set_xlabel("time ms")
+            # plts[3, 1].set_xlabel("time ms")
+            # plts[0, 1].set_ylabel("Altitude Z")
+            # plts[1, 1].set_ylabel("Acc_x")
+            # plts[2, 1].set_ylabel("Acc_y")
+            # plts[3, 1].set_ylabel("Acc_z")
 
-            plt.savefig("ToF_data_plot_with_pitch_and_roll.svg")"""
+            # plt.savefig("ToF_data_plot_with_pitch_and_roll.svg")
             # plt.show()
             # tof.kill_ToF()
             print("Saving done!")
