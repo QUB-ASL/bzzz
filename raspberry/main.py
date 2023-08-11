@@ -33,8 +33,8 @@ if __name__ == '__main__':
     enable_plotting = [False]
     enable_show_plot = [False and enable_plotting[0]]
     enable_save_plot_to_file = [False and enable_plotting[0]]
-    if enable_plotting[0]:
-        _, plts = plt.subplots(4, 2)
+    # if enable_plotting[0]:
+    _, plts = plt.subplots(4, 2)
     
     # objects declaration
     kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=0,
@@ -50,22 +50,22 @@ if __name__ == '__main__':
 
     # NOTE: single element lists are used to avoid python-env re-declaring new local variables with in the functions that follow below.
     # data caching and logging
-    if enable_caching[0]:
-        time_cache = []
-        quat_cache = []
-        yaw_cache = []
-        pitch_cache = []
-        roll_cache = []
-        throttle_ref_cache = []
-        accelrometer_cache = []
-        time_before_thread_starts = [0]
+    # if enable_caching[0]:
+    time_cache = []
+    quat_cache = []
+    yaw_cache = []
+    pitch_cache = []
+    roll_cache = []
+    throttle_ref_cache = []
+    accelrometer_cache = []
+    time_before_thread_starts = [0]
 
-        quat = [0., 0., 0.]
-        acc = [0., 0., 0.]
-        euler = [0., 0., 0.]
+    quat = [0., 0., 0.]
+    acc = [0., 0., 0.]
+    euler = [0., 0., 0.]
 
-        is_data_saved = [False]
-        is_data_log_kill = [False]
+    is_data_saved = [False]
+    is_data_log_kill = [False]
 
     # Altitude hold vars
     throttle_ref_from_LQR = [np.array([[0.]])]
@@ -161,8 +161,8 @@ if __name__ == '__main__':
         rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=False, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0",
                                                  over_write_throttle_ref_to=int((throttle_ref_from_LQR[0][0][0] - 1000)*1400/900 + 300) if use_altitude_hold[0] else -1)
         # update shared variables using RC data
-        use_altitude_hold[0] = rc.switch_C() == True  # is altitude hold enabled?
         is_data_log_kill[0] = rc.switch_A() == True  # is data logging killed and data saving requested?
+        use_altitude_hold[0] = rc.switch_C() == True  # is altitude hold enabled?
         LQR_Q11_gain[0] = rc.trimmer_VRA_percentage()*LQR_Q11_GAIN_MAX  # Kappa11 gain from RC
         LQR_Q22_gain[0] = rc.trimmer_VRB_percentage()*LQR_Q22_GAIN_MAX  # kappa22 gain from RC
         LQR_R_gain[0] = rc.trimmer_VRC_percentage()*LQR_R_GAIN_MAX + 1  # R data for LQR from RC
@@ -228,12 +228,12 @@ if __name__ == '__main__':
             print(f"Something wrong with the ToF, maximum number of consecutive altitude outliers recorded: {num_consecutive_altitude_outliers_count_thus_far[0]}."
                   "".format("\n   **It is recommended to use manual mode in this situation**." if use_altitude_hold[0] else ""))
 
-        is_drone_flying_close_to_ground[0] = last_valid_altitude_measurement_mts[0]/1000 < min_altitude_to_activate_AltiHold_mts[0]
+        is_drone_flying_close_to_ground[0] = last_valid_altitude_measurement_mts[0] < min_altitude_to_activate_AltiHold_mts[0]
         # lqr.set_Q_and_R_matrix_gains(Q11=LQR_Q11_gain[0], Q22=LQR_Q22_gain[0], R=LQR_R_gain[0])
 
         if is_drone_flying_close_to_ground[0]:
             z_hat[0] = current_altitude_snap_shot_mts[0] if temp == -1 else temp/1000
-            print(f"Cannot activate Altitude hold. Drone is flying close to the ground at {temp/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
+            print(f"Cannot activate Altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
             if is_KF_ran_atleast_once[0]:
                 kf.reset(0 if temp == -1 else temp, initial_Tt=Tref_t[0])
         else:
