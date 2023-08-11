@@ -253,7 +253,10 @@ if __name__ == '__main__':
                 is_current_altitude_snap_shot_taken[0] = False
         
         if use_altitude_hold[0]:
-            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0], reference_altitude_mts=altitude_ref_mts[0], recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2], k11=-LQR_Q11_gain[0], k12=-LQR_Q22_gain[0])                       
+            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0],
+                                                           reference_altitude_mts=altitude_ref_mts[0],
+                                                             recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2],
+                                                               k11=-LQR_Q11_gain[0], k12=-LQR_Q22_gain[0])                       
             throttle_ref_from_LQR[0] = np.array([[max(1000, min(throttle_ref_from_LQR[0][0][0]*900, 600) + 1000)]])
             Tref_t[0] = (throttle_ref_from_LQR[0][0][0] - 1000)/900
             print(f"alphan hat: {alpha_hat[0]} beta hat: {beta_hat[0]} k11: {-LQR_Q11_gain[0]} k12: {-LQR_Q22_gain[0]} Tref_LQR: {Tref_t[0]} alt_hat: {z_hat[0]} alt_ref: {altitude_ref_mts[0]}")
