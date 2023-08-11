@@ -1,4 +1,5 @@
 # TODO: REFINE THIS CODE
+# NOTE: THIS IS FOR FUTURE PURPOSES, CURRENTLY IT HAS NO USAGE
 
 from sensors.pressure_sensor import PressureSensor as PS
 from sensors.time_of_flight_sensor import TimeOfFlightSensor as ToF

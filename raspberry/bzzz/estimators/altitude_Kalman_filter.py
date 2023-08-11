@@ -1,9 +1,9 @@
-# TODO: Documentation
 import numpy as np
 import math
 
 class KalmanFilter:
     def __init__(self, sampling_frequency=10, initial_Tt=0., x_tilde_0=np.zeros((4, 1)), P_0=np.eye(4, 4)*100, cache_values=False, overwrite_x_MU=None, overwrite_sigma_MU=None) -> None:
+        # sampling frequency
         self.__fs = sampling_frequency
         self.__Ts = 1/self.__fs
         self.__is_yt_not_nan = True
@@ -59,6 +59,9 @@ class KalmanFilter:
             self.__cache_TU_values()
 
     def __update_At(self):
+        """Update state matrix At. 
+        NOTE: This function should be called whenever Tt is updated.
+        """
         k_t = 0.5*self.__Ts**2
 
         self.__At = np.array([
@@ -69,15 +72,37 @@ class KalmanFilter:
         ])
 
     def __update_Tt(self, Tt, pitch_rad, roll_rad):
+        """Update the throttle reference/ system input.
+
+        :param Tt: Current normalized throttle reference.
+        :param pitch_rad: current drone pitch in radians.
+        :param roll_rad: current drone roll in radians.
+        """
         self.__Tt = math.cos(pitch_rad) * math.cos(roll_rad) * float(Tt)
 
     def MU_cache(self):
+        """returns Measurement update cache data.
+
+        :return: list of measurement update cache data.
+        """
         return self.__x_MU_cache, self.__sigma_MU_cache
     
     def TU_cache(self):
+        """returns Time update cache data.
+
+        :return: list of time update cache data.
+        """
         return self.__x_TU_cache, self.__sigma_TU_cache
 
-    def __measurement_update(self, y_t):
+    def __measurement_update(self, y_t, pitch_rad=0., roll_rad=0.):
+        """Does measurement update step of the Kalman filter.
+
+        :param y_t: Current altitude measurement.
+        :param pitch_rad: current drone pitch in radians, defaults to 0.
+        :param roll_rad: current drone roll in radians, defaults to 0.
+        """
+        # NOTE: The below line is added new and untested
+        y_t = y_t * math.cos(pitch_rad) * math.cos(roll_rad)
         # this is just a number
         the_inv = self.__C@self.__sigma_TU@self.__C.T + self.__R
         the_inv = 1/the_inv
@@ -87,25 +112,37 @@ class KalmanFilter:
         self.__cache_MU_values()
     
     def __time_update(self):
+        """Does time update step of the kalman filter.
+        """
         self.__x_TU = self.__At@self.__x_MU
         self.__sigma_TU = self.__At@self.__sigma_MU@self.__At.T + self.__Q
         self.__cache_TU_values()
 
-    def reset(self, y_t, initial_Tt=0):
+    def reset(self):
+        """reset the kalman filter velocity estimate.
+        NOTE: only call this if the drone is close to ground and/ or the system dynamics are altered.
+        """
         self.__x_MU[1, 0] = 0.
-        # x_tilde_0 = self.__x_MU if self.__is_yt_not_nan else self.__x_TU
-        # reset the altitude estimate to current measurement and velocity estimate to zero
-        # x_tilde_0[0, 0] = y_t
-        # x_tilde_0[1, 0] = 0
-        # p_0 = self.__sigma_MU if self.__is_yt_not_nan else self.__sigma_TU
-        # self.__init__(sampling_frequency=self.__fs, initial_Tt=initial_Tt, x_tilde_0=x_tilde_0, P_0=p_0, cache_values=self.__cache_values, overwrite_x_MU=x_tilde_0, overwrite_sigma_MU=np.zeros((4, 4)))        
 
     def run(self, Tt, pitch_rad, roll_rad, y_t):
+        """Runs the Kalman filter for one step
+
+        :param Tt: Current normalized throttle reference.
+        :param pitch_rad: Current drone pitch in radians.
+        :param roll_rad: Current drone roll in radians.
+        :param y_t: Current altitude measurement in meters.
+        :return: State estimate.
+        """
+        # Check if altitude measurement is nan or outlier (which is indicated by -1/1000).
         self.__is_yt_not_nan = not (np.isnan(y_t) or y_t < 0)
+        # Update the throttle reference.
         self.__update_Tt(Tt, pitch_rad, roll_rad)
+        # update the system matrix At.
         self.__update_At()
+        # only do the measurement update if a valid measurement is received.
         if self.__is_yt_not_nan:
-            self.__measurement_update(y_t)
-        self.__time_update()
+            self.__measurement_update(y_t, pitch_rad, roll_rad) # Do the measurement update.
+        self.__time_update() # Do the time update.
+        # return measurement update estimate if a valid measurement is received else reuturn time update estimate.
         return self.__x_MU if self.__is_yt_not_nan else self.__x_TU
  
