@@ -85,7 +85,8 @@ class RC:
         """
         try:
             _is_connected, _packet_age, channel_data = self.get_radio_data()
-            print(f"Radio not connected; Status _is_connected: {_is_connected}")
+            if not _is_connected:
+                print(f"Radio not connected; Status _is_connected: {_is_connected}")
             if _is_connected:
                 channel_data = self.parse_radio_data(channel_data, over_write_throttle_ref_to=over_write_throttle_ref_to)
                 if force_send_fake_data:

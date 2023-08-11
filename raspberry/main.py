@@ -27,9 +27,9 @@ if __name__ == '__main__':
     # sampling frequency of KF and LQR
     sampling_frequency = 50
     # caching and plotting configuration
-    enable_caching = [False]
-    enable_save_cache_to_csv = [False and enable_caching[0]]
-    enable_printing_cache_to_screen = [False and enable_caching[0]]
+    enable_caching = [True]
+    enable_save_cache_to_csv = [True and enable_caching[0]]
+    enable_printing_cache_to_screen = [True and enable_caching[0]]
     enable_plotting = [False]
     enable_show_plot = [False and enable_plotting[0]]
     enable_save_plot_to_file = [False and enable_plotting[0]]
@@ -40,11 +40,11 @@ if __name__ == '__main__':
     kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=0,
                        x_tilde_0=np.array([[0], [0], [10], [-9.81]]),
                          P_0=np.diagflat([1, 1, 1, 0.01]),
-                           cache_values=False)
+                           cache_values=True)
     lqr = LQR(sampling_frequency=sampling_frequency,
                initial_alpha_t=10, initial_beta_t=-9.81)
     tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=1,
-                              cache_altitude=False, use_outlier_detection=True, abs_outlier_diff_thres=500)
+                              cache_altitude=True, use_outlier_detection=True, abs_outlier_diff_thres=500)
     rc = RC()    
     scheduler = Scheduler(use_threading=False)
 
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     roll_cache = []
     throttle_ref_cache = []
     accelrometer_cache = []
+    altitude_reference_cache_mts = []
     time_before_thread_starts = [0]
 
     quat = [0., 0., 0.]
@@ -140,6 +141,7 @@ if __name__ == '__main__':
             roll_cache.append(euler[2])
             accelrometer_cache.append(acc[:])
             time_cache.append((time_ns() - time_before_thread_starts[0])/1000000)
+            altitude_reference_cache_mts.append(altitude_ref_mts[0] if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1)
 
     # function to process radio data
     def process_radio_data():
@@ -235,7 +237,7 @@ if __name__ == '__main__':
             z_hat[0] = current_altitude_snap_shot_mts[0] if temp == -1 else temp/1000
             print(f"Cannot activate Altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
             if is_KF_ran_atleast_once[0]:
-                kf.reset(0 if temp == -1 else temp, initial_Tt=Tref_t[0])
+                kf.reset()
         else:
             x_est = kf.run(Tref_t[0], euler[1], euler[2], np.nan if temp == -1 else temp/1000)
             is_KF_ran_atleast_once[0] = True
@@ -279,16 +281,16 @@ if __name__ == '__main__':
             is_data_saved[0] = True
             accelrometer_cache_ = np.array(accelrometer_cache)
             date_time_now = datetime.now()
-            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az] for t, Tr, y, p, r, alt, ax, ay, az 
+            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref] for t, Tr, y, p, r, alt, ax, ay, az, alt_ref 
                                           in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache, 
-                                                 tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[:, 1], accelrometer_cache_[:, 2])])
+                                                 tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[:, 1], accelrometer_cache_[:, 2], altitude_reference_cache_mts)])
             data_cache_df.to_csv(f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_{date_time_now.hour}:{date_time_now.minute}:{date_time_now.second}.csv", index=False, header=False)
-            with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
-               file.write("time_stamps = %f,\n\n\n Throttle_reference = %f,\n\n\n altitude_cache = %f\n"%(time_cache, throttle_ref_cache, tof.altitude_cache()))
+            # with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
+            #   file.write("time_stamps = %f,\n\n\n Throttle_reference = %f,\n\n\n altitude_cache = %f\n"%(time_cache, throttle_ref_cache, tof.altitude_cache()))
             print("Saving done!")
             
             if enable_printing_cache_to_screen[0]:
-                print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelrometer_cache_}")
+                print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelrometer_cache_} \nalti_ref_mts{altitude_reference_cache_mts}")
             
             if enable_plotting[0]:
                 plts[0, 0].plot(time_cache, throttle_ref_cache[:len(time_cache)])
