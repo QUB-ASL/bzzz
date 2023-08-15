@@ -161,7 +161,7 @@ if __name__ == '__main__':
         # NOTE: There is this weird conversion for LQR throttle reference below, this is because the PI needs to send throttle reference in the range [300, 1400],
         # which is the actual range of the RC throttle stick.
         rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=False, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0",
-                                                 over_write_throttle_ref_to=int((throttle_ref_from_LQR[0][0][0] - 1000)*1400/900 + 300) if use_altitude_hold[0] else -1)
+                                                 over_write_throttle_ref_to=int((throttle_ref_from_LQR[0][0][0] - 1000)*1400/900 + 300) if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1)
         # update shared variables using RC data
         is_data_log_kill[0] = rc.switch_A() == True  # is data logging killed and data saving requested?
         use_altitude_hold[0] = rc.switch_C() == True  # is altitude hold enabled?
@@ -254,7 +254,7 @@ if __name__ == '__main__':
             else:
                 is_current_altitude_snap_shot_taken[0] = False
         
-        if use_altitude_hold[0]:
+        if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0]:
             throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0],
                                                            reference_altitude_mts=altitude_ref_mts[0],
                                                              recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2],
