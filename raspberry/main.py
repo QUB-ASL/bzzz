@@ -22,6 +22,9 @@ from bzzz.scheduler import Scheduler  # Task scheduler to run different function
 # within the python environment which could cause unwanted behaviour.
 from bzzz.estimators.altitude_Kalman_filter import KalmanFilter  # altitude dynamics state estimator
 from bzzz.controllers.altitude_LQR import LQR  # altitude hold controller
+from bzzz.sensors.position_tracker_camera import Camera
+from bzzz.estimators.position_Kalman_filter import PositionKalmanFilter
+from bzzz.controllers.position_tracker_PD_controller import PositionTrackerPDController
 
 if __name__ == '__main__':
     # sampling frequency of KF and LQR
@@ -46,6 +49,12 @@ if __name__ == '__main__':
     tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=1,
                               cache_altitude=True, use_outlier_detection=True, abs_outlier_diff_thres=500)
     rc = RC()    
+    cam = Camera(capture_device_id=0, frame_width=640, frame_height=480, fps=24, actual_QR_text="O",
+                 display_video_capture=True, draw_overlay=True, flip_image=True)
+    pos_kf = PositionKalmanFilter(sampling_frequency=24, initial_Tt=0,
+                                  initial_alpha_t=20, initial_input=np.zeros((2, 2)),
+                                  x_tilde_0=np.zeros((4, 1)), P_0=np.diagflat([1e-4, 1e-4, 1e-4, 1e-4]))
+    pos_PD = PositionTrackerPDController(kp=0.0765, kd=0.01, control_action_range=np.array([-0.01, 0.01]))
     scheduler = Scheduler(use_threading=False)
 
     # NOTE: single element lists are used to avoid python-env re-declaring new local variables with in the functions that follow below.
@@ -263,6 +272,11 @@ if __name__ == '__main__':
             Tref_t[0] = (throttle_ref_from_LQR[0][0][0] - 1000)/900
             print(f"alphan hat: {alpha_hat[0]} beta hat: {beta_hat[0]} k11: {-LQR_Q11_gain[0]} k12: {-LQR_Q22_gain[0]} Tref_LQR: {Tref_t[0]} alt_hat: {z_hat[0]} alt_ref: {altitude_ref_mts[0]}")
 
+    def run_position_reference_tracker():
+        # pixel position of QR center, yaw
+        x, y, heading = cam.run()
+        pos_kf.run(Tt=Tref_t[0], alpha_t=alpha_hat[0], pitch_rad=euler[1], roll_rad=euler[2], y_t=np.array([[x], [y]]))
+    
     if enable_caching[0]:
         time_before_thread_starts[0] = time_ns()
 
