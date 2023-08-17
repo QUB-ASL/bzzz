@@ -2,11 +2,17 @@ from bzzz.sensors.filters import median_filter
 from time import time_ns, sleep
 from datetime import datetime
 import VL53L0X
-import os 
+import os
+
 
 class TimeOfFlightSensor:
     # NOTE: This class fetches altitude in millimeters and this class requires i2c interfacing with the sensor.
-    def __init__(self, num_latest_readings_to_keep: int = 3, use_sleep=False, cache_altitude = False, use_outlier_detection = False, abs_outlier_diff_thres = 500):
+    def __init__(self,
+                 num_latest_readings_to_keep: int = 3,
+                 use_sleep=False,
+                 cache_altitude=False,
+                 use_outlier_detection=False,
+                 abs_outlier_diff_thres=500):
         """Time of flight sensor class initialization.
 
         :param num_latest_readings_to_keep: Window length for median filter, defaults to 3
@@ -20,7 +26,7 @@ class TimeOfFlightSensor:
         self._altitude_readings_list = None
         self._altitude_readings_list_current_index = None
         self._num_latest_readings_to_keep = num_latest_readings_to_keep
-        
+
         # previous measurement varaibles.
         self._previous_altitude = None
         self._last_update_time = None
@@ -35,16 +41,18 @@ class TimeOfFlightSensor:
         self.__abs_outlier_diff_thres = abs_outlier_diff_thres
 
         # Call for sensor initialization.
-        self._init_ToF_sensor()
+        self.__init_ToF_sensor()
 
-    def _init_ToF_sensor(self, address=0x29, mode=VL53L0X.Vl53l0xAccuracyMode.LONG_RANGE):
+    def __init_ToF_sensor(self,
+                          address=0x29,
+                          mode=VL53L0X.Vl53l0xAccuracyMode.LONG_RANGE):
         """Function to initialize the ToF sensor.
 
         :param address: ToF sensor physical i2C address, defaults to 0x29
         :param mode: Sensor mode of operation, defaults to VL53L0X.Vl53l0xAccuracyMode.LONG_RANGE
         """
         print("Init ToF, wait.....")
-        self.tof = VL53L0X.VL53L0X(i2c_bus=1,i2c_address=address)        
+        self.tof = VL53L0X.VL53L0X(i2c_bus=1, i2c_address=address)
         self.tof.open()
         self.tof.start_ranging(mode=mode)
         self.timing = self.tof.get_timing()
@@ -54,9 +62,10 @@ class TimeOfFlightSensor:
         self._altitude_readings_list = list()
         self._altitude_readings_list_current_index = 0
         for _ in range(self._num_latest_readings_to_keep):
-            self._altitude_readings_list.append(self._get_current_ToF_measurement())
+            self._altitude_readings_list.append(
+                self.__get_current_ToF_measurement())
             sleep(self.timing/1000000.0)
-        self.update_altitude()
+        self.__update_altitude()
         print("Init ToF, Done!")
 
     @property
@@ -74,14 +83,14 @@ class TimeOfFlightSensor:
         :param threshold: new threshold value.
         """
         self.__abs_outlier_diff_thres = threshold
-        
+
     @property
     def altitude(self):
         """Updates and returns the current altitude measurement in mm.
 
         :return: If there is no measurement error the function returns the current altitude measurement in mm else -1.
         """
-        status = self.update_altitude()
+        status = self.__update_altitude()
         if status == -1:
             return -1
         return self._current_altitude
@@ -89,7 +98,8 @@ class TimeOfFlightSensor:
     @altitude.setter
     def altitude(self, val):
         """Setter for altitude measurement.
-        NOTE: only use this for testing purposes, do not manually set the measurement during flight. This action will 
+        NOTE: only use this for testing purposes, do not manually 
+        set the measurement during flight. This action will 
         overwrite the actual measurement.
 
         :param val: manual measurement value.
@@ -103,7 +113,7 @@ class TimeOfFlightSensor:
         """
         return self._altitude_cache
 
-    def _get_current_ToF_measurement(self):
+    def __get_current_ToF_measurement(self):
         """Fetches the latest ToF sensor measurement.
 
         :return: latest altitude measurement in mm.
@@ -111,13 +121,13 @@ class TimeOfFlightSensor:
         ToF_distance_reading = self.tof.get_distance()
         return ToF_distance_reading
 
-    def _update_ToF(self):
+    def __update_ToF(self):
         """Fetches latest ToF measurement. Updates altitude measurement based on outlier detection and/ median fliter.
 
         :return: -1 if there is an outlier or sudden change in altitude which is greater than absolute outlier difference threshold 
         or sensor is not working properly.
         """
-        ToF_distance_reading = self._get_current_ToF_measurement()
+        ToF_distance_reading = self.__get_current_ToF_measurement()
         if ToF_distance_reading < 0 or (self.use_outlier_detection and (abs(ToF_distance_reading - (self._current_altitude if self._current_altitude is not None else 500)) > self.__abs_outlier_diff_thres)):
             return -1
         self._altitude_readings_list[self._altitude_readings_list_current_index] = ToF_distance_reading
@@ -125,9 +135,10 @@ class TimeOfFlightSensor:
             self._altitude_readings_list_current_index += 1
         else:
             self._altitude_readings_list_current_index = 0
-        self._current_altitude = median_filter(self._altitude_readings_list, self._num_latest_readings_to_keep)
+        self._current_altitude = median_filter(
+            self._altitude_readings_list, self._num_latest_readings_to_keep)
 
-    def update_altitude(self):
+    def __update_altitude(self):
         """Updates the Altitude measurement in mm.
 
         :return: None if valid measurement is taken. -1 otherwise.
@@ -135,7 +146,7 @@ class TimeOfFlightSensor:
         time_now = time_ns()
         if self.use_sleep == -1:
             temp = self._current_altitude
-            if self._update_ToF() != -1:
+            if self.__update_ToF() != -1:
                 self._previous_altitude = temp
                 if self.cache_altitude:
                     self._altitude_cache.append(self._current_altitude)
@@ -150,7 +161,7 @@ class TimeOfFlightSensor:
         if not self.use_sleep:
             if time_now - self._last_update_time > self.timing*1000:
                 temp = self._current_altitude
-                if self._update_ToF() != -1:
+                if self.__update_ToF() != -1:
                     self._previous_altitude = temp
                     if self.cache_altitude:
                         self._altitude_cache.append(self._current_altitude)
@@ -162,7 +173,7 @@ class TimeOfFlightSensor:
                 self._last_update_time = time_now
         else:
             temp = self._current_altitude
-            if self._update_ToF() != -1:
+            if self.__update_ToF() != -1:
                 self._previous_altitude = temp
                 if self.cache_altitude:
                     self._altitude_cache.append(self._current_altitude)
@@ -172,7 +183,7 @@ class TimeOfFlightSensor:
                 print("ToF sensor returning -ve distance....\nretrying....")
                 return -1
             sleep(self.timing/1000000)
-        
+
     def kill_ToF(self):
         """Kill the ToF sensor. 
         NOTE: After killing the sensor will stop measuring the altitude. It needs to be reinitialized to start measuring again.
@@ -180,8 +191,7 @@ class TimeOfFlightSensor:
         print("Killing ToF, wait...")
         self.tof.stop_ranging()
         self.tof.close()
-        print("Killed Tof.")
-
+        print("Killed ToF")
 
 
 # Test script.
@@ -190,9 +200,7 @@ if __name__ == "__main__":
     time_before_loop_starts = time_ns()
     with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
         for i in range(100):
-            tof.update_altitude()
-            print("Altitude in mm: %d   itr: %d" %(tof.altitude, i))
-            file.write("%f, %f, %f\n"%((time_ns() - time_before_loop_starts)/1000000, i, tof.altitude))
-    tof.kill_ToF()  
-
-    
+            print("Altitude in mm: %d   itr: %d" % (tof.altitude, i))
+            file.write("%f, %f, %f\n" % (
+                (time_ns() - time_before_loop_starts)/1000000, i, tof.altitude))
+    tof.kill_ToF()
