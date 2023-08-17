@@ -282,7 +282,7 @@ if __name__ == '__main__':
             if is_KF_ran_atleast_once[0]:
                 kf.reset()
         else:
-            x_est = kf.run(Tref_t[0], euler[1], euler[2],
+            x_est = kf.update(Tref_t[0], euler[1], euler[2],
                            np.nan if temp == -1 else temp/1000)
             is_KF_ran_atleast_once[0] = True
             z_hat[0] = x_est[0][0]

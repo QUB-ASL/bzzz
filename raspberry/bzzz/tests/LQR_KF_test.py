@@ -40,7 +40,7 @@ y_t = np.zeros(num_data_points_collected)
 throttle_ref_from_LQR = np.zeros(num_data_points_collected)
 for i in range(num_data_points_collected):
     y_t[i] = altitude_measurements_t[i]
-    x_est = kf.run(Tref_t[i], pitch_measurements[i], roll_measurements[i], y_t[i]).reshape(4, )
+    x_est = kf.update(Tref_t[i], pitch_measurements[i], roll_measurements[i], y_t[i]).reshape(4, )
     z_hat = x_est[0]
     v_hat = x_est[1]
     alpha_hat = x_est[2]
