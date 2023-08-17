@@ -66,6 +66,8 @@ class RadioDataParser:
         """Maps radio stick positions to corresponding angles in radians linearly.
 
         :param x: Stick position data.
+        :param stick_min: Minimum value of radio stick, defaults to RADIO_STICK_MIN
+        :param stick_max: Maximum value of radio stick, defaults to RADIO_STICK_MAX
         :return: angle in radians.
         """
         return -PITCH_MAX_RAD + (x - stick_min) / (stick_max - stick_min) * 2 * PITCH_MAX_RAD
@@ -74,6 +76,8 @@ class RadioDataParser:
         """Linearly maps radio timmer or stick data to percentage [0, 1].
 
         :param x: Stick or trimmer position data.
+        :param stick_min: Minimum value of radio stick, defaults to RADIO_STICK_MIN
+        :param stick_max: Maximum value of radio stick, defaults to RADIO_STICK_MAX
         :return: Percentage in range [0, 1].
         """
         percentage = (x - stick_min) / (stick_max - stick_min)

@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: bzzz
+Version: 0.1.0
+Summary: Bzzz is a quadcopter
+Home-page: https://github.com/QUB-ASL/bzzz
+Author: ['Naga Venkata Sai Chandra Mouli', 'Jamie Rainey', 'Pantelis Sopasakis']
+Author-email: p.sopasakis@gmail.com
+License: MIT License
+Keywords: embedded
+Classifier: Topic :: Software Development :: Embedded Systems
+Description-Content-Type: text/markdown
+
+
+# Later

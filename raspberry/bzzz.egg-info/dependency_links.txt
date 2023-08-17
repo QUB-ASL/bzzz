@@ -1,0 +1,1 @@
+git+https://github.com/pimoroni/VL53L0X-python.git

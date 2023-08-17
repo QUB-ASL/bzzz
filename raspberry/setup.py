@@ -28,11 +28,11 @@ setup(name=NAME,
       description=DESCRIPTION,
       long_description=long_description,
       long_description_content_type='text/markdown',
-      author=['CM', 'Pantelis Sopasakis'],
+      author=['Naga Venkata Sai Chandra Mouli', 'Jamie Rainey', 'Pantelis Sopasakis'],
       author_email='p.sopasakis@gmail.com',
       license='MIT License',
-    #   packages=find_packages(
-    #       exclude=["icasadi", "templates"]),
+      packages=find_packages(
+          exclude=["tests/"]),
       include_package_data=True,
       install_requires=[
           'smbus', 'pigpio', 'bitarray', 'pyserial', 'VL53L0X', 'pandas', 'numpy', 'matplotlib', 'wheel', 'control'

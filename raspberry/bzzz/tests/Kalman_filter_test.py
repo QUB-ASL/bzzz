@@ -1,3 +1,4 @@
+# This is a KF test using simulated data.
 from matplotlib import pyplot as plt
 import numpy as np
 
