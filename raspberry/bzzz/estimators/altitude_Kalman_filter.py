@@ -2,7 +2,7 @@
 import numpy as np
 
 class KalmanFilter:
-    def __init__(self, sampling_frequency=10, initial_Tt=0., x_tilde_0=np.zeros((4, 1)), P_0=np.eye(4, 4)*100, cache_values=False) -> None:
+    def __init__(self, sampling_frequency=10, initial_Tt=0., x_tilde_0=np.zeros((4, 1)), P_0=np.eye(4, 4)*100, cache_values=False):
         self.__fs = sampling_frequency
         self.__Ts = 1/self.__fs
 
