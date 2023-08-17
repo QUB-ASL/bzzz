@@ -57,11 +57,6 @@ class RadioDataParser:
         self.rawRatePercentage = None
         self.switchValue = None
 
-    def __radio_calib(self):
-        """Takes 
-        """
-        pass
-
     def __map_radio_to_angle(self, x, stick_min=RADIO_STICK_MIN, stick_max=RADIO_STICK_MAX):
         """Maps radio stick positions to corresponding angles in radians linearly.
 
