@@ -133,6 +133,13 @@ namespace bzzz
         */
         float currentYawRad();
 
+        /**
+         * Get the acclerometer values
+         * @param accValues float array pointer of size 3 to store ax, ay, and az values
+        */
+        void getAcclerometerValues(float *accValues);
+
+
 /*
  * While flying we will not need to access the Euler angles,
  * so the following is available only in debug mode.

@@ -146,6 +146,13 @@ namespace bzzz
         float cosr_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
         return std::atan2(sinr_cosp, cosr_cosp);
     }
+    
+    void AHRS::getAcclerometerValues(float *accValues)
+    {
+        accValues[0] = m_imu.getAccX();
+        accValues[1] = m_imu.getAccY();
+        accValues[2] = m_imu.getAccZ();
+    }
 
 #ifdef BZZZ_DEBUG
     void AHRS::eulerAngles(float *euler)
