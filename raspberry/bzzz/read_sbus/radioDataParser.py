@@ -57,26 +57,21 @@ class RadioDataParser:
         self.rawRatePercentage = None
         self.switchValue = None
 
-    def __radio_calib(self):
-        """Takes 
-        """
-        pass
-
-    def __map_radio_to_angle(self, x, stick_min=RADIO_STICK_MIN, stick_max=RADIO_STICK_MAX):
+    def __map_radio_to_angle(self, x):
         """Maps radio stick positions to corresponding angles in radians linearly.
 
         :param x: Stick position data.
         :return: angle in radians.
         """
-        return -PITCH_MAX_RAD + (x - stick_min) / (stick_max - stick_min) * 2 * PITCH_MAX_RAD
+        return -PITCH_MAX_RAD + (x - RADIO_STICK_MIN) / (RADIO_STICK_MAX - RADIO_STICK_MIN) * 2 * PITCH_MAX_RAD
 
-    def __map_trimmer_to_percentage(self, x, stick_min = RADIO_STICK_MIN, stick_max = RADIO_STICK_MAX):
+    def __map_trimmer_to_percentage(self, x):
         """Linearly maps radio timmer or stick data to percentage [0, 1].
 
         :param x: Stick or trimmer position data.
         :return: Percentage in range [0, 1].
         """
-        percentage = (x - stick_min) / (stick_max - stick_min)
+        percentage = (x - RADIO_STICK_MIN) / (RADIO_STICK_MAX - RADIO_STICK_MIN)
         return max(min(percentage, 1), 0)
 
     def pitch_reference_angle_rad(self):
@@ -108,17 +103,17 @@ class RadioDataParser:
         """
         return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_THROTTLE])
 
-    def armed(self):
-        """Checks if the arm switch (switch B) has been toggled.
+    def switch_B(self):
+        """Checks if switch B has been toggled.
 
-        :return: Arm status. True if armed else False.
+        :return: switch B status. True if On else False.
         """
         return self.m_channelData[RADIO_CHANNEL_SWITCH_B] >= 1500
 
-    def kill(self):
-        """Checks if the kill switch (switch A) has been toggled.
+    def switch_A(self):
+        """Checks if switch A has been toggled.
 
-        :return: Kill status. True if killed else False.
+        :return: switch A status. True if On else False.
         """
         return self.m_channelData[RADIO_CHANNEL_SWITCH_A] >= 1500
 
@@ -209,9 +204,7 @@ class RadioDataParser:
             this is the Least-significant byte of the sent integer in which
             
             - bit `|B|` indicates switch B's position 
-              (This is given the first position because it is the arm switch)
             - bit `|A|` indicates switch A's position 
-              (This is the kill switch)
             - bits `|C|c|` together indicate switch C's position
             - bit `|D|` indicates switch D's position  
 
@@ -224,9 +217,9 @@ class RadioDataParser:
                  where each data point is seperated by a comma.
         """
         reArrangedYPRTData = [self.yaw_rate_reference_rad_sec(), self.pitch_reference_angle_rad(), self.roll_reference_angle_rad(), self.__map_prcnt(self.throttle_reference_percentage(), ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM)]
-        bitEncodedSwithcesData = (self.armed() << 4) | (self.kill() << 3) | (self.switch_C() << 1) | self.switch_D()
+        bitEncodedSwithcesData = (self.switch_B() << 4) | (self.switch_A() << 3) | (self.switch_C() << 1) | self.switch_D()
         reArrangedABCETrimmersData = [self.trimmer_VRA_percentage(), self.trimmer_VRB_percentage(), self.trimmer_VRC_percentage(), self.trimmer_VRE_percentage()]
 
         reArrangedData = reArrangedYPRTData + reArrangedABCETrimmersData
         
-        return ",".join(map(lambda x: str(x)[:5], reArrangedData)) + f",{bitEncodedSwithcesData}"
+        return reArrangedData + [bitEncodedSwithcesData], ",".join(map(lambda x: str(x)[:5], reArrangedData)) + f",{bitEncodedSwithcesData}"

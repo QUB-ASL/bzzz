@@ -1,8 +1,8 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
-from simulations.altitude_dynamics import AltitudeDynamics
-from estimators.altitude_Kalman_filter import KalmanFilter
+from bzzz.simulations.altitude_dynamics import AltitudeDynamics
+from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
 
 
 num_data_points_collected = 100
