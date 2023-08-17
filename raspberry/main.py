@@ -57,7 +57,6 @@ if __name__ == '__main__':
     throttle_ref_cache = []
     accelrometer_cache = []
     altitude_reference_cache_mts = []
-    actual_altitude_cache = []
     radio_data_cache = []
     KF_data_cache = []
     time_before_thread_starts = [0]
@@ -149,7 +148,6 @@ if __name__ == '__main__':
                 (time_ns() - time_before_thread_starts[0])/1000000)
             altitude_reference_cache_mts.append(
                 altitude_ref_mts[0] if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1)
-            actual_altitude_cache.append(z_hat[0])
             KF_data_cache.append(KF_data)
             radio_data_cache.append(channel_data[0])
 
@@ -351,14 +349,16 @@ if __name__ == '__main__':
             KF_data_cache_ = np.array(KF_data_cache)
 
             date_time_now = datetime.now()
-            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref, KF_acc_alti, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta]
-                                          for t, Tr, y, p, r, alt, ax, ay, az, alt_ref, KF_acc_alti, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta
+            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta]
+                                          for t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta
                                           in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache,
                                                  tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[
-                                                     :, 1], accelrometer_cache_[:, 2], altitude_reference_cache_mts, actual_altitude_cache,
+                                                     :, 1], accelrometer_cache_[:, 2], altitude_reference_cache_mts,
                                                  radio_data_cache, motor_PWM_cache_[:, 0], motor_PWM_cache_[
                                                      :, 1], motor_PWM_cache_[:, 2], motor_PWM_cache_[:, 3],
-                                                 KF_data_cache_[:, 0], KF_data_cache_[:, 1], KF_data_cache_[:, 2], KF_data_cache_[:, 3])])
+                                                 KF_data_cache_[:, 0], KF_data_cache_[:, 1], KF_data_cache_[:, 2], KF_data_cache_[:, 3])], 
+                                                 columns=['Time-stamp', 'T_ref', 'yaw', 'pitch', 'roll', 'ToF measurement', 'accX', 'accY', 'accZ', 'Ref alti', 'RC data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
+                                                          'KF alti est', 'KF vel est', 'KF alpha est', 'KF beta est'])
             data_cache_df.to_csv(
                 f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_{date_time_now.hour}:{date_time_now.minute}:{date_time_now.second}.csv", index=False, header=False)
             # with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
