@@ -1,3 +1,4 @@
+# This is a KF test using simulated data.
 from matplotlib import pyplot as plt
 import numpy as np
 
@@ -23,7 +24,7 @@ kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=thrust_ref_t
 y_t = np.zeros(num_data_points_collected)
 for i in range(num_data_points_collected):
     y_t[i] = dynamics.altitude_cache[i] + np.random.normal(0, 0.1)
-    kf.run(thrust_ref_t[i], y_t[i]).reshape(4, )
+    kf.update(thrust_ref_t[i], y_t[i]).reshape(4, )
 
 
 x_hat_t, _ = kf.MU_cache()

@@ -8,11 +8,12 @@ import threading
 class RC:
     SBUS_PIN = 25  # pin where sbus wire is plugged in
 
-    def __init__(self): 
+    def __init__(self):
         # serial connection between Pi and ESP32
         self.ser = serial.Serial('/dev/ttyUSB0', 500000, timeout=1)
         self.ser.reset_input_buffer()
-        self.reader =  bzzz.read_sbus.read_sbus_from_GPIO.SbusReader(RC.SBUS_PIN)
+        self.reader = bzzz.read_sbus.read_sbus_from_GPIO.SbusReader(
+            RC.SBUS_PIN)
         self.reader.begin_listen()
 
         # wait until connection is established
@@ -26,7 +27,6 @@ class RC:
 
         self.__parsed_data = None
 
-
     def get_radio_data(self):
         is_connected = self.reader.is_connected()
         packet_age = self.reader.get_latest_packet_age()  # milliseconds
@@ -36,12 +36,11 @@ class RC:
 
         return is_connected, packet_age, channel_data
 
-
     def parse_radio_data(self, channel_data, over_write_throttle_ref_to=-1):
         # check if data is in range [1000, 2000]
         self.parser.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (
             2000 if int(x) > 2000 else int(x)), channel_data.strip().split(",")))
-        
+
         if over_write_throttle_ref_to != -1:
             # TODO: check if channel 2 is throttle data
             self.parser.m_channelData[2] = over_write_throttle_ref_to
@@ -58,13 +57,11 @@ class RC:
         self.__parsed_data, channel_data = self.parser.format_radio_data_for_sending()
         return channel_data
 
-
     def send_data_to_ESP(self, channel_data):
         # Send with S in the beginning to indicate the start of the data, and also useful to check if data
         # is received properly on the ESP's end
         # Send data from Pi to ESP32, send a new line char so ESP32 knows when to stop reading
         self.ser.write(f'S,{channel_data}\n'.encode())
-
 
     def receive_data_from_ESP(self):
         """Read data from ESP32 via UART.
@@ -80,19 +77,21 @@ class RC:
         else:
             return None
 
-    def get_radio_data_parse_and_send_to_ESP(self, return_channel_date = False, force_send_fake_data=False, fake_data="", over_write_throttle_ref_to=-1):
+    def get_radio_data_parse_and_send_to_ESP(self, return_channel_date=False, force_send_fake_data=False, fake_data="", over_write_throttle_ref_to=-1):
         """Read the radio data, process it, format it into a string, and send it via UART.
         """
         try:
             _is_connected, _packet_age, channel_data = self.get_radio_data()
             if not _is_connected:
-                print(f"Radio not connected; Status _is_connected: {_is_connected}")
+                print(
+                    f"Radio not connected; Status _is_connected: {_is_connected}")
             if _is_connected:
-                channel_data = self.parse_radio_data(channel_data, over_write_throttle_ref_to=over_write_throttle_ref_to)
+                channel_data = self.parse_radio_data(
+                    channel_data, over_write_throttle_ref_to=over_write_throttle_ref_to)
                 if force_send_fake_data:
                     channel_data = fake_data
                 self.send_data_to_ESP(channel_data)
-            if return_channel_date: 
+            if return_channel_date:
                 return channel_data
         except KeyboardInterrupt:
             # cleanup cleanly after ctrl-c
@@ -103,64 +102,38 @@ class RC:
             self.reader.end_listen()
             raise
 
-    def yaw_rate_reference_rad_sec(self)->float:
+    def yaw_rate_reference_rad_sec(self) -> float:
         return self.__parsed_data[0]
-    
-    def pitch_reference_angle_rad(self)->float:
+
+    def pitch_reference_angle_rad(self) -> float:
         return self.__parsed_data[1]
-    
-    def roll_reference_angle_rad(self)->float:
+
+    def roll_reference_angle_rad(self) -> float:
         return self.__parsed_data[2]
-    
-    def throttle_reference_percentage(self)->float:
+
+    def throttle_reference_percentage(self) -> float:
         return self.__parsed_data[3]
-    
+
     def trimmer_VRA_percentage(self):
         return self.__parsed_data[4]
-    
+
     def trimmer_VRB_percentage(self):
         return self.__parsed_data[5]
-    
+
     def trimmer_VRC_percentage(self):
         return self.__parsed_data[6]
-    
+
     def trimmer_VRE_percentage(self):
         return self.__parsed_data[7]
-    
+
     def switch_B(self):
         return (self.__parsed_data[8] & 0x10) >> 4
-    
+
     def switch_A(self):
         return (self.__parsed_data[8] & 0x08) >> 3
-    
+
     def switch_C(self):
         return (self.__parsed_data[8] & 0x06) >> 1
-    
+
     def switch_D(self):
         return self.__parsed_data[8] & 0x01
- 
-            
-    # def run_thread_every_given_interval(self, 
-    #                                     interval,
-    #                                     function_to_run,
-    #                                     num_times_to_run=0):
-    #     """
-    #     Create a thread of the given function, attach a timer 
-    #     to it and run it everytime the interval is elapsed.
-
-    #     :param interval: Interval between each run in seconds. 
-    #         Note: the given interval must be larger than worst 
-    #         execution time of the given function.
-    #     :param function_to_run: Function handle which is to be run.
-    #     :param num_times_to_run: Number of times to run the thread before killing it
-    #         0 means that the thread is called as long as the program doesn't 
-    #         terminate, defaults to 0.
-    #     """
-    #     if num_times_to_run != 1:
-    #         threading.Timer(interval, run_thread_every_given_interval, [
-    #                         interval, function_to_run, num_times_to_run if num_times_to_run else 0]).start()
-    #     function_to_run()
-
-    # # Run the get_radio_data_parse_and_send_to_ESP funtionn @ 50Hz
-    # run_thread_every_given_interval(0.02, get_radio_data_parse_and_send_to_ESP)
-    # run_thread_every_given_interval(0.02, print_receive_data_from_ESP)
