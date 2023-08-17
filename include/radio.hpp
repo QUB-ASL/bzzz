@@ -83,7 +83,7 @@ namespace bzzz
          * @param az
          * @return true iff new data was received from RPi
          */
-        bool readPiData(float q1, float q2, float q3, float ax, float ay, float az);
+        bool readPiData(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR);
 
         /**
          * @brief pitch reference from RC in rad
@@ -165,7 +165,7 @@ namespace bzzz
          * @param ay
          * @param az
         */
-        void sendIMUDataToPi(float q1, float q2, float q3, float ax, float ay, float az);
+        void sendIMUDataToPi(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR);
 
     }; /* end of class Radio */
 

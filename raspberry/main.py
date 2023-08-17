@@ -56,14 +56,21 @@ if __name__ == '__main__':
     yaw_cache = []
     pitch_cache = []
     roll_cache = []
+    motor_PWM_cache = []
     throttle_ref_cache = []
     accelrometer_cache = []
     altitude_reference_cache_mts = []
+    actual_altitude_cache = []
+    radio_data_cache = []
+    KF_data_cache = []
     time_before_thread_starts = [0]
 
     quat = [0., 0., 0.]
     acc = [0., 0., 0.]
     euler = [0., 0., 0.]
+    motor_PWM = [0., 0., 0., 0.]  # FL, FR, BL, BR
+    channel_data = [""]
+    KF_data = [0., 0., 0., 0.]
 
     is_data_saved = [False]
     is_data_log_kill = [False]
@@ -139,9 +146,13 @@ if __name__ == '__main__':
             yaw_cache.append(euler[0])
             pitch_cache.append(euler[1])
             roll_cache.append(euler[2])
+            motor_PWM_cache.append(motor_PWM)
             accelrometer_cache.append(acc[:])
             time_cache.append((time_ns() - time_before_thread_starts[0])/1000000)
             altitude_reference_cache_mts.append(altitude_ref_mts[0] if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1)
+            actual_altitude_cache.append(z_hat[0])
+            KF_data_cache.append(KF_data)
+            radio_data_cache.append(channel_data[0])
 
     # function to process radio data
     def process_radio_data():
@@ -160,7 +171,7 @@ if __name__ == '__main__':
         # if altitude hold is on the thorttle value from the RC will be overwritten by the throttle reference from the LQR.
         # NOTE: There is this weird conversion for LQR throttle reference below, this is because the PI needs to send throttle reference in the range [300, 1400],
         # which is the actual range of the RC throttle stick.
-        rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=False, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0",
+        channel_data[0] = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0",
                                                  over_write_throttle_ref_to=int((throttle_ref_from_LQR[0][0][0] - 1000)*1400/900 + 300) if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1)
         # update shared variables using RC data
         is_data_log_kill[0] = rc.switch_A() == True  # is data logging killed and data saving requested?
@@ -182,7 +193,7 @@ if __name__ == '__main__':
         flight_data = rc.receive_data_from_ESP()
         if flight_data is not None and "FD:" in flight_data:
             flight_data = flight_data.strip().split()
-            if len(flight_data) == 7:
+            if len(flight_data) == 11:
                 # convert flight data from string to floats
                 q1 = float(flight_data[1])
                 q2 = float(flight_data[2])
@@ -190,6 +201,10 @@ if __name__ == '__main__':
                 ax = float(flight_data[4])
                 ay = float(flight_data[5])
                 az = float(flight_data[6])
+                motorFL = float(flight_data[3])
+                motorFR = float(flight_data[4])
+                motorBL = float(flight_data[5])
+                motorBR = float(flight_data[6])
 
                 # update shared values
                 quat[0] = q1
@@ -198,6 +213,10 @@ if __name__ == '__main__':
                 acc[0] = ax
                 acc[1] = ay
                 acc[2] = az
+                motor_PWM[0] = motorFL
+                motor_PWM[1] = motorFR
+                motor_PWM[2] = motorBL
+                motor_PWM[3] = motorBR
 
                 # additional check: if ESP is not armed, it sends [-1, -1, -1] for quaternions, which is invalid.
                 if quat == [-1., -1., -1.]:
@@ -246,6 +265,11 @@ if __name__ == '__main__':
             alpha_hat[0] = x_est[2][0]
             beta_hat[0] = x_est[3][0]
 
+            KF_data[0] = z_hat[0]
+            KF_data[1] = v_hat[0]
+            KF_data[2] = alpha_hat[0]
+            KF_data[3] = beta_hat[0]
+
             if use_altitude_hold[0]:
                 if not is_current_altitude_snap_shot_taken[0]:
                     current_altitude_snap_shot_mts[0] = temp/1000
@@ -280,10 +304,16 @@ if __name__ == '__main__':
             print("saving data wait....")
             is_data_saved[0] = True
             accelrometer_cache_ = np.array(accelrometer_cache)
+            motor_PWM_cache_ = np.array(motor_PWM_cache)
+            KF_data_cache_ = np.array(KF_data_cache)
+
             date_time_now = datetime.now()
-            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref] for t, Tr, y, p, r, alt, ax, ay, az, alt_ref 
+            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref, KF_acc_alti, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta] 
+                                          for t, Tr, y, p, r, alt, ax, ay, az, alt_ref, KF_acc_alti, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta
                                           in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache, 
-                                                 tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[:, 1], accelrometer_cache_[:, 2], altitude_reference_cache_mts)])
+                                                 tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[:, 1], accelrometer_cache_[:, 2], altitude_reference_cache_mts, actual_altitude_cache,
+                                                 radio_data_cache, motor_PWM_cache_[:, 0], motor_PWM_cache_[:, 1], motor_PWM_cache_[:, 2], motor_PWM_cache_[:, 3],
+                                                   KF_data_cache_[:, 0], KF_data_cache_[:, 1], KF_data_cache_[:, 2], KF_data_cache_[:, 3])])
             data_cache_df.to_csv(f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_{date_time_now.hour}:{date_time_now.minute}:{date_time_now.second}.csv", index=False, header=False)
             # with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
             #   file.write("time_stamps = %f,\n\n\n Throttle_reference = %f,\n\n\n altitude_cache = %f\n"%(time_cache, throttle_ref_cache, tof.altitude_cache()))

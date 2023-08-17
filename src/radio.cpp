@@ -38,7 +38,7 @@ namespace bzzz
         this->m_replyWithIMUData = replyWithIMUData;
     };
     
-    bool Radio::readPiData(float q1, float q2, float q3, float ax, float ay, float az)
+    bool Radio::readPiData(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR)
     {
         String allDataFromPi;
         int data_count = 0;
@@ -82,14 +82,14 @@ namespace bzzz
             }
             m_encodedSwitchesData = m_rawEncodedSwtchsData;
             if(this->m_replyWithIMUData){
-                this->sendIMUDataToPi(q1, q2, q3, ax, ay, az);
+                this->sendIMUDataToPi(q1, q2, q3, ax, ay, az, motorFL, motorFR, motorBL, motorBR);
             }
             return true;
         }
         return false;
     }
 
-    void Radio::sendIMUDataToPi(float q1, float q2, float q3, float ax, float ay, float az)
+    void Radio::sendIMUDataToPi(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR)
     {
         Serial.print("FD: ");
         Serial.print(q1);
@@ -102,7 +102,15 @@ namespace bzzz
         Serial.print(' ');
         Serial.print(ay);
         Serial.print(' ');
-        Serial.println(az);
+        Serial.print(az);
+        Serial.print(' ');
+        Serial.print(motorFL);
+        Serial.print(' ');
+        Serial.print(motorFR);
+        Serial.print(' ');
+        Serial.print(motorBL);
+        Serial.print(' ');
+        Serial.println(motorBR);
         // String flightData = "FD: " + String(q1) + " " + String(q2) + " " + String(q3)
         //                    + " " + String(ax) + " " + String(ay) + " " + String(az); 
         // Serial.println(flightData);
@@ -189,11 +197,11 @@ namespace bzzz
     void Radio::waitForArmCommand()
     {
         float temp[6];
-        readPiData(-1, -1, -1, -1, -1, -1);
+        readPiData(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
         delay(20);
         while (!armed())
         {
-            readPiData(-1, -1, -1, -1, -1, -1);
+            readPiData(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
         }
     }
 

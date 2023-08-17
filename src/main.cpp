@@ -19,6 +19,7 @@ FailSafes failSafes(TX_CONNECTION_TIMEOUT_IN_uS);
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 float IMUData[6];
+int motorFL, motorFR, motorBL, motorBR;
 
 /**
  * Setup the AHRS
@@ -80,7 +81,7 @@ void loop()
   float angularVelocityCorrected[3];
 
   // if radio data received update the last data read time.
-  if (radio.readPiData(IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5]))
+  if (radio.readPiData(IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5], motorFL, motorFR, motorBL, motorBR))
   {
     failSafes.setLastRadioReceptionTime(micros());
   }
@@ -147,7 +148,6 @@ void loop()
   float throttleRef = radio.throttleReferencePWM();
 
   // Compute control actions and send them to the motors
-  int motorFL, motorFR, motorBL, motorBR;
   controller.motorPwmSignals(attitudeError,
                              angularVelocityCorrected,
                              yawRateReference,
