@@ -38,7 +38,7 @@ namespace bzzz
         this->m_replyWithFlightData = replyWithFlightData;
     };
     
-    bool Radio::readPiData(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR)
+    bool Radio::readPiData()
     {
         String allDataFromPi;
         int data_count = 0;
@@ -81,10 +81,6 @@ namespace bzzz
                 return false;
             }
             m_encodedSwitchesData = m_rawEncodedSwtchsData;
-            if(this->m_replyWithFlightData){
-                // if replyWithFlightData is enabled, send flight data to Pi
-                this->sendFlightDataToPi(q1, q2, q3, ax, ay, az, motorFL, motorFR, motorBL, motorBR);
-            }
             return true;
         }
         return false;
@@ -92,26 +88,29 @@ namespace bzzz
 
     void Radio::sendFlightDataToPi(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR)
     {
-        Serial.print("FD: ");
-        Serial.print(q1);
-        Serial.print(' ');
-        Serial.print(q2);
-        Serial.print(' ');
-        Serial.print(q3);
-        Serial.print(' ');
-        Serial.print(ax);
-        Serial.print(' ');
-        Serial.print(ay);
-        Serial.print(' ');
-        Serial.print(az);
-        Serial.print(' ');
-        Serial.print(motorFL);
-        Serial.print(' ');
-        Serial.print(motorFR);
-        Serial.print(' ');
-        Serial.print(motorBL);
-        Serial.print(' ');
-        Serial.println(motorBR);
+            if(this->m_replyWithFlightData){
+                // if replyWithFlightData is enabled, send flight data to Pi
+                Serial.print("FD: ");
+                Serial.print(q1);
+                Serial.print(' ');
+                Serial.print(q2);
+                Serial.print(' ');
+                Serial.print(q3);
+                Serial.print(' ');
+                Serial.print(ax);
+                Serial.print(' ');
+                Serial.print(ay);
+                Serial.print(' ');
+                Serial.print(az);
+                Serial.print(' ');
+                Serial.print(motorFL);
+                Serial.print(' ');
+                Serial.print(motorFR);
+                Serial.print(' ');
+                Serial.print(motorBL);
+                Serial.print(' ');
+                Serial.println(motorBR);
+            }
     }
 
     float Radio::pitchReferenceAngleRad()
@@ -195,11 +194,13 @@ namespace bzzz
     void Radio::waitForArmCommand()
     {
         float temp[6];
-        readPiData(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+        readPiData();
+        sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
         delay(20);
         while (!armed())
         {
-            readPiData(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+            readPiData();
+            sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
         }
     }
 

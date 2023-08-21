@@ -29,13 +29,13 @@ def _getUshort(data, index):
 class PressureSensor:
     def __init__(self,
                  DEVICE_ADDRESS: int = 0x77,
-                 num_latest_readings_to_keep: int = 5,
+                 median_filter_length: int = 5,
                  reference_pressure_at_sea_level=None):
         self._current_pressure = None
         self._previous_pressure = None
         self._pressure_readings_list = None
         self._pressure_readings_list_current_index = None
-        self._num_latest_readings_to_keep = num_latest_readings_to_keep
+        self._median_filter_length = median_filter_length
 
         self.DEVICE_ADDRESS = DEVICE_ADDRESS
         self.smbus = smbus.SMBus(1)
@@ -53,7 +53,7 @@ class PressureSensor:
         self._pressure_readings_list = list()
         self._pressure_readings_list_current_index = 0
         # TODO: add code to init pressure sensor
-        for i in range(self._num_latest_readings_to_keep):
+        for i in range(self._median_filter_length):
             self._pressure_readings_list.append(
                 self._get_current_pressure_measurement())
         if self.reference_pressure_at_sea_level is None:
@@ -152,7 +152,6 @@ class PressureSensor:
 
     @property
     def altitude(self):
-        # self.update_altitude()
         return self._current_altitude
 
     @altitude.setter
@@ -169,12 +168,12 @@ class PressureSensor:
         pressure_reading = self._get_current_pressure_measurement()
         self._previous_pressure = self._current_pressure
         self._pressure_readings_list[self._pressure_readings_list_current_index] = pressure_reading
-        if 0 <= self._pressure_readings_list_current_index < self._num_latest_readings_to_keep - 1:
+        if 0 <= self._pressure_readings_list_current_index < self._median_filter_length - 1:
             self._pressure_readings_list_current_index += 1
         else:
             self._pressure_readings_list_current_index = 0
         self._current_pressure = median_filter(
-            self._pressure_readings_list, self._num_latest_readings_to_keep)
+            self._pressure_readings_list, self._median_filter_length)
 
     def _calculate_altitude_from_pressure(self):
         # TODO: add code to calculate altitude from pressure

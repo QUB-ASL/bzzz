@@ -11,7 +11,7 @@ from adafruit_hcsr04 import HCSR04
 
 class Sonar:
     def __init__(self,
-                 num_latest_readings_to_keep: int = 5,
+                 median_filter_length = 5,
                  use_sleep=False,
                  sleep_time=0.02,
                  trigger_pin=board.D17,
@@ -19,7 +19,7 @@ class Sonar:
         self._current_altitude = None
         self._altitude_readings_list = None
         self._altitude_readings_list_current_index = None
-        self._num_latest_readings_to_keep = num_latest_readings_to_keep
+        self._median_filter_length = median_filter_length
 
         self._previous_altitude = None
         self._last_update_time = None
@@ -38,7 +38,7 @@ class Sonar:
         self._last_update_time = time_ns()
         self._altitude_readings_list = list()
         self._altitude_readings_list_current_index = 0
-        for _ in range(self._num_latest_readings_to_keep):
+        for _ in range(self._median_filter_length):
             self._altitude_readings_list.append(
                 self._get_current_sonar_measurement())
             sleep(self.sleep_time)
@@ -65,12 +65,12 @@ class Sonar:
         if ToF_distance_reading < 0:
             return -1
         self._altitude_readings_list[self._altitude_readings_list_current_index] = ToF_distance_reading
-        if 0 <= self._altitude_readings_list_current_index < self._num_latest_readings_to_keep - 1:
+        if 0 <= self._altitude_readings_list_current_index < self._median_filter_length - 1:
             self._altitude_readings_list_current_index += 1
         else:
             self._altitude_readings_list_current_index = 0
         self._current_altitude = median_filter(
-            self._altitude_readings_list, self._num_latest_readings_to_keep)
+            self._altitude_readings_list, self._median_filter_length)
 
     def update_altitude(self):
         if not self.use_sleep:

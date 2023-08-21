@@ -8,14 +8,14 @@ import os
 class TimeOfFlightSensor:
     # NOTE: This class fetches altitude in millimeters and this class requires i2c interfacing with the sensor.
     def __init__(self,
-                 num_latest_readings_to_keep: int = 3,
+                 median_filter_length = 3,
                  update_measurement_at_fixed_rate=False,
                  cache_altitude=False,
                  use_outlier_detection=False,
                  abs_outlier_diff_thres=500):
         """Time of flight sensor class initialization.
 
-        :param num_latest_readings_to_keep: Window length for median filter, defaults to 3
+        :param median_filter_length: Window length for median filter, defaults to 3
         :param update_measurement_at_fixed_rate: Indicator to use difference between current time and last measurement time
           and wait till sufficient time is elapsed to take a measurement, defaults to False
         :param cache_altitude: Cache the altitude measurements in mm if True, defaults to False
@@ -26,7 +26,7 @@ class TimeOfFlightSensor:
         self._current_altitude = None
         self._altitude_readings_list = None
         self._altitude_readings_list_current_index = None
-        self._num_latest_readings_to_keep = num_latest_readings_to_keep
+        self._median_filter_length = median_filter_length
 
         # previous measurement varaibles.
         self._previous_altitude = None
@@ -62,7 +62,7 @@ class TimeOfFlightSensor:
         self._last_update_time = time_ns()
         self._altitude_readings_list = list()
         self._altitude_readings_list_current_index = 0
-        for _ in range(self._num_latest_readings_to_keep):
+        for _ in range(self._median_filter_length):
             self._altitude_readings_list.append(
                 self.__get_current_ToF_measurement())
             sleep(self.timing/1000000.0)
@@ -96,17 +96,6 @@ class TimeOfFlightSensor:
             return -1
         return self._current_altitude
 
-    @altitude.setter
-    def altitude(self, val):
-        """Setter for altitude measurement.
-        NOTE: only use this for testing purposes, do not manually 
-        set the measurement during flight. This action will 
-        overwrite the actual measurement.
-
-        :param val: manual measurement value.
-        """
-        self._current_altitude = val
-
     def altitude_cache(self):
         """Returns altitude cache list.
 
@@ -132,12 +121,12 @@ class TimeOfFlightSensor:
         if ToF_distance_reading < 0 or (self.use_outlier_detection and (abs(ToF_distance_reading - (self._current_altitude if self._current_altitude is not None else 500)) > self.__abs_outlier_diff_thres)):
             return -1
         self._altitude_readings_list[self._altitude_readings_list_current_index] = ToF_distance_reading
-        if 0 <= self._altitude_readings_list_current_index < self._num_latest_readings_to_keep - 1:
+        if 0 <= self._altitude_readings_list_current_index < self._median_filter_length - 1:
             self._altitude_readings_list_current_index += 1
         else:
             self._altitude_readings_list_current_index = 0
         self._current_altitude = median_filter(
-            self._altitude_readings_list, self._num_latest_readings_to_keep)
+            self._altitude_readings_list, self._median_filter_length)
 
     def __update_altitude(self):
         """Updates the Altitude measurement in mm.

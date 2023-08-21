@@ -79,20 +79,9 @@ namespace bzzz
 
         /**
          * @brief Read the receiver data sent from Pi and send 
-         * flight data (q1, q2, q3, ax, ay, az, motorFL, motorFR, motorBL, motorBR) data to Pi.
-         * @param q1 1st element of the vector part of current attitude quaternion
-         * @param q2 2nd element of the vector part of current attitude quaternion
-         * @param q3 3rd element of the vector part of current attitude quaternion
-         * @param ax current accleration along x-axis
-         * @param ay current accleration along y-axis
-         * @param az current accleration along z-axis
-         * @param motorFL current Front-Left motor PWM control action
-         * @param motorFR current Front-Right motor PWM control action
-         * @param motorBL current Back-Left motor PWM control action
-         * @param motorBR current Back-Right motor PWM control action
          * @return true iff new data was received from RPi
          */
-        bool readPiData(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR);
+        bool readPiData();
 
         /**
          * @brief pitch reference from RC in rad

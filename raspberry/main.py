@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # update_measurement_at_fixed_rate: if True then use time difference between current time and last measurement time to take a measurement
     #            if false then take a measurement instantly
     tof = TimeOfFlightSensor(update_measurement_at_fixed_rate=False,
-                             num_latest_readings_to_keep=1,
+                             median_filter_length=1,
                              cache_altitude=True,
                              use_outlier_detection=True,
                              abs_outlier_diff_thres=500)
@@ -274,7 +274,6 @@ if __name__ == '__main__':
                   "".format("\n   **It is recommended to use manual mode in this situation**." if use_altitude_hold[0] else ""))
 
         is_drone_flying_close_to_ground[0] = last_valid_altitude_measurement_mts[0] < min_altitude_to_activate_AltiHold_mts[0]
-        # lqr.set_Q_and_R_matrix_gains(Q11=LQR_Q11_gain[0], Q22=LQR_Q22_gain[0], R=LQR_R_gain[0])
 
         if is_drone_flying_close_to_ground[0]:
             z_hat[0] = current_altitude_snap_shot_mts[0] if temp == - \
@@ -363,8 +362,6 @@ if __name__ == '__main__':
                                                           'KF alti est', 'KF vel est', 'KF alpha est', 'KF beta est'])
             data_cache_df.to_csv(
                 f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_{date_time_now.hour}:{date_time_now.minute}:{date_time_now.second}.csv", index=False, header=False)
-            # with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
-            #   file.write("time_stamps = %f,\n\n\n Throttle_reference = %f,\n\n\n altitude_cache = %f\n"%(time_cache, throttle_ref_cache, tof.altitude_cache()))
             print("Saving done!")
 
             if enable_printing_cache_to_screen[0]:

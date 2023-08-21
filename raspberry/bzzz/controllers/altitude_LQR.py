@@ -4,7 +4,18 @@ import control as ctrl
 from math import cos
 
 class LQR:
+    """LQR for altitude hold mechanism.
+    The system dynamics are time-varying and the state space matrix Bt varies with battery drainage.
+    This implementation of LQR uses already avialable 'DARE' solver from `control` module and the solution is 
+    obtained everytime the system dynamics are updated.
+    """
     def __init__(self, sampling_frequency = 10, initial_alpha_t = 0, initial_beta_t = 0):
+        """Constructor
+
+        :param sampling_frequency: Sampling frequency in Hz, defaults to 10
+        :param initial_alpha_t: initial value of vertical acceleration parameter alpha, defaults to 0
+        :param initial_beta_t: initial value of vertical acceleration parameter beta, defaults to 0
+        """
         # sampling frequency
         self.__fs = sampling_frequency
         self.__Ts = 1./sampling_frequency

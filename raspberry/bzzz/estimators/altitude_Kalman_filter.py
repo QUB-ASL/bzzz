@@ -13,7 +13,7 @@ class KalmanFilter:
                  sampling_frequency=10,
                  initial_Tt=0.,
                  x_tilde_0=np.zeros((4, 1)),
-                 P_0=np.eye(4, 4)*100,
+                 P_0=np.eye(4)*100,
                  cache_values=False,
                  overwrite_x_MU=None,
                  overwrite_sigma_MU=None):
@@ -22,7 +22,7 @@ class KalmanFilter:
         :param sampling_frequency: KF sampling frequency, defaults to 10
         :param initial_Tt: Initial throttle reference to the system, defaults to 0.
         :param x_tilde_0: Intial conditions; initial state guess for the KF, defaults to np.zeros((4, 1))
-        :param P_0: Iniitial conditions: initial state guess variance, defaults to np.eye(4, 4)*100
+        :param P_0: Iniitial conditions: initial state guess variance, defaults to np.eye(4)*100
         :param cache_values: Enables caching KF values if True, defaults to False
         """
         self.__fs = sampling_frequency
@@ -52,34 +52,29 @@ class KalmanFilter:
         self.__x_TU = x_tilde_0
         self.__sigma_TU = P_0
 
-        self.__cache_MU_values = lambda: ()
-        self.__cache_TU_values = lambda: ()
 
         self.__cache_values = cache_values
-        if cache_values:
-            # Measurement update cache
-            self.__x_MU_cache = []
-            self.__sigma_MU_cache = []
+        
+        # Measurement update cache
+        self.__x_MU_cache = []
+        self.__sigma_MU_cache = []
 
-            def cache_MU():
-                self.__x_MU_cache.append(self.__x_MU)
-                self.__sigma_MU_cache.append(self.__sigma_MU)
+        # Time update cache
+        self.__x_TU_cache = []
+        self.__sigma_TU_cache = []
 
-            # point to MU caching function
-            self.__cache_MU_values = cache_MU
+        # cache first TU from above
+        self.__cache_TU_values()
 
-            # Time update cache
-            self.__x_TU_cache = []
-            self.__sigma_TU_cache = []
+    def __cache_MU_values(self):
+        if self.__cache_values:
+            self.__x_MU_cache.append(self.__x_MU)
+            self.__sigma_MU_cache.append(self.__sigma_MU)
 
-            def cache_TU():
-                self.__x_TU_cache.append(self.__x_TU)
-                self.__sigma_TU_cache.append(self.__sigma_TU)
-
-            # point to TU caching function
-            self.__cache_TU_values = cache_TU
-            # cache first MU from above
-            self.__cache_TU_values()
+    def __cache_TU_values(self):
+        if self.__cache_values:                
+            self.__x_TU_cache.append(self.__x_TU)
+            self.__sigma_TU_cache.append(self.__sigma_TU)
 
     def __update_At(self):
         """Update state matrix At. 
@@ -103,7 +98,7 @@ class KalmanFilter:
         """
         self.__Tt = math.cos(pitch_rad) * math.cos(roll_rad) * float(Tt)
 
-    def MU_cache(self):
+    def measurement_update_cache(self):
         """returns Measurement update cache data.
 
         :return: list of measurement update cache data.

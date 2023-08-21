@@ -8,8 +8,8 @@ from altitude_LQR import LQR
 
 class AltitudeHoldController:
     def __init__(self, update_frequency, initial_alpha_t, initial_beta_t):
-        self.pressure_sensor = PS(num_latest_readings_to_keep=5)
-        self.time_of_flight_sensor = ToF(num_latest_readings_to_keep=5)
+        self.pressure_sensor = PS(median_filter_length=5)
+        self.time_of_flight_sensor = ToF(median_filter_length=5)
         self.update_frequency = update_frequency
         self.sampling_time = 1/self.update_frequency
         

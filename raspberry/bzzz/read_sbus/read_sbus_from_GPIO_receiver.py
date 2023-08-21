@@ -17,8 +17,10 @@ class RC:
         self.reader.begin_listen()
 
         # wait until connection is established
-        # while (not self.reader.is_connected()):
-        #     time.sleep(.2)
+        still_waiting = False
+        while (not self.reader.is_connected()):
+            print("{still_waiting_text}aiting for radio connection to establish....".format(still_waiting_text="Still w" if still_waiting else "W"))
+            time.sleep(.2)
 
         # Note that there will be nonsense data for the first 10ms or so of connection
         # until the first packet comes in.

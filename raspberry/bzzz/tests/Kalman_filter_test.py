@@ -27,7 +27,7 @@ for i in range(num_data_points_collected):
     kf.update(thrust_ref_t[i], y_t[i]).reshape(4, )
 
 
-x_hat_t, _ = kf.MU_cache()
+x_hat_t, _ = kf.measurement_update_cache()
 x_hat_t = np.array(x_hat_t).reshape((num_data_points_collected, 4))
 print("alpha hat = %f"%x_hat_t[-1, 2], "\nc hat = %f"%x_hat_t[-1, 3])
 

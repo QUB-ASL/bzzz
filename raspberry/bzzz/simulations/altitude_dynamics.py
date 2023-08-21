@@ -6,12 +6,12 @@ class AltitudeDynamics:
     """
 
     def __init__(self,
-                 sampling_time: float = 0.01,
-                 initial_altitude: float = 0,
-                 initial_velocity_z: float = 0,
-                 initial_accleration_z: float = 0,
-                 alpha: float = 1,
-                 c: float = -9.81):
+                 sampling_time = 0.01,
+                 initial_altitude = 0,
+                 initial_velocity_z = 0,
+                 initial_accleration_z = 0,
+                 alpha = 1,
+                 c = -9.81):
         """Instantiate altitude dynamics class.
         :param sampling_time: Sampling time of the discrete time system in seconds, defaults to 0.01.
         :param initial_altitude: Initial altitude of the quad-rotor in meters, defaults to 0.
@@ -31,9 +31,9 @@ class AltitudeDynamics:
         self.velocity_z_cache = [initial_velocity_z, ]
         self.accleration_z_cache = [initial_accleration_z, ]
 
-    def __dynamics(self, altitude_t: float,
-                   velocity_z_t: float,
-                   thrust_ref_t: float):
+    def __dynamics(self, altitude_t,
+                   velocity_z_t,
+                   thrust_ref_t):
         """Discrete time dynamics of the quad-rotor.
         :param altitude_t: Altitude at time t in m, current altitude.
         :param velocity_z_t: Velocity at time t in m/s along global z-axis, current velocity.
@@ -46,7 +46,7 @@ class AltitudeDynamics:
         velocity_z_t_1 = velocity_z_t + self.Ts*accleration_z_t + w_vz_t
         return altitude_t_1, velocity_z_t_1, accleration_z_t
 
-    def simulate(self, thrust_ref_t: float):
+    def simulate(self, thrust_ref_t):
         """Simulate and update the discrete time altitude states of the quad-rotor.
         :param thrust_ref_t: Reference thrust/ thrust produced by the quad-rotor along the global z-axis, current thrust.
         """
