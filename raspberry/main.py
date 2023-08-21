@@ -74,6 +74,8 @@ if __name__ == '__main__':
     is_kill = [False]
     allow_data_logging = [True]
 
+    allow_initial_engagement = [False]
+
     # Altitude hold vars
     throttle_ref_from_LQR = [0.]
     use_altitude_hold = [False]
@@ -98,7 +100,7 @@ if __name__ == '__main__':
     KP_GAIN_MAX = 0.1  # 100
     KD_GAIN_MAX = 0.2  # 100
 
-    DEBUG_MODE = True
+    DEBUG_MODE = False
 
     def print_debug(stuff):
         if DEBUG_MODE:
@@ -272,6 +274,7 @@ if __name__ == '__main__':
     def read_ToF_run_kf_and_LQR():
         """Read ToF sensor, and run the Kalman filter and LQR control algorithms
         """
+
         # NOTE: DO NOT DIVIDE temp BY 1000 here to get altitude measurements in m.
         # There are checks if temp == -1 in the code for outlier detection.
         # you can run LQR even when the drone is close to ground but you cannot run KF.
@@ -299,8 +302,8 @@ if __name__ == '__main__':
         if is_drone_flying_close_to_ground[0]:
             z_hat[0] = current_altitude_snap_shot_mts[0] if temp == - \
                 1 else temp/1000
-            print(
-                f"Cannot activate Altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
+            print_debug(
+                f"Cannot activate altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
             if is_KF_ran_atleast_once[0]:
                 kf.reset()
         else:
@@ -342,6 +345,17 @@ if __name__ == '__main__':
     if enable_caching[0]:
         time_before_thread_starts[0] = time_ns()
 
+    # initialisation checks: are the switches at the correct positions before flying?
+    print(">> [INIT] checking switch positions [waiting] <<<")
+    print(">> [INIT] s/A must be UP, s/B must be UP, s/C must be DOWN!")
+
+    while True:
+        process_radio_data()
+        if not rc.switch_A() and not rc.switch_B() and rc.switch_D():
+            break
+
+    print(">> [INIT] complete <<<")
+
     # schedule the necessary functions
     scheduler.schedule("process_radio_data",
                        process_radio_data,
@@ -362,7 +376,7 @@ if __name__ == '__main__':
 
         # Cache saving
         if is_kill[0] and switch_a_status[0] and allow_data_logging[0]:
-            print("saving data; wait....")
+            print("[LOGGER] saving data")
             accelrometer_cache_ = np.array(accelrometer_cache)
             motor_PWM_cache_ = np.array(motor_PWM_cache)
             KF_data_cache_ = np.array(KF_data_cache)
@@ -390,8 +404,10 @@ if __name__ == '__main__':
                                                   'Ref alti', 'RC data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
                                                   'KF alti est', 'KF vel est', 'KF alpha est', 'KF beta est'])
             data_cache_df.to_csv(
-                f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_at_{date_time_now.hour}h{date_time_now.minute}m{date_time_now.second}s.csv", index=False, header=False)
-            print_debug("Saving done!")
+                f"/home/bzzz/Desktop/logs/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_at_{date_time_now.hour}h{date_time_now.minute}m{date_time_now.second}s.csv",
+                index=False,
+                header=True)
+            print("[LOGGER] saving complete")
             clear_caches()
             allow_data_logging[0] = False
 
