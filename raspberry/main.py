@@ -25,7 +25,6 @@ if __name__ == '__main__':
     sampling_frequency = 50
     # caching configuration
     enable_caching = [True]
-    enable_save_cache_to_csv = [True and enable_caching[0]]
     enable_printing_cache_to_screen = [True and enable_caching[0]]
 
     # objects declaration
@@ -63,18 +62,20 @@ if __name__ == '__main__':
     KF_data_cache = []
     time_before_thread_starts = [0]
 
-    quat = [0., 0., 0.]
+    quaternion_vector = [0., 0., 0.]
     acc = [0., 0., 0.]
     euler = [0., 0., 0.]
     motor_PWM = [0., 0., 0., 0.]  # FL, FR, BL, BR
     channel_data = [""]
     KF_data = [0., 0., 0., 0.]
 
-    is_data_saved = [False]
+    switch_a_status = [True]
     is_data_log_kill = [False]
+    is_kill = [False]
+    allow_data_logging = [True]
 
     # Altitude hold vars
-    throttle_ref_from_LQR = [np.array([[0.]])]
+    throttle_ref_from_LQR = [0.]
     use_altitude_hold = [False]
     Tref_t = [0.0]
     altitude_ref_mts = [0.09]
@@ -92,12 +93,16 @@ if __name__ == '__main__':
     v_hat = [0.]
     alpha_hat = [10.]
     beta_hat = [-9.81]
-    LQR_Q11_gain = [0.]
-    LQR_Q22_gain = [0.]
-    LQR_R_gain = [0.]
-    LQR_Q11_GAIN_MAX = 0.1  # 100
-    LQR_Q22_GAIN_MAX = 0.2  # 100
-    LQR_R_GAIN_MAX = 100
+    gain_kp_from_rc = [0.]
+    gain_kd_from_rc = [0.]
+    KP_GAIN_MAX = 0.1  # 100
+    KD_GAIN_MAX = 0.2  # 100
+
+    DEBUG_MODE = True
+
+    def print_debug(stuff):
+        if DEBUG_MODE:
+            print(stuff)
 
     # function to convert radians to degrees
 
@@ -140,7 +145,7 @@ if __name__ == '__main__':
         """
         if enable_caching[0]:
             throttle_ref_cache.append(Tref_t[0])
-            quat_cache.append(quat)
+            quat_cache.append(quaternion_vector)
             yaw_cache.append(euler[0])
             pitch_cache.append(euler[1])
             roll_cache.append(euler[2])
@@ -175,7 +180,7 @@ if __name__ == '__main__':
         # NOTE: There is this weird conversion for LQR throttle reference below,
         # this is because the PI needs to send throttle reference in the range [300, 1400],
         # which is the actual range of the RC throttle stick.
-        shit = int((throttle_ref_from_LQR[0][0][0] - 1000) * 1400/900 +
+        shit = int((throttle_ref_from_LQR[0] - 1000) * 1400/900 +
                    300) if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1
         channel_data[0] = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True,
                                                                   force_send_fake_data=False,
@@ -183,15 +188,14 @@ if __name__ == '__main__':
                                                                   over_write_throttle_ref_to=shit)
         # update shared variables using RC data
         # is data logging killed and data saving requested?
-        is_data_log_kill[0] = rc.switch_A()
         # is altitude hold enabled?
+        switch_a_status[0] = rc.switch_A()
         use_altitude_hold[0] = rc.switch_C()
-        LQR_Q11_gain[0] = rc.trimmer_VRA_percentage(
-        )*LQR_Q11_GAIN_MAX  # Kappa11 gain from RC
-        LQR_Q22_gain[0] = rc.trimmer_VRB_percentage(
-        )*LQR_Q22_GAIN_MAX  # kappa22 gain from RC
-        LQR_R_gain[0] = rc.trimmer_VRC_percentage() * LQR_R_GAIN_MAX + \
-            1  # R data for LQR from RC
+        is_kill[0] = rc.switch_D()
+        gain_kp_from_rc[0] = rc.trimmer_VRA_percentage(
+        )*KP_GAIN_MAX  # Kappa11 gain from RC
+        gain_kd_from_rc[0] = rc.trimmer_VRB_percentage(
+        )*KD_GAIN_MAX  # kappa22 gain from RC
         # normalised throttle reference from RC, max is 1900
         Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
         cache_values()  # call to cache values
@@ -202,51 +206,65 @@ if __name__ == '__main__':
         2. Checks the received flight data for corruption. 
            If string is not None and starts with "FD:", and if there are 7 space seperated values
            then convert the 7 values to floats and update shared variables.
-        NOTE: might want to include a check for value data corruption before converting to floats, 
-        because without this check the program might crash.
         """
         # process ESP data
-        flight_data = rc.receive_data_from_ESP()
-        if flight_data is not None and "FD:" in flight_data:
-            flight_data = flight_data.strip().split()
+        flight_data_string = rc.receive_data_from_ESP()
+        if flight_data_string is not None and "FD:" in flight_data_string:
+            flight_data = flight_data_string.strip().split()
             if len(flight_data) == 11:
-                # convert flight data from string to floats
-                q1 = float(flight_data[1])
-                q2 = float(flight_data[2])
-                q3 = float(flight_data[3])
-                ax = float(flight_data[4])
-                ay = float(flight_data[5])
-                az = float(flight_data[6])
-                motorFL = float(flight_data[3])
-                motorFR = float(flight_data[4])
-                motorBL = float(flight_data[5])
-                motorBR = float(flight_data[6])
 
-                # update shared values
-                quat[0] = q1
-                quat[1] = q2
-                quat[2] = q3
-                acc[0] = ax
-                acc[1] = ay
-                acc[2] = az
-                motor_PWM[0] = motorFL
-                motor_PWM[1] = motorFR
-                motor_PWM[2] = motorBL
-                motor_PWM[3] = motorBR
+                # See if ALL the quaternion values are correct ...
+                try:
+                    q1 = float(flight_data[1])
+                    q2 = float(flight_data[2])
+                    q3 = float(flight_data[3])
+                except ValueError as e:
+                    print(f"Invalid quaternion data from ESP32 - flight data: {flight_data_string}\n {e}")
+                    return
+                
+                # ... if they are, then update
+                quaternion_vector[0] = q1
+                quaternion_vector[1] = q2 
+                quaternion_vector[2] = q3
 
                 # additional check: if ESP is not armed, it sends [-1, -1, -1] for quaternions, which is invalid.
-                if quat == [-1., -1., -1.]:
-                    print(
-                        f"Received quat = {quat}. Defaulting to quat = [0, 0, 0].")
-                    quat[0] = 0.
-                    quat[1] = 0.
-                    quat[2] = 0.
+                if quaternion_vector == [-1., -1., -1.]:
+                    print_debug(
+                        f"Received quat = {quaternion_vector}. Defaulting to quat = [0, 0, 0].")
+                    quaternion_vector[0] = 0.
+                    quaternion_vector[1] = 0.
+                    quaternion_vector[2] = 0.
 
                 # compute the scalar part of the quaternion
-                q0 = sqrt(1 - quat[0]**2 - quat[1]**2 - quat[2]**2)
-                full_quaternion = [q0] + quat
+                q0 = sqrt(1 - quaternion_vector[0]**2 - quaternion_vector[1]**2 - quaternion_vector[2]**2)
+                quaternion_full = [q0] + quaternion_vector
                 # compute euler angles from quaternion
-                euler[0], euler[1], euler[2] = euler_angles(full_quaternion)
+                euler[0], euler[1], euler[2] = euler_angles(quaternion_full)
+
+                try:
+                    # convert flight data from string to floats
+                    acc[0] = float(flight_data[4])
+                    acc[1] = float(flight_data[5])
+                    acc[2] = float(flight_data[6])
+                    motor_PWM[0] = float(flight_data[7])
+                    motor_PWM[1] = float(flight_data[8])
+                    motor_PWM[2] = float(flight_data[9])
+                    motor_PWM[3] = float(flight_data[10])
+                except ValueError as e:
+                    print(f"Invalid data from ESP32 - flight data: {flight_data_string}\n {e}")
+                
+    def clear_caches():
+        time_cache.clear()
+        quat_cache.clear()
+        yaw_cache.clear()
+        pitch_cache.clear()
+        roll_cache.clear()
+        motor_PWM_cache.clear()
+        throttle_ref_cache.clear()
+        accelrometer_cache.clear()
+        altitude_reference_cache_mts.clear()
+        radio_data_cache.clear()
+        KF_data_cache.clear()
 
     def read_ToF_run_kf_and_LQR():
         """Read ToF sensor, and run the Kalman filter and LQR control algorithms
@@ -305,20 +323,17 @@ if __name__ == '__main__':
                 is_current_altitude_snap_shot_taken[0] = False
 
         if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0]:
+            lqr.set_alpha_beta(alpha_hat[0], beta_hat[0])
+            lqr.set_gains(-gain_kp_from_rc[0], -gain_kd_from_rc[0])
             throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]),
-                                                          alpha_t=alpha_hat[0],
-                                                          beta_t=beta_hat[0],
                                                           reference_altitude_mts=altitude_ref_mts[0],
                                                           recalculate_dynamics=True,
                                                           pitch_rad=euler[1],
-                                                          roll_rad=euler[2],
-                                                          k11=-LQR_Q11_gain[0],
-                                                          k12=-LQR_Q22_gain[0])
-            throttle_ref_from_LQR[0] = np.array(
-                [[max(1000, min(throttle_ref_from_LQR[0][0][0]*900, 600) + 1000)]])
-            Tref_t[0] = (throttle_ref_from_LQR[0][0][0] - 1000)/900
-            print(
-                f"alphan hat: {alpha_hat[0]} beta hat: {beta_hat[0]} k11: {-LQR_Q11_gain[0]} k12: {-LQR_Q22_gain[0]} Tref_LQR: {Tref_t[0]} alt_hat: {z_hat[0]} alt_ref: {altitude_ref_mts[0]}")
+                                                          roll_rad=euler[2])
+            throttle_ref_from_LQR[0] = max(1000, min(throttle_ref_from_LQR[0]*900, 600) + 1000)
+            Tref_t[0] = (throttle_ref_from_LQR[0] - 1000)/900
+            print_debug(
+                f"alphan hat: {alpha_hat[0]} beta hat: {beta_hat[0]} k11: {-gain_kp_from_rc[0]} k12: {-gain_kd_from_rc[0]} Tref_LQR: {Tref_t[0]} alt_hat: {z_hat[0]} alt_ref: {altitude_ref_mts[0]}")
 
     if enable_caching[0]:
         time_before_thread_starts[0] = time_ns()
@@ -342,9 +357,8 @@ if __name__ == '__main__':
         scheduler.run()  # run the scheduled functions
 
         # Cache saving
-        if enable_save_cache_to_csv[0] and not is_data_saved[0] and is_data_log_kill[0]:
+        if is_kill[0] and switch_a_status[0] and allow_data_logging[0]:
             print("saving data; wait....")
-            is_data_saved[0] = True
             accelrometer_cache_ = np.array(accelrometer_cache)
             motor_PWM_cache_ = np.array(motor_PWM_cache)
             KF_data_cache_ = np.array(KF_data_cache)
@@ -353,16 +367,38 @@ if __name__ == '__main__':
             data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta]
                                           for t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta
                                           in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache,
-                                                 tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[
-                                                     :, 1], accelrometer_cache_[:, 2], altitude_reference_cache_mts,
-                                                 radio_data_cache, motor_PWM_cache_[:, 0], motor_PWM_cache_[
-                                                     :, 1], motor_PWM_cache_[:, 2], motor_PWM_cache_[:, 3],
-                                                 KF_data_cache_[:, 0], KF_data_cache_[:, 1], KF_data_cache_[:, 2], KF_data_cache_[:, 3])], 
-                                                 columns=['Time-stamp', 'T_ref', 'yaw', 'pitch', 'roll', 'ToF measurement', 'accX', 'accY', 'accZ', 'Ref alti', 'RC data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
+                                                 tof.altitude_cache(), 
+                                                 accelrometer_cache_[:, 0], 
+                                                 accelrometer_cache_[:, 1], 
+                                                 accelrometer_cache_[:, 2], 
+                                                 altitude_reference_cache_mts,
+                                                 radio_data_cache, 
+                                                 motor_PWM_cache_[:, 0], 
+                                                 motor_PWM_cache_[:, 1], 
+                                                 motor_PWM_cache_[:, 2], 
+                                                 motor_PWM_cache_[:, 3],
+                                                 KF_data_cache_[:, 0], 
+                                                 KF_data_cache_[:, 1], 
+                                                 KF_data_cache_[:, 2], 
+                                                 KF_data_cache_[:, 3])], 
+                                                 columns=['Time-stamp', 'T_ref', 'yaw', 'pitch', 'roll', 
+                                                          'ToF measurement', 'accX', 'accY', 'accZ', 
+                                                          'Ref alti', 'RC data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
                                                           'KF alti est', 'KF vel est', 'KF alpha est', 'KF beta est'])
             data_cache_df.to_csv(
-                f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_{date_time_now.hour}:{date_time_now.minute}:{date_time_now.second}.csv", index=False, header=False)
-            print("Saving done!")
+                f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_at_{date_time_now.hour}h{date_time_now.minute}m{date_time_now.second}s.csv", index=False, header=False)
+            print_debug("Saving done!")
+            clear_caches()
+            allow_data_logging[0] = False
+           
+        allow_data_logging[0] = not switch_a_status[0]
+        
+            
+        
+
+
+
+
 
             if enable_printing_cache_to_screen[0]:
                 print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelrometer_cache_} \nalti_ref_mts{altitude_reference_cache_mts}")
