@@ -343,17 +343,6 @@ if __name__ == '__main__':
     if enable_caching[0]:
         time_before_thread_starts[0] = time_ns()
 
-    # initialisation checks: are the switches at the correct positions before flying?
-    print(">> [INIT] checking switch positions [waiting] <<<")
-    print(">> [INIT] s/A must be UP, s/B must be UP, s/C must be DOWN!")
-
-    while True:
-        process_radio_data()
-        if not rc.switch_A() and not rc.switch_B() and rc.switch_D():
-            break
-
-    print(">> [INIT] complete <<<")
-
     # schedule the necessary functions
     scheduler.schedule("process_radio_data",
                        process_radio_data,
