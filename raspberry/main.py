@@ -13,7 +13,8 @@ from bzzz.controllers.altitude_LQR import LQR  # altitude hold controller
 from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
 from bzzz.scheduler import Scheduler
 from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
-from bzzz.read_sbus import RC  # for radio data receving, encoding and sending to ESP
+from bzzz.radio.radio import Radio  # for radio data receving, encoding and sending to ESP
+from bzzz.radio.flight_data_receiver import FlightDataReceiver # for flight data reception from ESP
 
 
 # NOTE: The scheduler supports both multi-threading and time-based function calling
@@ -43,8 +44,10 @@ if __name__ == '__main__':
                              cache_altitude=True,
                              use_outlier_detection=True,
                              abs_outlier_diff_thres=500)
-    rc = RC()
+    radio = Radio()
+    flight_data_receiver = FlightDataReceiver()
     scheduler = Scheduler(use_threading=False)
+    perform_RC_check = [True]
 
     # NOTE: single element lists are used to avoid python-env re-declaring
     # new local variables with in the functions that follow below.
@@ -169,7 +172,7 @@ if __name__ == '__main__':
         # if altitude hold is enabled and drone is not close to the ground update the altitude_ref_mts
         if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0]:
             altitude_ref_mts[0] = current_altitude_snap_shot_mts[0] + (
-                var_e_RC_mid_percentage[0] - rc.trimmer_VRE_percentage())*altitude_shifter_range_mts[0]
+                var_e_RC_mid_percentage[0] - radio.trimmer_VRE_percentage())*altitude_shifter_range_mts[0]
             # the altitude_ref_mts should not be less than minimum flight altitude
             altitude_ref_mts[0] = max(
                 min_altitude_to_activate_AltiHold_mts[0], altitude_ref_mts[0])
@@ -182,22 +185,22 @@ if __name__ == '__main__':
         # which is the actual range of the RC throttle stick.
         shit = int((throttle_ref_from_LQR[0] - 1000) * 1400/900 +
                    300) if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1
-        channel_data[0] = rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=True,
+        channel_data[0] = radio.receive_parse_and_send(return_channel_date=True,
                                                                   force_send_fake_data=False,
                                                                   fake_data="S,0,0,0,0,0,0,0,0,0",
                                                                   over_write_throttle_ref_to=shit)
         # update shared variables using RC data
         # is data logging killed and data saving requested?
         # is altitude hold enabled?
-        switch_a_status[0] = rc.switch_A()
-        use_altitude_hold[0] = rc.switch_C()
-        is_kill[0] = rc.switch_D()
+        switch_a_status[0] = radio.switch_A()
+        use_altitude_hold[0] = radio.switch_C()
+        is_kill[0] = radio.switch_D()
         # Kappa11 gain from RC
-        gain_kp_from_rc[0] = rc.trimmer_VRA_percentage()*KP_GAIN_MAX
+        gain_kp_from_rc[0] = radio.trimmer_VRA_percentage()*KP_GAIN_MAX
         # kappa22 gain from RC
-        gain_kd_from_rc[0] = rc.trimmer_VRB_percentage()*KD_GAIN_MAX
+        gain_kd_from_rc[0] = radio.trimmer_VRB_percentage()*KD_GAIN_MAX
         # normalised throttle reference from RC, max is 1900
-        Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
+        Tref_t[0] = (radio.throttle_reference_percentage() - 1000)/900
         cache_values()  # call to cache values
 
     def process_ESP_data():
@@ -208,7 +211,7 @@ if __name__ == '__main__':
            then convert the 7 values to floats and update shared variables.
         """
         # process ESP data
-        flight_data_string = rc.receive_data_from_ESP()
+        flight_data_string = flight_data_receiver.receive_data_from_ESP()
         if flight_data_string is not None and "FD:" in flight_data_string:
             flight_data = flight_data_string.strip().split()
             if len(flight_data) == 11:
@@ -321,7 +324,7 @@ if __name__ == '__main__':
             if use_altitude_hold[0]:
                 if not is_current_altitude_snap_shot_taken[0]:
                     current_altitude_snap_shot_mts[0] = temp/1000
-                    var_e_RC_mid_percentage[0] = rc.trimmer_VRE_percentage()
+                    var_e_RC_mid_percentage[0] = radio.trimmer_VRE_percentage()
                     is_current_altitude_snap_shot_taken[0] = True
             else:
                 is_current_altitude_snap_shot_taken[0] = False
@@ -359,6 +362,9 @@ if __name__ == '__main__':
 
     # THE MAIN LOOP
     while True:
+        while perform_RC_check[0]:
+            RC_check_status = radio.receive_parse_and_send(perform_RC_check=perform_RC_check[0])
+            perform_RC_check[0] = not RC_check_status
         scheduler.run()  # run the scheduled functions
 
         # Cache saving
