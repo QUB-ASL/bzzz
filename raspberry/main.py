@@ -38,7 +38,7 @@ if __name__ == '__main__':
               initial_alpha_t=10,
               initial_beta_t=-9.81)
     # update_measurement_at_fixed_rate: if True then use time difference between current time and last measurement time to take a measurement
-    #            if Flase then take a measurement instantly
+    #            if false then take a measurement instantly
     tof = TimeOfFlightSensor(update_measurement_at_fixed_rate=False,
                              num_latest_readings_to_keep=1,
                              cache_altitude=True,

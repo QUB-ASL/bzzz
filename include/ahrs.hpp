@@ -134,10 +134,10 @@ namespace bzzz
         float currentYawRad();
 
         /**
-         * Get the acclerometer values
+         * Get the accelerometer values
          * @param accValues float array pointer of size 3 to store ax, ay, and az values
         */
-        void getAcclerometerValues(float *accValues);
+        void getAccelerometerValues(float *accValues);
 
 
 /*

@@ -130,7 +130,7 @@ void loop()
   IMUData[0] = relativeQuaternion[1];
   IMUData[1] = relativeQuaternion[2];
   IMUData[2] = relativeQuaternion[3];
-  ahrs.getAcclerometerValues(IMUData + 3);
+  ahrs.getAccelerometerValues(IMUData + 3);
 
   // Throttle from RC to throttle reference
   float throttleRef = radio.throttleReferencePWM();

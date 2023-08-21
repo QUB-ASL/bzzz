@@ -34,7 +34,7 @@
 
 namespace bzzz
 {
-    Radio::Radio(bool replyWithFlightData /*=flase*/){
+    Radio::Radio(bool replyWithFlightData /*=false*/){
         this->m_replyWithFlightData = replyWithFlightData;
     };
     
