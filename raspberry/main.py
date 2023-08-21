@@ -74,8 +74,6 @@ if __name__ == '__main__':
     is_kill = [False]
     allow_data_logging = [True]
 
-    allow_initial_engagement = [False]
-
     # Altitude hold vars
     throttle_ref_from_LQR = [0.]
     use_altitude_hold = [False]
@@ -194,10 +192,10 @@ if __name__ == '__main__':
         switch_a_status[0] = rc.switch_A()
         use_altitude_hold[0] = rc.switch_C()
         is_kill[0] = rc.switch_D()
-        gain_kp_from_rc[0] = rc.trimmer_VRA_percentage(
-        )*KP_GAIN_MAX  # Kappa11 gain from RC
-        gain_kd_from_rc[0] = rc.trimmer_VRB_percentage(
-        )*KD_GAIN_MAX  # kappa22 gain from RC
+        # Kappa11 gain from RC
+        gain_kp_from_rc[0] = rc.trimmer_VRA_percentage()*KP_GAIN_MAX
+        # kappa22 gain from RC
+        gain_kd_from_rc[0] = rc.trimmer_VRB_percentage()*KD_GAIN_MAX
         # normalised throttle reference from RC, max is 1900
         Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
         cache_values()  # call to cache values
@@ -233,7 +231,7 @@ if __name__ == '__main__':
                 # additional check: if ESP is not armed, it sends [-1, -1, -1] for quaternions, which is invalid.
                 if quaternion_vector == [-1., -1., -1.]:
                     print_debug(
-                        f"Received quat = {quaternion_vector}. Defaulting to quat = [0, 0, 0].")
+                        f"Received quat = {quaternion_vector}; defaulting to quat = [0, 0, 0].")
                     quaternion_vector[0] = 0.
                     quaternion_vector[1] = 0.
                     quaternion_vector[2] = 0.

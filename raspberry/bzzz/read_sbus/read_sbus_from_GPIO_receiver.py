@@ -81,7 +81,11 @@ class RC:
         else:
             return None
 
-    def get_radio_data_parse_and_send_to_ESP(self, return_channel_date=False, force_send_fake_data=False, fake_data="", over_write_throttle_ref_to=-1):
+    def get_radio_data_parse_and_send_to_ESP(self,
+                                             return_channel_date=False,
+                                             force_send_fake_data=False,
+                                             fake_data="",
+                                             over_write_throttle_ref_to=-1):
         """Read the radio data, process it, format it into a string, and send it via UART.
         """
         try:
