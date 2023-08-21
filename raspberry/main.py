@@ -25,7 +25,7 @@ if __name__ == '__main__':
     sampling_frequency = 50
     # caching configuration
     enable_caching = [True]
-    enable_printing_cache_to_screen = [True and enable_caching[0]]
+    enable_printing_cache_to_screen = [False and enable_caching[0]]
 
     # objects declaration
     kf = KalmanFilter(sampling_frequency=sampling_frequency,
@@ -219,12 +219,13 @@ if __name__ == '__main__':
                     q2 = float(flight_data[2])
                     q3 = float(flight_data[3])
                 except ValueError as e:
-                    print(f"Invalid quaternion data from ESP32 - flight data: {flight_data_string}\n {e}")
+                    print(
+                        f"Invalid quaternion data from ESP32 - flight data: {flight_data_string}\n {e}")
                     return
-                
+
                 # ... if they are, then update
                 quaternion_vector[0] = q1
-                quaternion_vector[1] = q2 
+                quaternion_vector[1] = q2
                 quaternion_vector[2] = q3
 
                 # additional check: if ESP is not armed, it sends [-1, -1, -1] for quaternions, which is invalid.
@@ -236,7 +237,8 @@ if __name__ == '__main__':
                     quaternion_vector[2] = 0.
 
                 # compute the scalar part of the quaternion
-                q0 = sqrt(1 - quaternion_vector[0]**2 - quaternion_vector[1]**2 - quaternion_vector[2]**2)
+                q0 = sqrt(
+                    1 - quaternion_vector[0]**2 - quaternion_vector[1]**2 - quaternion_vector[2]**2)
                 quaternion_full = [q0] + quaternion_vector
                 # compute euler angles from quaternion
                 euler[0], euler[1], euler[2] = euler_angles(quaternion_full)
@@ -251,8 +253,9 @@ if __name__ == '__main__':
                     motor_PWM[2] = float(flight_data[9])
                     motor_PWM[3] = float(flight_data[10])
                 except ValueError as e:
-                    print(f"Invalid data from ESP32 - flight data: {flight_data_string}\n {e}")
-                
+                    print(
+                        f"Invalid data from ESP32 - flight data: {flight_data_string}\n {e}")
+
     def clear_caches():
         time_cache.clear()
         quat_cache.clear()
@@ -302,7 +305,7 @@ if __name__ == '__main__':
                 kf.reset()
         else:
             x_est = kf.update(Tref_t[0], euler[1], euler[2],
-                           np.nan if temp == -1 else temp/1000)
+                              np.nan if temp == -1 else temp/1000)
             is_KF_ran_atleast_once[0] = True
             z_hat[0] = x_est[0][0]
             v_hat[0] = x_est[1][0]
@@ -330,7 +333,8 @@ if __name__ == '__main__':
                                                           recalculate_dynamics=True,
                                                           pitch_rad=euler[1],
                                                           roll_rad=euler[2])
-            throttle_ref_from_LQR[0] = max(1000, min(throttle_ref_from_LQR[0]*900, 600) + 1000)
+            throttle_ref_from_LQR[0] = max(
+                1000, min(throttle_ref_from_LQR[0]*900, 600) + 1000)
             Tref_t[0] = (throttle_ref_from_LQR[0] - 1000)/900
             print_debug(
                 f"alphan hat: {alpha_hat[0]} beta hat: {beta_hat[0]} k11: {-gain_kp_from_rc[0]} k12: {-gain_kd_from_rc[0]} Tref_LQR: {Tref_t[0]} alt_hat: {z_hat[0]} alt_ref: {altitude_ref_mts[0]}")
@@ -367,38 +371,32 @@ if __name__ == '__main__':
             data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta]
                                           for t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta
                                           in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache,
-                                                 tof.altitude_cache(), 
-                                                 accelrometer_cache_[:, 0], 
-                                                 accelrometer_cache_[:, 1], 
-                                                 accelrometer_cache_[:, 2], 
+                                                 tof.altitude_cache(),
+                                                 accelrometer_cache_[:, 0],
+                                                 accelrometer_cache_[:, 1],
+                                                 accelrometer_cache_[:, 2],
                                                  altitude_reference_cache_mts,
-                                                 radio_data_cache, 
-                                                 motor_PWM_cache_[:, 0], 
-                                                 motor_PWM_cache_[:, 1], 
-                                                 motor_PWM_cache_[:, 2], 
+                                                 radio_data_cache,
+                                                 motor_PWM_cache_[:, 0],
+                                                 motor_PWM_cache_[:, 1],
+                                                 motor_PWM_cache_[:, 2],
                                                  motor_PWM_cache_[:, 3],
-                                                 KF_data_cache_[:, 0], 
-                                                 KF_data_cache_[:, 1], 
-                                                 KF_data_cache_[:, 2], 
-                                                 KF_data_cache_[:, 3])], 
-                                                 columns=['Time-stamp', 'T_ref', 'yaw', 'pitch', 'roll', 
-                                                          'ToF measurement', 'accX', 'accY', 'accZ', 
-                                                          'Ref alti', 'RC data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
-                                                          'KF alti est', 'KF vel est', 'KF alpha est', 'KF beta est'])
+                                                 KF_data_cache_[:, 0],
+                                                 KF_data_cache_[:, 1],
+                                                 KF_data_cache_[:, 2],
+                                                 KF_data_cache_[:, 3])],
+                                         columns=['Time-stamp', 'T_ref', 'yaw', 'pitch', 'roll',
+                                                  'ToF measurement', 'accX', 'accY', 'accZ',
+                                                  'Ref alti', 'RC data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
+                                                  'KF alti est', 'KF vel est', 'KF alpha est', 'KF beta est'])
             data_cache_df.to_csv(
                 f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_at_{date_time_now.hour}h{date_time_now.minute}m{date_time_now.second}s.csv", index=False, header=False)
             print_debug("Saving done!")
             clear_caches()
             allow_data_logging[0] = False
-           
-        allow_data_logging[0] = not switch_a_status[0]
-        
-            
-        
 
-
-
-
-
+            # TODO change this to print the dataframe (all rows and columns)
             if enable_printing_cache_to_screen[0]:
                 print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelrometer_cache_} \nalti_ref_mts{altitude_reference_cache_mts}")
+
+        allow_data_logging[0] = not switch_a_status[0]
