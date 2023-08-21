@@ -34,8 +34,8 @@
 
 namespace bzzz
 {
-    Radio::Radio(bool replyWithIMUData /*=flase*/){
-        this->m_replyWithIMUData = replyWithIMUData;
+    Radio::Radio(bool replyWithFlightData /*=flase*/){
+        this->m_replyWithFlightData = replyWithFlightData;
     };
     
     bool Radio::readPiData(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR)
@@ -81,15 +81,16 @@ namespace bzzz
                 return false;
             }
             m_encodedSwitchesData = m_rawEncodedSwtchsData;
-            if(this->m_replyWithIMUData){
-                this->sendIMUDataToPi(q1, q2, q3, ax, ay, az, motorFL, motorFR, motorBL, motorBR);
+            if(this->m_replyWithFlightData){
+                // if replyWithFlightData is enabled, send flight data to Pi
+                this->sendFlightDataToPi(q1, q2, q3, ax, ay, az, motorFL, motorFR, motorBL, motorBR);
             }
             return true;
         }
         return false;
     }
 
-    void Radio::sendIMUDataToPi(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR)
+    void Radio::sendFlightDataToPi(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR)
     {
         Serial.print("FD: ");
         Serial.print(q1);
@@ -111,9 +112,6 @@ namespace bzzz
         Serial.print(motorBL);
         Serial.print(' ');
         Serial.println(motorBR);
-        // String flightData = "FD: " + String(q1) + " " + String(q2) + " " + String(q3)
-        //                    + " " + String(ax) + " " + String(ay) + " " + String(az); 
-        // Serial.println(flightData);
     }
 
     float Radio::pitchReferenceAngleRad()

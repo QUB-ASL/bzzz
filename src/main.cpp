@@ -64,11 +64,11 @@ void setup()
 void setGainsFromRcTrimmers()
 {
   controller.setQuaternionGain(
-      - 0.470 * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
+      - QUATERNION_XY_GAIN * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
   controller.setAngularVelocityXYGain(
-      - 0.266 * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
+      - OMEGA_XY_GAIN * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
   controller.setYawAngularVelocityGain(
-      - 0.145 * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+      - OMEGA_Z_GAIN * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 }
 
 /**
@@ -132,18 +132,6 @@ void loop()
   IMUData[2] = relativeQuaternion[3];
   ahrs.getAcclerometerValues(IMUData + 3);
 
-  // Serial.print("FD: ");
-  // Serial.print(IMUData[0]);
-  // Serial.print(' ');
-  // Serial.print(IMUData[1]);
-  // Serial.print(' ');
-  // Serial.print(IMUData[2]);
-  // Serial.print(' ');
-  // Serial.print(IMUData[3]);
-  // Serial.print(' ');
-  // Serial.print(IMUData[4]);
-  // Serial.print(' ');
-  // Serial.println(IMUData[5]);
   // Throttle from RC to throttle reference
   float throttleRef = radio.throttleReferencePWM();
 

@@ -35,7 +35,7 @@ class AltitudeDynamics:
                    velocity_z_t: float,
                    thrust_ref_t: float):
         """Discrete time dynamics of the quad-rotor.
-        :param altitude_t: Altitude at time t in mts, current altitude.
+        :param altitude_t: Altitude at time t in m, current altitude.
         :param velocity_z_t: Velocity at time t in m/s along global z-axis, current velocity.
         :param thrust_ref_t: Reference thrust/ thrust produced by the quad-rotor along the global z-axis, current thrust.
         :return: altitude, velocity, and accleration updates

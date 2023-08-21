@@ -9,14 +9,15 @@ class TimeOfFlightSensor:
     # NOTE: This class fetches altitude in millimeters and this class requires i2c interfacing with the sensor.
     def __init__(self,
                  num_latest_readings_to_keep: int = 3,
-                 use_sleep=False,
+                 update_measurement_at_fixed_rate=False,
                  cache_altitude=False,
                  use_outlier_detection=False,
                  abs_outlier_diff_thres=500):
         """Time of flight sensor class initialization.
 
         :param num_latest_readings_to_keep: Window length for median filter, defaults to 3
-        :param use_sleep: Indicator to use sleep and wait for the next measurement; Not recommended as this will halt the system, defaults to False
+        :param update_measurement_at_fixed_rate: Indicator to use difference between current time and last measurement time
+          and wait till sufficient time is elapsed to take a measurement, defaults to False
         :param cache_altitude: Cache the altitude measurements in mm if True, defaults to False
         :param use_outlier_detection: Use outlier detection based on maximum alowable altitude change, defaults to False
         :param abs_outlier_diff_thres: Maximum change in altitude allowed between the current and previous measurements, defaults to 500
@@ -30,7 +31,7 @@ class TimeOfFlightSensor:
         # previous measurement varaibles.
         self._previous_altitude = None
         self._last_update_time = None
-        self.use_sleep = use_sleep
+        self.update_measurement_at_fixed_rate = update_measurement_at_fixed_rate
 
         # Data cache varaibles.
         self.cache_altitude = cache_altitude
@@ -144,7 +145,8 @@ class TimeOfFlightSensor:
         :return: None if valid measurement is taken. -1 otherwise.
         """
         time_now = time_ns()
-        if self.use_sleep == -1:
+        # if update_measurement_at_fixed_rate is False take and return measurement instantly
+        if not self.update_measurement_at_fixed_rate:
             temp = self._current_altitude
             if self.__update_ToF() != -1:
                 self._previous_altitude = temp
@@ -157,8 +159,8 @@ class TimeOfFlightSensor:
                 return -1
             self._last_update_time = time_now
             return
-
-        if not self.use_sleep:
+        else:
+            # if update_measurement_at_fixed_rate is True take and return measurement based on time elapsed
             if time_now - self._last_update_time > self.timing*1000:
                 temp = self._current_altitude
                 if self.__update_ToF() != -1:
@@ -171,18 +173,6 @@ class TimeOfFlightSensor:
                     print("ToF sensor returning -ve distance....\nretrying....")
                     return -1
                 self._last_update_time = time_now
-        else:
-            temp = self._current_altitude
-            if self.__update_ToF() != -1:
-                self._previous_altitude = temp
-                if self.cache_altitude:
-                    self._altitude_cache.append(self._current_altitude)
-            else:
-                if self.cache_altitude:
-                    self._altitude_cache.append(-1)
-                print("ToF sensor returning -ve distance....\nretrying....")
-                return -1
-            sleep(self.timing/1000000)
 
     def kill_ToF(self):
         """Kill the ToF sensor. 
@@ -196,7 +186,7 @@ class TimeOfFlightSensor:
 
 # Test script.
 if __name__ == "__main__":
-    tof = TimeOfFlightSensor(use_sleep=True)
+    tof = TimeOfFlightSensor(update_measurement_at_fixed_rate=True)
     time_before_loop_starts = time_ns()
     with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
         for i in range(100):

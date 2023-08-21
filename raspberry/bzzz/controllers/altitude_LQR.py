@@ -4,7 +4,7 @@ import control as ctrl
 from math import cos
 
 class LQR:
-    def __init__(self, sampling_frequency = 10, initial_alpha_t = 0, initial_beta_t = 0) -> None:
+    def __init__(self, sampling_frequency = 10, initial_alpha_t = 0, initial_beta_t = 0):
         # sampling frequency
         self.__fs = sampling_frequency
         self.__Ts = 1./sampling_frequency
@@ -34,10 +34,7 @@ class LQR:
         self.__reference_tracker_matrix = np.zeros((3, 1))
 
         # LQR matrices
-        self.__Q = np.array([
-            [1, 0],
-            [0, 1]
-        ])
+        self.__Q = np.eye(2)
         self.__R = np.array([[100]])
         self.__kappa = np.zeros((1, 2))  # pre-allocation for LQR gain
 
@@ -122,7 +119,7 @@ class LQR:
     def control_action(self, current_states_z_and_vz: np.array, alpha_t = 0, beta_t = 0, reference_altitude_mts = 1, recalculate_dynamics = False, pitch_rad=0, roll_rad=0, k11=None, k12=None):
         """Calculate and return the normalized control action
 
-        :param current_states_z_and_vz: current states of altitude in mts and velocity in m/s in a 2x1 numpy array
+        :param current_states_z_and_vz: current states of altitude in m and velocity in m/s in a 2x1 numpy array
         :param alpha_t: vertical accleration parameter alpha, defaults to 0
         :param beta_t: vertical accleration parameter beta, defaults to 0
         :param reference_altitude_mts: reference altitude in mts, defaults to 1

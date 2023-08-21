@@ -37,7 +37,9 @@ if __name__ == '__main__':
     lqr = LQR(sampling_frequency=sampling_frequency,
               initial_alpha_t=10,
               initial_beta_t=-9.81)
-    tof = TimeOfFlightSensor(use_sleep=-1,
+    # update_measurement_at_fixed_rate: if True then use time difference between current time and last measurement time to take a measurement
+    #            if Flase then take a measurement instantly
+    tof = TimeOfFlightSensor(update_measurement_at_fixed_rate=False,
                              num_latest_readings_to_keep=1,
                              cache_altitude=True,
                              use_outlier_detection=True,
@@ -249,7 +251,7 @@ if __name__ == '__main__':
     def read_ToF_run_kf_and_LQR():
         """Read ToF sensor, and run the Kalman filter and LQR control algorithms
         """
-        # NOTE: DO NOT DIVIDE temp BY 1000 here to get altitude measurements in mts.
+        # NOTE: DO NOT DIVIDE temp BY 1000 here to get altitude measurements in m.
         # There are checks if temp == -1 in the code for outlier detection.
         # you can run LQR even when the drone is close to ground but you cannot run KF.
         # So, to compensate use the previous estimates of alpha and beta

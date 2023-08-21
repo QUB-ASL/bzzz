@@ -3,6 +3,12 @@ import math
 
 
 class KalmanFilter:
+    """Kalman Filter for altitude hold parameters estimation. 
+    The states are x = [Altitude in m, Velocity along z-axis in m/s, alpha, beta].
+    Where, alpha and beta are parameters that relate throttle reference percentage with vertical accleration as follows,
+    ===> a_z = alpha * Throttle_reference_percentage_along_z + beta
+    and Throttle_reference_percentage_along_z = Throttle_reference_percentage * cos (current_drone_pitch_rad) * cos (current_drone_roll_rad)
+    """
     def __init__(self,
                  sampling_frequency=10,
                  initial_Tt=0.,
