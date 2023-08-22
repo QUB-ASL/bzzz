@@ -64,15 +64,24 @@ namespace bzzz
          */
         int m_encodedSwitchesData;
 
+        /**
+         * Boolean to enable sending IMU data to Pi whenever ESP receives radio data
+         * if True: replies with IMU data;  
+        */
+       bool m_replyWithFlightData;
+
     public:
-        Radio();
+        /**
+         * @brief Radio class constructor
+         * @param replyWithFlightData enables replying to Pi with flight data whenever radio data from Pi is received.
+        */
+        Radio(bool replyWithFlightData = false);
 
         /**
-         * @brief Read the receiver data sent from Pi
-         *
+         * @brief Read the receiver data sent from Pi and send 
          * @return true iff new data was received from RPi
          */
-        bool readPiData(void);
+        bool readPiData();
 
         /**
          * @brief pitch reference from RC in rad
@@ -144,6 +153,22 @@ namespace bzzz
          * Wait until the arm switch is at the ON position
          */
         void waitForArmCommand();
+
+        /**
+         * @brief send flight data: IMU data quaternions, accelerometer values, and motor PWM values 
+         * (q1, q2, q3, ax, ay, az, motorFL, motorFR, motorBL, motorBR) data to Pi.
+         * @param q1 1st element of the vector part of current attitude quaternion
+         * @param q2 2nd element of the vector part of current attitude quaternion
+         * @param q3 3rd element of the vector part of current attitude quaternion
+         * @param ax current accleration along x-axis
+         * @param ay current accleration along y-axis
+         * @param az current accleration along z-axis
+         * @param motorFL current Front-Left motor PWM control action
+         * @param motorFR current Front-Right motor PWM control action
+         * @param motorBL current Back-Left motor PWM control action
+         * @param motorBR current Back-Right motor PWM control action
+        */
+        void sendFlightDataToPi(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR);
 
     }; /* end of class Radio */
 

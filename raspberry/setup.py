@@ -28,7 +28,8 @@ setup(name=NAME,
       description=DESCRIPTION,
       long_description=long_description,
       long_description_content_type='text/markdown',
-      author=['Naga Venkata Sai Chandra Mouli', 'Jamie Rainey', 'Pantelis Sopasakis'],
+      author=['Naga Venkata Sai Chandra Mouli',
+              'Jamie Rainey', 'Pantelis Sopasakis'],
       author_email='p.sopasakis@gmail.com',
       license='MIT License',
       packages=find_packages(
@@ -37,8 +38,8 @@ setup(name=NAME,
       install_requires=[
           'smbus', 'pigpio', 'bitarray', 'pyserial', 'VL53L0X', 'pandas', 'numpy', 'matplotlib', 'wheel', 'control'
       ],
-       dependency_links = [
-         "git+https://github.com/pimoroni/VL53L0X-python.git",
+      dependency_links=[
+          "git+https://github.com/pimoroni/VL53L0X-python.git",
       ],
       classifiers=[
           'Topic :: Software Development :: Embedded Systems'

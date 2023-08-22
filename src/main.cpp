@@ -11,13 +11,15 @@
 using namespace bzzz;
 
 MotorDriver motorDriver;
-Radio radio;
+Radio radio(true);
 AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
 FailSafes failSafes(TX_CONNECTION_TIMEOUT_IN_uS);
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
+float IMUData[6];
+int motorFL, motorFR, motorBL, motorBR;
 
 /**
  * Setup the AHRS
@@ -62,11 +64,11 @@ void setup()
 void setGainsFromRcTrimmers()
 {
   controller.setQuaternionGain(
-      -radio.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
+      - QUATERNION_XY_GAIN * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
   controller.setAngularVelocityXYGain(
-      -radio.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
+      - OMEGA_XY_GAIN * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
   controller.setYawAngularVelocityGain(
-      -radio.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+      - OMEGA_Z_GAIN * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 }
 
 /**
@@ -81,6 +83,7 @@ void loop()
   // if radio data received update the last data read time.
   if (radio.readPiData())
   {
+    radio.sendFlightDataToPi(IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5], motorFL, motorFR, motorBL, motorBR);
     failSafes.setLastRadioReceptionTime(micros());
   }
   // one function to run all fail safe checks
@@ -125,11 +128,15 @@ void loop()
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
   Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
+  IMUData[0] = relativeQuaternion[1];
+  IMUData[1] = relativeQuaternion[2];
+  IMUData[2] = relativeQuaternion[3];
+  ahrs.getAccelerometerValues(IMUData + 3);
+
   // Throttle from RC to throttle reference
   float throttleRef = radio.throttleReferencePWM();
 
   // Compute control actions and send them to the motors
-  int motorFL, motorFR, motorBL, motorBR;
   controller.motorPwmSignals(attitudeError,
                              angularVelocityCorrected,
                              yawRateReference,
@@ -137,6 +144,6 @@ void loop()
                              motorFL, motorFR, motorBL, motorBR);
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
 
-  logSerial(LogVerbosityLevel::Debug, "FR: %d FL: %d BL: %d BR: %d",
-            motorFR, motorFL, motorBL, motorBR);
+  logSerial(LogVerbosityLevel::Debug, "PR: %f %f\n",
+            IMUData[1], IMUData[2]);
 }
