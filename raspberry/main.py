@@ -74,9 +74,15 @@ if __name__ == '__main__':
     # This switch is used to save the logged data. Value is updated in `process_radio_data`
     switch_a_status = [True]
     # indicates the position of switch D. This is the kill switch on the Remote.
-    # Value is updated in `process_radio_data`
+    # Value is updated in `process_radio_data`. 
+    # NOTE: you will have to kill the drone first before saving data.
     is_kill = [False]
-    # indicates whether
+    # indicates if data logging is allowed. Value is updated in the `main` loop.
+    # Value update logic:
+    # 1. Allow data logging for the first time by flipping switch A to on position.
+    # 2. After saving the data for the first time, disable data logging.
+    # 3. Now set the value to `not switch_A_status`, this disables the logging as long as 
+    #       switch A stays on. You will have to flip switch A off to re-enable data logging.
     allow_data_logging = [True]
 
     # Altitude hold vars
