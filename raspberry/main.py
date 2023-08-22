@@ -69,9 +69,14 @@ if __name__ == '__main__':
     channel_data = [""]
     KF_data = [0., 0., 0., 0.]
 
+    # These variables are used to keep track of data logging process
+    # indicates the position of switch A on the Remote.
+    # This switch is used to save the logged data. Value is updated in `process_radio_data`
     switch_a_status = [True]
-    is_data_log_kill = [False]
+    # indicates the position of switch D. This is the kill switch on the Remote.
+    # Value is updated in `process_radio_data`
     is_kill = [False]
+    # indicates whether
     allow_data_logging = [True]
 
     # Altitude hold vars
