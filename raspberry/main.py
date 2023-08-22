@@ -386,10 +386,10 @@ if __name__ == '__main__':
                                                  KF_data_cache_[:, 1],
                                                  KF_data_cache_[:, 2],
                                                  KF_data_cache_[:, 3])],
-                                         columns=['Time-stamp', 'T_ref', 'yaw', 'pitch', 'roll',
-                                                  'ToF measurement', 'accX', 'accY', 'accZ',
-                                                  'Ref alti', 'RC data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
-                                                  'KF alti est', 'KF vel est', 'KF alpha est', 'KF beta est'])
+                                         columns=['timestamp', 'throttle_ref', 'yaw', 'pitch', 'roll',
+                                                  'tof_measurement', 'accX', 'accY', 'accZ',
+                                                  'altitude_ref', 'RC_data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
+                                                  'KF_altitutde_est', 'KF_velocity_z_est', 'KF_alpha_est', 'KF_beta_est'])
             data_cache_df.to_csv(
                 f"/home/bzzz/Desktop/logs/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_at_{date_time_now.hour}h{date_time_now.minute}m{date_time_now.second}s.csv",
                 index=False,
