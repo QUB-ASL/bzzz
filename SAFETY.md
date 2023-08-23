@@ -1,6 +1,6 @@
 # General lab rules
 
-Last updated: 9 May 2023
+Last updated: 24 August 2023
 
 **Table of Contents**
 
@@ -12,7 +12,8 @@ Last updated: 9 May 2023
 6. [Test flights](#6-test-flights)
 7. [Fire safety](#7-fire-safety)
 8. [Emergency numbers](#8-emergency-numbers)
-9. [Endnotes](#9-endnotes)
+9. [First aid](#9-first-aid-kit)
+10. [Endnotes](#9-endnotes)
 
 
 
@@ -59,7 +60,7 @@ As a result:
 You may find more information at the [webpage](https://safety.eng.cam.ac.uk/safe-working/copy_of_soldering-safety) of the Dept of Engineering Health and Safety of the University of Cambridge.
 
 
-### 4. Quadcopter motors
+## 4. Quadcopter motors
 
 The brushless motors used on a quadcopter can spin up to several thousands RPM, therefore, if you are close to a spinning motor you risk getting injured. 
 
