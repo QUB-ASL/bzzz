@@ -13,8 +13,10 @@ from bzzz.controllers.altitude_LQR import LQR  # altitude hold controller
 from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
 from bzzz.scheduler import Scheduler
 from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
-from bzzz.radio.radio import Radio  # for radio data receving, encoding and sending to ESP
-from bzzz.radio.flight_data_receiver import FlightDataReceiver # for flight data reception from ESP
+# for radio data receving, encoding and sending to ESP
+from bzzz.radio.radio import Radio
+# for flight data reception from ESP
+from bzzz.radio.flight_data_receiver import FlightDataReceiver
 
 
 # NOTE: The scheduler supports both multi-threading and time-based function calling
@@ -72,9 +74,20 @@ if __name__ == '__main__':
     channel_data = [""]
     KF_data = [0., 0., 0., 0.]
 
+    # These variables are used to keep track of data logging process
+    # indicates the position of switch A on the Remote.
+    # This switch is used to save the logged data. Value is updated in `process_radio_data`
     switch_a_status = [True]
-    is_data_log_kill = [False]
+    # indicates the position of switch D. This is the kill switch on the Remote.
+    # Value is updated in `process_radio_data`.
+    # NOTE: you will have to kill the drone first before saving data.
     is_kill = [False]
+    # indicates if data logging is allowed. Value is updated in the `main` loop.
+    # Value update logic:
+    # 1. Allow data logging for the first time by flipping switch A to on position.
+    # 2. After saving the data for the first time, disable data logging.
+    # 3. Now set the value to `not switch_A_status`, this disables the logging as long as
+    #       switch A stays on. You will have to flip switch A off to re-enable data logging.
     allow_data_logging = [True]
 
     # Altitude hold vars
@@ -185,10 +198,10 @@ if __name__ == '__main__':
         # which is the actual range of the RC throttle stick.
         shit = int((throttle_ref_from_LQR[0] - 1000) * 1400/900 +
                    300) if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1
-        channel_data[0] = radio.receive_parse_and_send(return_channel_date=True,
-                                                                  force_send_fake_data=False,
-                                                                  fake_data="S,0,0,0,0,0,0,0,0,0",
-                                                                  over_write_throttle_ref_to=shit)
+        channel_data[0] = radio.get_radio_data_parse_and_send_to_ESP(return_channel_data=True,
+                                                                     force_send_fake_data=False,
+                                                                     fake_data="S,0,0,0,0,0,0,0,0,0",
+                                                                     over_write_throttle_ref_to=shit)
         # update shared variables using RC data
         # is data logging killed and data saving requested?
         # is altitude hold enabled?
@@ -363,7 +376,8 @@ if __name__ == '__main__':
     # THE MAIN LOOP
     while True:
         while perform_RC_check[0]:
-            RC_check_status = radio.receive_parse_and_send(perform_RC_check=perform_RC_check[0])
+            RC_check_status = radio.receive_parse_and_send(
+                perform_RC_check=perform_RC_check[0])
             perform_RC_check[0] = not RC_check_status
         scheduler.run()  # run the scheduled functions
 
@@ -392,10 +406,10 @@ if __name__ == '__main__':
                                                  KF_data_cache_[:, 1],
                                                  KF_data_cache_[:, 2],
                                                  KF_data_cache_[:, 3])],
-                                         columns=['Time-stamp', 'T_ref', 'yaw', 'pitch', 'roll',
-                                                  'ToF measurement', 'accX', 'accY', 'accZ',
-                                                  'Ref alti', 'RC data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
-                                                  'KF alti est', 'KF vel est', 'KF alpha est', 'KF beta est'])
+                                         columns=['timestamp', 'throttle_ref', 'yaw', 'pitch', 'roll',
+                                                  'tof_measurement', 'accX', 'accY', 'accZ',
+                                                  'altitude_ref', 'RC_data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
+                                                  'KF_altitutde_est', 'KF_velocity_z_est', 'KF_alpha_est', 'KF_beta_est'])
             data_cache_df.to_csv(
                 f"/home/bzzz/Desktop/logs/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_at_{date_time_now.hour}h{date_time_now.minute}m{date_time_now.second}s.csv",
                 index=False,

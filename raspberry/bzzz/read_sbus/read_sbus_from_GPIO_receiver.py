@@ -82,7 +82,7 @@ class RC:
             return None
 
     def get_radio_data_parse_and_send_to_ESP(self,
-                                             return_channel_date=False,
+                                             return_channel_data=False,
                                              force_send_fake_data=False,
                                              fake_data="",
                                              over_write_throttle_ref_to=-1):
@@ -99,7 +99,7 @@ class RC:
                 if force_send_fake_data:
                     channel_data = fake_data
                 self.send_data_to_ESP(channel_data)
-            if return_channel_date:
+            if return_channel_data:
                 return channel_data
         except KeyboardInterrupt:
             # cleanup cleanly after ctrl-c
