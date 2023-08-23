@@ -67,7 +67,7 @@ At all times, observe the following safety instructions:
 
 - Never touch a spinning motor with your hands or with a tool or through a piece of clothing
 - When you are close to a spinning motor you must not wear a lanyard, tie, scarfs. If you are wearing a hoodie with drawstrings, put them inside so that they do not hang. Any hanging string is likely to be caught up by a motor leading to injury.
-- Wear protective gloves: even when you are operating a motor without the propellers attached, there is a chance that a bolt becomes loose and flies off at a high speed.
+- Wear protective glasses: even when you are operating a motor without the propellers attached, there is a chance that a bolt becomes loose and flies off at a high speed.
 - Periodically (at least twice a day), make sure that the little grub screws at the bottom part of the motors are not loose. Of course, you should not tighten them too much.
 - At least once a day and every time before performing test flights, you should check to make sure that the bolts that hold the motors on the horizontal metallic rods are tightly screwed.
 
@@ -188,10 +188,23 @@ The procedure is:
 - Off campus: dial 999 and ask for the fire and rescue service
 
 
+## 9. First aid kit
+
+A first aid kit is available in the lab. Make sure you know where it is and familiarise yourself with its contents, which are:
+
+- A first aid guidance leaflet (read it carefully!)
+- 20 HypaPlast washproof plasters
+- 2 HypaCover eye dressings
+- 2 HypaBand triangular bandages
+- 12 HypaBand safety pins
+- 6 HypaCover first aid dressings (12x12cm)
+- 2 HypaCover first aid dressings (18x18cm)
+- 6 HypaClean sterile wipes
+- 3 pairs of HypaTouch disposable gloves
+- 2 HypaClens eye wash bottles (500ml)
 
 
-
-## 9. Endnotes
+## 10. Endnotes
 
 - No equipment leaves the lab
 - Before you leave the lab:
