@@ -12,7 +12,7 @@ CSV files with the following columns:
 - `accY` acc_y from the accelerometer, in m/s^2 
 - `accZ` acc_z from the accelerometer, in m/s^2
 - `altitude_ref` altitude reference in m
-- `RC data` dump of the RC data as a string
+- `RC data` dump of the RC data as a string - exactly as encoded by the RC parser 
 - `mot_FL` PWM signal to the forward left motor (int)
 - `mot_FR` PWM signal to the forward right motor (int)
 - `mot_BL` PWM signal to the backward left motor (int)
