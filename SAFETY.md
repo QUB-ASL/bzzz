@@ -72,8 +72,10 @@ At all times, observe the following safety instructions:
 - Periodically (at least twice a day), make sure that the little grub screws at the bottom part of the motors are not loose. Of course, you should not tighten them too much.
 - At least once a day and every time before performing test flights, you should check to make sure that the bolts that hold the motors on the horizontal metallic rods are tightly screwed.
 
-> Keep in mind: when the ESCs are **armed**, the motors can start to rotate at any time.
-
+> :warning: **KEEP IN MIND**
+> - When the ESCs are **armed**, the motors can start to rotate at any time.
+> - In case it is not possible to kill the quadcopter (e.g., due to a fault), wear protective equipment (glasses and proper gloved) before approaching.
+> - After you flip the ARM switch (switch B on the RC) treat the motors as if they are armed - even if the ESCs are beeping, the motors may be armed.
 
 
 ## 5. LiPo batteries
