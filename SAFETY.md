@@ -74,7 +74,7 @@ At all times, observe the following safety instructions:
 
 > :warning: **KEEP IN MIND**
 > - When the ESCs are **armed**, the motors can start to rotate at any time.
-> - In case it is not possible to kill the quadcopter (e.g., due to a fault), wear protective equipment (glasses and proper gloved) before approaching.
+> - In case it is not possible to kill the quadcopter (e.g., due to a fault), wear protective equipment (glasses and proper gloves) before approaching.
 > - After you flip the ARM switch (switch B on the RC) treat the motors as if they are armed - even if the ESCs are beeping, the motors may be armed.
 
 
