@@ -1,6 +1,6 @@
 # General lab rules
 
-Last updated: 9 May 2023
+Last updated: 24 August 2023
 
 **Table of Contents**
 
@@ -12,7 +12,8 @@ Last updated: 9 May 2023
 6. [Test flights](#6-test-flights)
 7. [Fire safety](#7-fire-safety)
 8. [Emergency numbers](#8-emergency-numbers)
-9. [Endnotes](#9-endnotes)
+9. [First aid](#9-first-aid-kit)
+10. [Endnotes](#9-endnotes)
 
 
 
@@ -59,7 +60,7 @@ As a result:
 You may find more information at the [webpage](https://safety.eng.cam.ac.uk/safe-working/copy_of_soldering-safety) of the Dept of Engineering Health and Safety of the University of Cambridge.
 
 
-### 4. Quadcopter motors
+## 4. Quadcopter motors
 
 The brushless motors used on a quadcopter can spin up to several thousands RPM, therefore, if you are close to a spinning motor you risk getting injured. 
 
@@ -71,8 +72,10 @@ At all times, observe the following safety instructions:
 - Periodically (at least twice a day), make sure that the little grub screws at the bottom part of the motors are not loose. Of course, you should not tighten them too much.
 - At least once a day and every time before performing test flights, you should check to make sure that the bolts that hold the motors on the horizontal metallic rods are tightly screwed.
 
-> Keep in mind: when the ESCs are **armed**, the motors can start to rotate at any time.
-
+> :warning: **KEEP IN MIND**
+> - When the ESCs are **armed**, the motors can start to rotate at any time.
+> - In case it is not possible to kill the quadcopter (e.g., due to a fault), wear protective equipment (glasses and proper gloves) before approaching.
+> - After you flip the ARM switch (switch B on the RC) treat the motors as if they are armed - even if the ESCs are beeping, the motors may be armed.
 
 
 ## 5. LiPo batteries
