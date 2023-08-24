@@ -8,27 +8,20 @@
 
 
 ## Project Description
-The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (QUB) has designed and built a quadcopter with a stabilising attitude control system. This is part of an ongoing research project whose objective is the development of control methodologies that will enable quadcopters to fly in extreme weather conditions. Currently, the quadcopter can be operated using a radio controller (RC).
+The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (QUB) has designed and built a quadcopter with a stabilising attitude control system and (as of v0.2.0) altitude hold. This is part of an ongoing research project whose objective is the development of control methodologies that will enable quadcopters to fly in extreme weather conditions. Currently, the quadcopter can be operated using a radio controller (RC).
 
-## Schematics & Board layouts
-The following images are not to scale.
-### ESP board
-<img width="300" src="design/PCBs/ESP_BOARD/PCB_ESP_SHIELD_PCB_2023-06-13.png">
 
-### ESP schematic
-<img width="300" src="design/PCBs/ESP_BOARD/Schematic_DRONE_ESP_SHIELD_2023-06-05.png">
+## Getting started
 
-### RPi board
-<img width="300" src="design/PCBs/PI_BOARD/PCB_PCB_DRONE_RPI_SHIELD_2023-06-18.png">
+- [Safety first](SAFETY.md): read the safety guidelines
+- [Contributing to this project](CONTRIBUTING.md)
+- 
 
-### RPi schematic
-<img width="300" src="design/PCBs/PI_BOARD/Schematic_DRONE_RPI_SHIELD_2023-06-18.png">
+## Videos 
 
-### Sensor Board
-<img width="300" height = "600" src="design/PCBs/SENSOR_BOARD_V3/SCHEMATICS/Sensor board layout picture.png">
+[![Watch the video](https://img.youtube.com/vi/7mFDusj9uvs/hqdefault.jpg)](https://youtu.be/7mFDusj9uvs)
+[![Watch the video](https://img.youtube.com/vi/eGNW_-LX130/hqdefault.jpg)](https://youtu.be/eGNW_-LX130)
 
-### Sensor schematic
-<img width="300" src="design/PCBs/SENSOR_BOARD_V2/SCHEMATICS/Sensor board schematic image.png">
 
 ## Videos 
 
