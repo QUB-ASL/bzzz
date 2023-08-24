@@ -15,15 +15,17 @@ The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (
 
 - [Safety first](SAFETY.md): read the safety guidelines
 - [Contributing to this project](CONTRIBUTING.md)
-- 
-
-## Videos 
-
-[![Watch the video](https://img.youtube.com/vi/7mFDusj9uvs/hqdefault.jpg)](https://youtu.be/7mFDusj9uvs)
-[![Watch the video](https://img.youtube.com/vi/eGNW_-LX130/hqdefault.jpg)](https://youtu.be/eGNW_-LX130)
+- [PCB design](design/README.md)
+- [ESP32 code](src/README.md)
+- [Raspberry Pi code](raspberry/README.md)
 
 
 ## Videos 
 
+Preliminary tests in the lab:
 [![Watch the video](https://img.youtube.com/vi/7mFDusj9uvs/hqdefault.jpg)](https://youtu.be/7mFDusj9uvs)
+
+First flight of bzzz:
 [![Watch the video](https://img.youtube.com/vi/eGNW_-LX130/hqdefault.jpg)](https://youtu.be/eGNW_-LX130)
+
+
