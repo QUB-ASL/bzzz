@@ -20,8 +20,8 @@ The following images are not to scale.
 
 ## Sensor Board
 
-<img width="300" height = "600" src="PCBs/SENSOR_BOARD_V3/SCHEMATICS/Sensor board layout picture.png">
+<img width="300" height = "600" src="PCBs/SENSOR_BOARD_V4/SCHEMATICS/Sensor Board Layout.png">
 
 ### Sensor schematic
 
-<img width="300" src="PCBs/SENSOR_BOARD_V2/SCHEMATICS/Sensor board schematic image.png">
+<img width="300" src="PCBs/SENSOR_BOARD_V4/SCHEMATICS/Sensor board schematic image.png">
