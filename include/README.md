@@ -1,5 +1,25 @@
+# Embedded ESP32 C++ code
 
-# Headers 
+**About:** This software runs on the ESP32. Its job is
+- To receive data from the Serial (provided by the Raspberry Pi) and parse it
+- To run the attitude control algorithm
+- To implement certain safety mechanisms (arming, killing, etc)
+
+## Contents
+
+The following files are included
+
+| `ahrs.hpp`        | AHRS system (reads IMU measurements, calibrates the IMU, interfaces the Madgwick filter) |
+| `config.hpp`      | various constants |
+| `controller.hpp`  | attitude control system |
+| `fail_safe.hpp`   | checks whether the serial is connected |
+| `motors.hpp`      | interface for the four motors |
+| `quaternion.hpp`  | quaternion algebra |
+| `util.hpp`        | logging, buzzing, and other utils |
+
+The implementations are in [`../src`](../src)
+ 
+## Headers 
 
 This directory is intended for project header files.
 
