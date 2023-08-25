@@ -32,7 +32,7 @@ The EPS32 receives over the serial the following message
 S, yaw_rate_reference, pitch_reference_rad, roll_reference_rad, throttle_reference, trimmer_a_prcnt, trimmer_b_prcnt, trimmer_c_prcnt, trimmer_e_prcnt, encoded_switches
 ```
 
-where `yaw_rate_reference` is the yaw reference rate (left stick, horizontal) in rad/sec, `pitch_reference_rad` is the pitch reference angle in rad (right stick, vertical), `roll_reference_rad` is the roll reference angle in rad (right stick, horizontal), `throttle_reference` is the throttle reference (left stick, vertical), `trimmer_a_prcnt`, `trimmer_b_prcnt` and `trimmer_c_prcnt` are the positions of the three trimmers as a number between 0 and 1, `trimmer_e_prcnt` is the position of trimmer E (right side of the RC), and lastly `encoded_switches` are the switches A, B, C, and D encoded as follows:
+where the character "S" is used to mark the start of the message, `yaw_rate_reference` is the yaw reference rate (left stick, horizontal) in rad/sec, `pitch_reference_rad` is the pitch reference angle in rad (right stick, vertical), `roll_reference_rad` is the roll reference angle in rad (right stick, horizontal), `throttle_reference` is the throttle reference (left stick, vertical), `trimmer_a_prcnt`, `trimmer_b_prcnt` and `trimmer_c_prcnt` are the positions of the three trimmers as a number between 0 and 1, `trimmer_e_prcnt` is the position of trimmer E (right side of the RC), and lastly `encoded_switches` are the switches A, B, C, and D encoded as follows:
 
 - bit-4 (MSB): 1-bit info of Switch B: 1 if armed else 0
 - bit-3: 1-bit info of Switch A: 1 if kill_on else 0
@@ -47,7 +47,7 @@ The ESP sends the following message over the serial
 FD: q1 q2 q3 ax ay az motorFL motorFR motorBL motorBR
 ```
 
-where `q1`, `q2`, `q3` are the vector part of the quaternion, `ax`, `ay`, `az` are the acceleration measurements from the IMU, `motorFL`, `motorFR`, `motorBL`, and `motorBR` are the PWM signals to the four motors.
+where the string "FD:" is used to mark the start of the message, `q1`, `q2`, `q3` are the vector part of the quaternion, `ax`, `ay`, `az` are the acceleration measurements from the IMU, `motorFL`, `motorFR`, `motorBL`, and `motorBR` are the PWM signals to the four motors.
  
 ## Headers 
 
