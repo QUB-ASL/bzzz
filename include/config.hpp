@@ -21,13 +21,13 @@
 /*
  * AHRS config
  */
-#define MAGNETOMETER_BIAS_X 61.733
-#define MAGNETOMETER_BIAS_Y -34.498
-#define MAGNETOMETER_BIAS_Z -611.183
+#define MAGNETOMETER_BIAS_X -251.054
+#define MAGNETOMETER_BIAS_Y -43.154
+#define MAGNETOMETER_BIAS_Z -226.343
 
-#define MAGNETOMETER_SCALE_X 1.083
-#define MAGNETOMETER_SCALE_Y 1.108
-#define MAGNETOMETER_SCALE_Z 0.852
+#define MAGNETOMETER_SCALE_X 1.013
+#define MAGNETOMETER_SCALE_Y 0.981
+#define MAGNETOMETER_SCALE_Z 1.006
 
 /*
  * Motors config
@@ -62,20 +62,31 @@
 
 /** Trimmer A on RC - maximum quaternion XY gain */
 #define RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN 100.
+/** Tested attitude Quaternion roll-pitch axis control gain*/
+#define QUATERNION_XY_GAIN 0.470
 
 /** Trimmer B on RC - maximum quaternion Z gain */
 #define RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN 100.
 
 /** Trimmer C on RC - maximum omega xy gain */
 #define RADIO_TRIMMER_MAX_OMEGA_XY_GAIN 0.5
+/** Tested attitude angular velocity roll-pitch axis control gain*/
+#define OMEGA_XY_GAIN 0.266
 
 /** Trimmer E on RC - maximum omega z gain */
 #define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 10
+/** Tested attitude angular velocity yaw axis control gain*/
+#define OMEGA_Z_GAIN 0.145
 
 /**
  * Control action to PWM scaling factor
  */
 #define U_TO_PWM 8
+
+/**
+ * Fail-safe config
+*/
+#define TX_CONNECTION_TIMEOUT_IN_uS 500000
 
 #ifndef BZZZ_LOGGING_LEVEL
 #define BZZZ_LOGGING_LEVEL 3
