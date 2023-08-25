@@ -15,23 +15,26 @@ The following subsections are used:
       v0.2.0
      --------------------- -->
 
-## [v0.2.0] - 14 June 2023
+## [v0.2.0] - 28 August 2023
 
 ### Added
 
+- First implementation of altitude hold mode.
+- Data logging on Raspberry Pi (data is saved in CSV file).
 - A fail-safe to shut down the drone when the receiver connection is timed-out due to a possible loss of connection.
-- Yaw rate based controller.
-- Schematics for electronic board with ESP32
-- Added configurable fail-safe time-out macro to `config.cpp`
+- Yaw rate controller.
+- Schematics for electronic board with ESP32.
+
 
 ### Fixed
 
 - Fixed the unnecessary yawing of the drone (the drone now yaws only when commanded)
+- Packaged Python code
+- Fixed incompatibility between ThreeWaySwitch and bit shift operator
 
 ### Changed
 
-- Changed `read_sbus_from_GPIO_receiver.py` to stop sending data to ESP when the radio connection is lost.
-- Modified `main.cpp` to utilize the fail-safe.
+- Communication protocol between ESP32 and Raspberry Pi
 
 
 <!-- ---------------------
