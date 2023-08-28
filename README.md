@@ -23,10 +23,14 @@ The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (
 
 ## Videos 
 
-<p>Preliminary tests in the lab:</p>
+<p>Testing altitude hold of bzzz:</p>
 
-[![Watch the video](https://img.youtube.com/vi/7mFDusj9uvs/hqdefault.jpg)](https://youtu.be/7mFDusj9uvs)
+[![Watch the video](https://img.youtube.com/vi/AMWUkB0SQi4/hqdefault.jpg)](https://youtu.be/AMWUkB0SQi4)
 
 <p>First flight of bzzz:</p>
 
 [![Watch the video](https://img.youtube.com/vi/eGNW_-LX130/hqdefault.jpg)](https://youtu.be/eGNW_-LX130)
+
+<p>Preliminary tests in the lab:</p>
+
+[![Watch the video](https://img.youtube.com/vi/7mFDusj9uvs/hqdefault.jpg)](https://youtu.be/7mFDusj9uvs)
