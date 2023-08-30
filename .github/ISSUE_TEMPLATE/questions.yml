@@ -12,13 +12,13 @@ body:
     required: true
 - type: input
   attributes:
-    label: Affected Page
-    placeholder: Add a link to the coding challenge with the problem.
+    label: Associated Page
+    placeholder: Add a link to the associated page.
   validations:
     required: false
 - type: input
   attributes:
-    label: Affected Line
+    label: Associated Line
     placeholder: Add code line number.
   validations:
     required: false
