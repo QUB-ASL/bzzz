@@ -11,8 +11,8 @@ body:
     required: true
 - type: input
   attributes:
-    label: Affected Page
-    placeholder: Add a link to the associated page.
+    label: Affected File
+    placeholder: Add file name or a link to the associated file.
   validations:
     required: true
 - type: input
