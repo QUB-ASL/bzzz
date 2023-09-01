@@ -1,0 +1,24 @@
+name: "🙋 Question"
+description: Ask a question you would like answered
+labels: 
+- question
+- help wanted
+body:
+- type: textarea
+  attributes: 
+    label: What is your question?
+    placeholder: A clear and concise description of what the issue is.
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Affected File
+    placeholder: Add file name or a link to the associated file.
+  validations:
+    required: false
+- type: input
+  attributes:
+    label: Associated Line
+    placeholder: Add code line number.
+  validations:
+    required: false

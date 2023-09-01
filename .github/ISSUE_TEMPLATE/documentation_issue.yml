@@ -1,0 +1,23 @@
+name: "📚 Documentation Issue"
+description: Report issues in our documentation, such as broken links, typos and missing parts.
+labels: 
+- docs
+body:
+- type: textarea
+  attributes: 
+    label: Describe the issue
+    placeholder: A clear and concise description of what the issue is.
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Affected File
+    placeholder: Add file name or a link to the associated file.
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Affected Line
+    placeholder: Add code line number.
+  validations:
+    required: true
