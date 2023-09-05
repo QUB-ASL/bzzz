@@ -14,13 +14,13 @@ body:
     label: Affected File
     placeholder: Add file name or a link to the associated file.
   validations:
-    required: true
+    required: false
 - type: input
   attributes:
     label: Affected Line
     placeholder: Add code line number.
   validations:
-    required: true   
+    required: false   
 - type: textarea
   attributes:
     label: To Reproduce
