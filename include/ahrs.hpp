@@ -18,10 +18,10 @@ namespace bzzz
         MPU9250 m_imu;
 
         /**
-         * Discarm AHRS measurements
+         * Discard AHRS measurements
          *
          * It is a good idea to discard the first few estimates of the IMU
-         * to make sure the estimtor has converged
+         * to make sure the estimator has converged
          *
          * @param numMeasurements number of measurements to discard
          *                        Default: 5,000.
