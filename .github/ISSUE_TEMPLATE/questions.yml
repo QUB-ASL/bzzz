@@ -12,7 +12,7 @@ body:
     required: true
 - type: input
   attributes:
-    label: Affected File
+    label: Associated File
     placeholder: Add file name or a link to the associated file.
   validations:
     required: false
