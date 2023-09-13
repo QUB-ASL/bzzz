@@ -11,7 +11,7 @@ with open(filename, "w", newline="") as f:
     # creating the writer
     writer = csv.writer(f)
     # using writerow to write individual record one by one
-    writer.writerow(["index","date_time","wind_speed", "wind_speed_2D", "H_direction", "V_direction"])
+    writer.writerow(["index","date_time","wind_speed", "wind_speed_2D", "H_direction", "V_direction", "U_axis", "V_axis", "W_axis"])
     f.close()
 
 if __name__ == '__main__':
@@ -35,12 +35,15 @@ if __name__ == '__main__':
             wind_speed_2D = float(all_data[1])
             H_direction = float(all_data[2])
             V_direction = float(all_data[3])
+            U_axis = float(all_data[4])
+            V_axis = float(all_data[5])
+            W_axis = float(all_data[6])
 
             with open(filename, "a+", newline="") as f:
                 # creating the writer
                 writer = csv.writer(f)
                 # using writerow to write individual record one by one
-                writer.writerow([index, dt, wind_speed, wind_speed_2D, H_direction, V_direction])
+                writer.writerow([index, dt, wind_speed, wind_speed_2D, H_direction, V_direction, U_axis, V_axis, W_axis])
                 f.close()
             
             # print("Date and time is:", dt)
@@ -49,3 +52,6 @@ if __name__ == '__main__':
             # print(wind_speed_2D)
             # print(H_direction)
             # print(V_direction)
+            # print(U_axis)
+            # print(V_axis)
+            # print(W_axis)
