@@ -147,7 +147,7 @@ namespace bzzz
         return std::atan2(sinr_cosp, cosr_cosp);
     }
     
-    void AHRS::getAcclerometerValues(float *accValues)
+    void AHRS::getAccelerometerValues(float *accValues)
     {
         accValues[0] = m_imu.getAccX();
         accValues[1] = m_imu.getAccY();

@@ -19,6 +19,7 @@ FailSafes failSafes(TX_CONNECTION_TIMEOUT_IN_uS);
 float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 float IMUData[6];
+int motorFL, motorFR, motorBL, motorBR;
 
 /**
  * Setup the AHRS
@@ -63,11 +64,11 @@ void setup()
 void setGainsFromRcTrimmers()
 {
   controller.setQuaternionGain(
-      - 0.470 * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
+      - QUATERNION_XY_GAIN * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
   controller.setAngularVelocityXYGain(
-      - 0.266 * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
+      - OMEGA_XY_GAIN * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
   controller.setYawAngularVelocityGain(
-      - 0.145 * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+      - OMEGA_Z_GAIN * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 }
 
 /**
@@ -82,6 +83,7 @@ void loop()
   // if radio data received update the last data read time.
   if (radio.readPiData(IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5]))
   {
+    radio.sendFlightDataToPi(IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5], motorFL, motorFR, motorBL, motorBR);
     failSafes.setLastRadioReceptionTime(micros());
   }
   // one function to run all fail safe checks
@@ -129,25 +131,12 @@ void loop()
   IMUData[0] = relativeQuaternion[1];
   IMUData[1] = relativeQuaternion[2];
   IMUData[2] = relativeQuaternion[3];
-  ahrs.getAcclerometerValues(IMUData + 3);
+  ahrs.getAccelerometerValues(IMUData + 3);
 
-  // Serial.print("FD: ");
-  // Serial.print(IMUData[0]);
-  // Serial.print(' ');
-  // Serial.print(IMUData[1]);
-  // Serial.print(' ');
-  // Serial.print(IMUData[2]);
-  // Serial.print(' ');
-  // Serial.print(IMUData[3]);
-  // Serial.print(' ');
-  // Serial.print(IMUData[4]);
-  // Serial.print(' ');
-  // Serial.println(IMUData[5]);
   // Throttle from RC to throttle reference
   float throttleRef = radio.throttleReferencePWM();
 
   // Compute control actions and send them to the motors
-  int motorFL, motorFR, motorBL, motorBR;
   controller.motorPwmSignals(attitudeError,
                              angularVelocityCorrected,
                              yawRateReference,

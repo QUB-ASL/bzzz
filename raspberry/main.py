@@ -1,84 +1,92 @@
-# NOTE: It is encouraged to write all the functions that are need to be scheduled in this document, 
+# NOTE: It is encouraged to write all the functions that are need to be scheduled in this document,
 # that way all the shared variables can be accessed by the functions without needing to explicitly pass them
 # and it will make handling shared resources easy.
 
-
-# standard importing
-import pandas as pd  # pandas for storing cached data into csv files
-import matplotlib
-matplotlib.use('Agg')  # use Agg when running from remote IDE, else use TkAgg to display plots
-from matplotlib import pyplot as plt  # for plotting
-from math import pi, atan2, sqrt  # math functions for calculations
 import numpy as np  # for matrix based calculations
-from datetime import datetime  # to get date-time stamps for naming the csv files
+import pandas as pd  # pandas for storing cached data into csv files
 
-# local package imports
-from bzzz.read_sbus import RC  # for radio data receving, encoding and sending to ESP
-from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor  # to handel the ToF sensor
 from time import time_ns  # function to get system-up time in nano seconds
-from bzzz.scheduler import Scheduler  # Task scheduler to run different functions
-# NOTE: The scheduler supports both multi-threading and time-based function calling
-# Although threading guarantees consistent function call rates, the actual process handeling is not done 
-# within the python environment which could cause unwanted behaviour.
-from bzzz.estimators.altitude_Kalman_filter import KalmanFilter  # altitude dynamics state estimator
+from datetime import datetime  # to get date-time stamps for naming the csv files
+from math import pi, atan2, sqrt  # math functions for calculations
+
 from bzzz.controllers.altitude_LQR import LQR  # altitude hold controller
-from bzzz.sensors.position_tracker_camera import Camera
-from bzzz.estimators.position_Kalman_filter import PositionKalmanFilter
-from bzzz.controllers.position_tracker_PD_controller import PositionTrackerPDController
+from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
+from bzzz.scheduler import Scheduler
+from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
+from bzzz.read_sbus import RC  # for radio data receving, encoding and sending to ESP
+
+
+# NOTE: The scheduler supports both multi-threading and time-based function calling
+# Although threading guarantees consistent function call rates, the actual process handeling is not done
+# within the python environment which could cause unwanted behaviour.
 
 if __name__ == '__main__':
     # sampling frequency of KF and LQR
     sampling_frequency = 50
-    # caching and plotting configuration
+    # caching configuration
     enable_caching = [True]
-    enable_save_cache_to_csv = [True and enable_caching[0]]
-    enable_printing_cache_to_screen = [True and enable_caching[0]]
-    enable_plotting = [False]
-    enable_show_plot = [False and enable_plotting[0]]
-    enable_save_plot_to_file = [False and enable_plotting[0]]
-    # if enable_plotting[0]:
-    _, plts = plt.subplots(4, 2)
-    
+    enable_printing_cache_to_screen = [False and enable_caching[0]]
+
     # objects declaration
-    kf = KalmanFilter(sampling_frequency=sampling_frequency, initial_Tt=0,
-                       x_tilde_0=np.array([[0], [0], [10], [-9.81]]),
-                         P_0=np.diagflat([1, 1, 1, 0.01]),
-                           cache_values=True)
+    kf = KalmanFilter(sampling_frequency=sampling_frequency,
+                      initial_Tt=0,
+                      x_tilde_0=np.array([[0], [0], [10], [-9.81]]),
+                      P_0=np.diagflat([1, 1, 1, 0.01]),
+                      cache_values=True)
     lqr = LQR(sampling_frequency=sampling_frequency,
-               initial_alpha_t=10, initial_beta_t=-9.81)
-    tof = TimeOfFlightSensor(use_sleep=-1, num_latest_readings_to_keep=1,
-                              cache_altitude=True, use_outlier_detection=True, abs_outlier_diff_thres=500)
-    rc = RC()    
-    cam = Camera(capture_device_id=0, frame_width=640, frame_height=480, fps=24, actual_QR_text="O",
-                 display_video_capture=True, draw_overlay=True, flip_image=True)
-    pos_kf = PositionKalmanFilter(sampling_frequency=24, initial_Tt=0,
-                                  initial_alpha_t=20, initial_input=np.zeros((2, 2)),
-                                  x_tilde_0=np.zeros((4, 1)), P_0=np.diagflat([1e-4, 1e-4, 1e-4, 1e-4]))
-    pos_PD = PositionTrackerPDController(kp=0.0765, kd=0.01, control_action_range=np.array([-0.01, 0.01]))
+              initial_alpha_t=10,
+              initial_beta_t=-9.81)
+    # update_measurement_at_fixed_rate: if True then use time difference between current time and last measurement time to take a measurement
+    #            if false then take a measurement instantly
+    tof = TimeOfFlightSensor(update_measurement_at_fixed_rate=False,
+                             median_filter_length=1,
+                             cache_altitude=True,
+                             use_outlier_detection=True,
+                             abs_outlier_diff_thres=500)
+    rc = RC()
     scheduler = Scheduler(use_threading=False)
 
-    # NOTE: single element lists are used to avoid python-env re-declaring new local variables with in the functions that follow below.
+    # NOTE: single element lists are used to avoid python-env re-declaring
+    # new local variables with in the functions that follow below.
     # data caching and logging
-    # if enable_caching[0]:
     time_cache = []
     quat_cache = []
     yaw_cache = []
     pitch_cache = []
     roll_cache = []
+    motor_PWM_cache = []
     throttle_ref_cache = []
     accelrometer_cache = []
     altitude_reference_cache_mts = []
+    radio_data_cache = []
+    KF_data_cache = []
     time_before_thread_starts = [0]
 
-    quat = [0., 0., 0.]
+    quaternion_vector = [0., 0., 0.]
     acc = [0., 0., 0.]
     euler = [0., 0., 0.]
+    motor_PWM = [0., 0., 0., 0.]  # FL, FR, BL, BR
+    channel_data = [""]
+    KF_data = [0., 0., 0., 0.]
 
-    is_data_saved = [False]
-    is_data_log_kill = [False]
+    # These variables are used to keep track of data logging process
+    # indicates the position of switch A on the Remote.
+    # This switch is used to save the logged data. Value is updated in `process_radio_data`
+    switch_a_status = [True]
+    # indicates the position of switch D. This is the kill switch on the Remote.
+    # Value is updated in `process_radio_data`.
+    # NOTE: you will have to kill the drone first before saving data.
+    is_kill = [False]
+    # indicates if data logging is allowed. Value is updated in the `main` loop.
+    # Value update logic:
+    # 1. Allow data logging for the first time by flipping switch A to on position.
+    # 2. After saving the data for the first time, disable data logging.
+    # 3. Now set the value to `not switch_A_status`, this disables the logging as long as
+    #       switch A stays on. You will have to flip switch A off to re-enable data logging.
+    allow_data_logging = [True]
 
     # Altitude hold vars
-    throttle_ref_from_LQR = [np.array([[0.]])]
+    throttle_ref_from_LQR = [0.]
     use_altitude_hold = [False]
     Tref_t = [0.0]
     altitude_ref_mts = [0.09]
@@ -96,15 +104,19 @@ if __name__ == '__main__':
     v_hat = [0.]
     alpha_hat = [10.]
     beta_hat = [-9.81]
-    LQR_Q11_gain = [0.]
-    LQR_Q22_gain = [0.]
-    LQR_R_gain = [0.]
-    LQR_Q11_GAIN_MAX = 0.1 # 100
-    LQR_Q22_GAIN_MAX = 0.2 # 100
-    LQR_R_GAIN_MAX = 100
+    gain_kp_from_rc = [0.]
+    gain_kd_from_rc = [0.]
+    KP_GAIN_MAX = 0.1  # 100
+    KD_GAIN_MAX = 0.2  # 100
 
+    DEBUG_MODE = False
+
+    def print_debug(stuff):
+        if DEBUG_MODE:
+            print(stuff)
 
     # function to convert radians to degrees
+
     def rad2deg(lst):
         """Converts a list of angles in radians to a list of angles in degrees
 
@@ -112,7 +124,7 @@ if __name__ == '__main__':
         :return: list of angles in degrees
         """
         return [i*180/pi for i in lst]
-    
+
     # function to compute quaternions to euler angles
     def euler_angles(q: list):
         """Computes euler angles from given quaternion
@@ -137,123 +149,185 @@ if __name__ == '__main__':
         euler_[0] = atan2(siny_cosp, cosy_cosp)
 
         return euler_
-    
+
     # function to cache all values at a time
     def cache_values():
         """Caches values if enable caching[0] is true
         """
         if enable_caching[0]:
             throttle_ref_cache.append(Tref_t[0])
-            quat_cache.append(quat)
+            quat_cache.append(quaternion_vector[:])
             yaw_cache.append(euler[0])
             pitch_cache.append(euler[1])
             roll_cache.append(euler[2])
+            motor_PWM_cache.append(motor_PWM[:])
             accelrometer_cache.append(acc[:])
-            time_cache.append((time_ns() - time_before_thread_starts[0])/1000000)
-            altitude_reference_cache_mts.append(altitude_ref_mts[0] if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1)
+            time_cache.append(
+                (time_ns() - time_before_thread_starts[0])/1000000)
+            altitude_reference_cache_mts.append(
+                altitude_ref_mts[0] if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1)
+            KF_data_cache.append(KF_data[:])
+            radio_data_cache.append(channel_data[0])
 
     # function to process radio data
     def process_radio_data():
         """This function does three jobs:
-        1. Reads the radio data from the receiver, parses it and sends the encoded data to ESP using a fucntion from RC class.
+        1. Reads the radio data from the receiver, parses it and sends the 
+           encoded data to ESP using a fucntion from RC class.
         2. Updates shared variable values using radio data.
         3. Calls cache_values function.
         """
         # if altitude hold is enabled and drone is not close to the ground update the altitude_ref_mts
         if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0]:
-            altitude_ref_mts[0] = current_altitude_snap_shot_mts[0] + (var_e_RC_mid_percentage[0] - rc.trimmer_VRE_percentage())*altitude_shifter_range_mts[0]
+            altitude_ref_mts[0] = current_altitude_snap_shot_mts[0] + (
+                var_e_RC_mid_percentage[0] - rc.trimmer_VRE_percentage())*altitude_shifter_range_mts[0]
             # the altitude_ref_mts should not be less than minimum flight altitude
-            altitude_ref_mts[0] = max(min_altitude_to_activate_AltiHold_mts[0], altitude_ref_mts[0])
-        
+            altitude_ref_mts[0] = max(
+                min_altitude_to_activate_AltiHold_mts[0], altitude_ref_mts[0])
+
         # read, encode, and send the radio data to ESP.
-        # if altitude hold is on the thorttle value from the RC will be overwritten by the throttle reference from the LQR.
-        # NOTE: There is this weird conversion for LQR throttle reference below, this is because the PI needs to send throttle reference in the range [300, 1400],
+        # if altitude hold is on the thorttle value from the RC will be overwritten
+        # by the throttle reference from the LQR.
+        # NOTE: There is this weird conversion for LQR throttle reference below,
+        # this is because the PI needs to send throttle reference in the range [300, 1400],
         # which is the actual range of the RC throttle stick.
-        rc.get_radio_data_parse_and_send_to_ESP(return_channel_date=False, force_send_fake_data=False, fake_data="S,0,0,0,0,0,0,0,0,0",
-                                                 over_write_throttle_ref_to=int((throttle_ref_from_LQR[0][0][0] - 1000)*1400/900 + 300) if use_altitude_hold[0] else -1)
+        shit = int((throttle_ref_from_LQR[0] - 1000) * 1400/900 +
+                   300) if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1
+        channel_data[0] = rc.get_radio_data_parse_and_send_to_ESP(return_channel_data=True,
+                                                                  force_send_fake_data=False,
+                                                                  fake_data="S,0,0,0,0,0,0,0,0,0",
+                                                                  over_write_throttle_ref_to=shit)
         # update shared variables using RC data
-        is_data_log_kill[0] = rc.switch_A() == True  # is data logging killed and data saving requested?
-        use_altitude_hold[0] = rc.switch_C() == True  # is altitude hold enabled?
-        LQR_Q11_gain[0] = rc.trimmer_VRA_percentage()*LQR_Q11_GAIN_MAX  # Kappa11 gain from RC
-        LQR_Q22_gain[0] = rc.trimmer_VRB_percentage()*LQR_Q22_GAIN_MAX  # kappa22 gain from RC
-        LQR_R_gain[0] = rc.trimmer_VRC_percentage()*LQR_R_GAIN_MAX + 1  # R data for LQR from RC
-        Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900  # normalised throttle reference from RC, max is 1900
+        # is data logging killed and data saving requested?
+        # is altitude hold enabled?
+        switch_a_status[0] = rc.switch_A()
+        use_altitude_hold[0] = rc.switch_C()
+        is_kill[0] = rc.switch_D()
+        # Kappa11 gain from RC
+        gain_kp_from_rc[0] = rc.trimmer_VRA_percentage()*KP_GAIN_MAX
+        # kappa22 gain from RC
+        gain_kd_from_rc[0] = rc.trimmer_VRB_percentage()*KD_GAIN_MAX
+        # normalised throttle reference from RC, max is 1900
+        Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
         cache_values()  # call to cache values
 
     def process_ESP_data():
         """Process ESP data, this function does two jobs:
         1. Receives flight data as a string of space seperated values formatted as "FD: q1 q2 q3 ax ay az".
-        2. Checks the received flight data for corruption. if string is not None and starts with "FD:", and if there are 7 space seperated values
-            then convert the 7 values to floats and update shared variables.
-        NOTE: might want to include a check for value data corruption before converting to floats, because without this check the program might crash.
+        2. Checks the received flight data for corruption. 
+           If string is not None and starts with "FD:", and if there are 7 space seperated values
+           then convert the 7 values to floats and update shared variables.
         """
         # process ESP data
-        flight_data = rc.receive_data_from_ESP()
-        if flight_data is not None and "FD:" in flight_data:
-            flight_data = flight_data.strip().split()
-            if len(flight_data) == 7:
-                # convert flight data from string to floats
-                q1 = float(flight_data[1])
-                q2 = float(flight_data[2])
-                q3 = float(flight_data[3])
-                ax = float(flight_data[4])
-                ay = float(flight_data[5])
-                az = float(flight_data[6])
+        flight_data_string = rc.receive_data_from_ESP()
+        if flight_data_string is not None and "FD:" in flight_data_string:
+            flight_data = flight_data_string.strip().split()
+            if len(flight_data) == 11:
 
-                # update shared values
-                quat[0] = q1
-                quat[1] = q2
-                quat[2] = q3
-                acc[0] = ax
-                acc[1] = ay
-                acc[2] = az
+                # See if ALL the quaternion values are correct ...
+                try:
+                    q1 = float(flight_data[1])
+                    q2 = float(flight_data[2])
+                    q3 = float(flight_data[3])
+                except ValueError as e:
+                    print(
+                        f"Invalid quaternion data from ESP32 - flight data: {flight_data_string}\n {e}")
+                    return
+
+                # ... if they are, then update
+                quaternion_vector[0] = q1
+                quaternion_vector[1] = q2
+                quaternion_vector[2] = q3
 
                 # additional check: if ESP is not armed, it sends [-1, -1, -1] for quaternions, which is invalid.
-                if quat == [-1., -1., -1.]:
-                    print(f"Received quat = {quat}. Defaulting to quat = [0, 0, 0].")
-                    quat[0] = 0.
-                    quat[1] = 0.
-                    quat[2] = 0.
-                
+                if quaternion_vector == [-1., -1., -1.]:
+                    print_debug(
+                        f"Received quat = {quaternion_vector}; defaulting to quat = [0, 0, 0].")
+                    quaternion_vector[0] = 0.
+                    quaternion_vector[1] = 0.
+                    quaternion_vector[2] = 0.
+
                 # compute the scalar part of the quaternion
-                q0 = sqrt(1 - quat[0]**2 - quat[1]**2 - quat[2]**2)
-                full_quaternion = [q0] + quat
-                euler[0], euler[1], euler[2] = euler_angles(full_quaternion)  # compute euler angles from quaternion
-    
+                q0 = sqrt(
+                    1 - quaternion_vector[0]**2 - quaternion_vector[1]**2 - quaternion_vector[2]**2)
+                quaternion_full = [q0] + quaternion_vector
+                # compute euler angles from quaternion
+                euler[0], euler[1], euler[2] = euler_angles(quaternion_full)
+
+                try:
+                    # convert flight data from string to floats
+                    acc[0] = float(flight_data[4])
+                    acc[1] = float(flight_data[5])
+                    acc[2] = float(flight_data[6])
+                    motor_PWM[0] = float(flight_data[7])
+                    motor_PWM[1] = float(flight_data[8])
+                    motor_PWM[2] = float(flight_data[9])
+                    motor_PWM[3] = float(flight_data[10])
+                except ValueError as e:
+                    print(
+                        f"Invalid data from ESP32 - flight data: {flight_data_string}\n {e}")
+
+    def clear_caches():
+        time_cache.clear()
+        quat_cache.clear()
+        yaw_cache.clear()
+        pitch_cache.clear()
+        roll_cache.clear()
+        motor_PWM_cache.clear()
+        throttle_ref_cache.clear()
+        accelrometer_cache.clear()
+        altitude_reference_cache_mts.clear()
+        radio_data_cache.clear()
+        KF_data_cache.clear()
+
     def read_ToF_run_kf_and_LQR():
         """Read ToF sensor, and run the Kalman filter and LQR control algorithms
         """
-        # NOTE: DO NOT DIVIDE temp BY 1000 here to get altitude measurements in mts. There are checks if temp == -1 in the code for outlier detection.
-        # you can run LQR even when the drone is close to ground but you cannot run KF. So, to compensate use the previous estimates of alpha and beta
-        # and the current ToF sensor readings. In this case if the ToF returns outliers send current altitude as desired altitude to LQR so it has no control.
-        temp = tof.altitude  # reading the tof altitude invokes the automatic update from the sensor, no need to read the sensor explictly
-        
+
+        # NOTE: DO NOT DIVIDE temp BY 1000 here to get altitude measurements in m.
+        # There are checks if temp == -1 in the code for outlier detection.
+        # you can run LQR even when the drone is close to ground but you cannot run KF.
+        # So, to compensate use the previous estimates of alpha and beta
+        # and the current ToF sensor readings. In this case if the ToF returns outliers
+        # send current altitude as desired altitude to LQR so it has no control.
+
+        # Reading the tof altitude invokes the automatic update from the sensor,
+        # no need to read the sensor explictly
+        temp = tof.altitude
+
         if temp == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
             num_consecutive_altitude_outliers_count_thus_far[0] += 1
         else:
             num_consecutive_altitude_outliers_count_thus_far[0] = 0
             last_valid_altitude_measurement_mts[0] = temp/1000
-        
+
         if num_consecutive_altitude_outliers_count_thus_far[0] == max_consecutive_altitude_outliers_count[0]:
             print(f"Something wrong with the ToF, maximum number of consecutive altitude outliers recorded: {num_consecutive_altitude_outliers_count_thus_far[0]}."
                   "".format("\n   **It is recommended to use manual mode in this situation**." if use_altitude_hold[0] else ""))
 
         is_drone_flying_close_to_ground[0] = last_valid_altitude_measurement_mts[0] < min_altitude_to_activate_AltiHold_mts[0]
-        # lqr.set_Q_and_R_matrix_gains(Q11=LQR_Q11_gain[0], Q22=LQR_Q22_gain[0], R=LQR_R_gain[0])
 
         if is_drone_flying_close_to_ground[0]:
-            z_hat[0] = current_altitude_snap_shot_mts[0] if temp == -1 else temp/1000
-            print(f"Cannot activate Altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
+            z_hat[0] = current_altitude_snap_shot_mts[0] if temp == - \
+                1 else temp/1000
+            print_debug(
+                f"Cannot activate altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
             if is_KF_ran_atleast_once[0]:
                 kf.reset()
         else:
-            x_est = kf.run(Tref_t[0], euler[1], euler[2], np.nan if temp == -1 else temp/1000)
+            x_est = kf.update(Tref_t[0], euler[1], euler[2],
+                              np.nan if temp == -1 else temp/1000)
             is_KF_ran_atleast_once[0] = True
             z_hat[0] = x_est[0][0]
             v_hat[0] = x_est[1][0]
             alpha_hat[0] = x_est[2][0]
             beta_hat[0] = x_est[3][0]
+
+            KF_data[0] = z_hat[0]
+            KF_data[1] = v_hat[0]
+            KF_data[2] = alpha_hat[0]
+            KF_data[3] = beta_hat[0]
 
             if use_altitude_hold[0]:
                 if not is_current_altitude_snap_shot_taken[0]:
@@ -262,97 +336,81 @@ if __name__ == '__main__':
                     is_current_altitude_snap_shot_taken[0] = True
             else:
                 is_current_altitude_snap_shot_taken[0] = False
-        
-        if use_altitude_hold[0]:
-            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]), alpha_t=alpha_hat[0], beta_t=beta_hat[0],
-                                                           reference_altitude_mts=altitude_ref_mts[0],
-                                                             recalculate_dynamics=True, pitch_rad=euler[1], roll_rad=euler[2],
-                                                               k11=-LQR_Q11_gain[0], k12=-LQR_Q22_gain[0])                       
-            throttle_ref_from_LQR[0] = np.array([[max(1000, min(throttle_ref_from_LQR[0][0][0]*900, 600) + 1000)]])
-            Tref_t[0] = (throttle_ref_from_LQR[0][0][0] - 1000)/900
-            print(f"alphan hat: {alpha_hat[0]} beta hat: {beta_hat[0]} k11: {-LQR_Q11_gain[0]} k12: {-LQR_Q22_gain[0]} Tref_LQR: {Tref_t[0]} alt_hat: {z_hat[0]} alt_ref: {altitude_ref_mts[0]}")
 
-    def run_position_reference_tracker():
-        # pixel position of QR center, yaw
-        x, y, heading = cam.run()
-        pos_kf.run(Tt=Tref_t[0], alpha_t=alpha_hat[0], pitch_rad=euler[1], roll_rad=euler[2], y_t=np.array([[x], [y]]))
-    
+        if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0]:
+            lqr.set_alpha_beta(alpha_hat[0], beta_hat[0])
+            lqr.set_gains(-gain_kp_from_rc[0], -gain_kd_from_rc[0])
+            throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]),
+                                                          reference_altitude_mts=altitude_ref_mts[0],
+                                                          recalculate_dynamics=True,
+                                                          pitch_rad=euler[1],
+                                                          roll_rad=euler[2])
+            throttle_ref_from_LQR[0] = max(
+                1000, min(throttle_ref_from_LQR[0]*900, 600) + 1000)
+            Tref_t[0] = (throttle_ref_from_LQR[0] - 1000)/900
+            print_debug(
+                f"alphan hat: {alpha_hat[0]} beta hat: {beta_hat[0]} k11: {-gain_kp_from_rc[0]} k12: {-gain_kd_from_rc[0]} Tref_LQR: {Tref_t[0]} alt_hat: {z_hat[0]} alt_ref: {altitude_ref_mts[0]}")
+
     if enable_caching[0]:
         time_before_thread_starts[0] = time_ns()
 
     # schedule the necessary functions
-    scheduler.schedule("process_radio_data", process_radio_data, function_call_frequency=50, function_call_count=0)
-    scheduler.schedule("process_ESP_data", process_ESP_data, function_call_frequency=50, function_call_count=0)
-    scheduler.schedule("read_ToF_run_kf_and_LQR", read_ToF_run_kf_and_LQR, function_call_frequency=sampling_frequency, function_call_count=0)
-    
+    scheduler.schedule("process_radio_data",
+                       process_radio_data,
+                       function_call_frequency=50,
+                       function_call_count=0)
+    scheduler.schedule("process_ESP_data",
+                       process_ESP_data,
+                       function_call_frequency=50,
+                       function_call_count=0)
+    scheduler.schedule("read_ToF_run_kf_and_LQR",
+                       read_ToF_run_kf_and_LQR,
+                       function_call_frequency=sampling_frequency,
+                       function_call_count=0)
+
     # THE MAIN LOOP
     while True:
         scheduler.run()  # run the scheduled functions
 
-        # Cache saving and plotting.
-        if enable_save_cache_to_csv[0] and not is_data_saved[0] and is_data_log_kill[0]:
-            print("saving data wait....")
-            is_data_saved[0] = True
+        # Cache saving
+        if is_kill[0] and switch_a_status[0] and allow_data_logging[0]:
+            print("[LOGGER] saving data")
             accelrometer_cache_ = np.array(accelrometer_cache)
+            motor_PWM_cache_ = np.array(motor_PWM_cache)
+            KF_data_cache_ = np.array(KF_data_cache)
+
             date_time_now = datetime.now()
-            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref] for t, Tr, y, p, r, alt, ax, ay, az, alt_ref 
-                                          in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache, 
-                                                 tof.altitude_cache(), accelrometer_cache_[:, 0], accelrometer_cache_[:, 1], accelrometer_cache_[:, 2], altitude_reference_cache_mts)])
-            data_cache_df.to_csv(f"/home/bzzz/Desktop/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_{date_time_now.hour}:{date_time_now.minute}:{date_time_now.second}.csv", index=False, header=False)
-            # with open("/home/bzzz/Desktop/data_log.csv", "w") as file:
-            #   file.write("time_stamps = %f,\n\n\n Throttle_reference = %f,\n\n\n altitude_cache = %f\n"%(time_cache, throttle_ref_cache, tof.altitude_cache()))
-            print("Saving done!")
-            
+            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta]
+                                          for t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta
+                                          in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache,
+                                                 tof.altitude_cache(),
+                                                 accelrometer_cache_[:, 0],
+                                                 accelrometer_cache_[:, 1],
+                                                 accelrometer_cache_[:, 2],
+                                                 altitude_reference_cache_mts,
+                                                 radio_data_cache,
+                                                 motor_PWM_cache_[:, 0],
+                                                 motor_PWM_cache_[:, 1],
+                                                 motor_PWM_cache_[:, 2],
+                                                 motor_PWM_cache_[:, 3],
+                                                 KF_data_cache_[:, 0],
+                                                 KF_data_cache_[:, 1],
+                                                 KF_data_cache_[:, 2],
+                                                 KF_data_cache_[:, 3])],
+                                         columns=['timestamp', 'throttle_ref', 'yaw', 'pitch', 'roll',
+                                                  'tof_measurement', 'accX', 'accY', 'accZ',
+                                                  'altitude_ref', 'RC_data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
+                                                  'KF_altitutde_est', 'KF_velocity_z_est', 'KF_alpha_est', 'KF_beta_est'])
+            data_cache_df.to_csv(
+                f"/home/bzzz/Desktop/logs/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_at_{date_time_now.hour}h{date_time_now.minute}m{date_time_now.second}s.csv",
+                index=False,
+                header=True)
+            print("[LOGGER] saving complete")
+            clear_caches()
+            allow_data_logging[0] = False
+
+            # TODO change this to print the dataframe (all rows and columns)
             if enable_printing_cache_to_screen[0]:
                 print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelrometer_cache_} \nalti_ref_mts{altitude_reference_cache_mts}")
-            
-            if enable_plotting[0]:
-                plts[0, 0].plot(time_cache, throttle_ref_cache[:len(time_cache)])
-                plts[1, 0].plot(time_cache, rad2deg(yaw_cache[:len(time_cache)+1]))
-                plts[2, 0].plot(time_cache, rad2deg(pitch_cache[:len(time_cache)+1]))
-                plts[3, 0].plot(time_cache, rad2deg(roll_cache[:len(time_cache)+1]))
-                
-                plts[0, 0].legend(["Throttle ref"])
-                plts[1, 0].legend(["Yaw deg"])
-                plts[2, 0].legend(["Pitch deg"])
-                plts[3, 0].legend(["Roll deg"])
-                plts[0, 0].set_xlabel("time ms")
-                plts[1, 0].set_xlabel("time ms")
-                plts[2, 0].set_xlabel("time ms")
-                plts[3, 0].set_xlabel("time ms")
-                plts[0, 0].set_ylabel("Throttle Ref")
-                plts[1, 0].set_ylabel("Yaw")
-                plts[2, 0].set_ylabel("Pitch")
-                plts[3, 0].set_ylabel("Roll")
 
-                plts[0, 1].plot(time_cache[:len(tof.altitude_cache())], tof.altitude_cache()[:-1])
-                plts[1, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 0])
-                plts[2, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 1])
-                plts[3, 1].plot(time_cache, accelrometer_cache_[:len(time_cache), 2])
-                
-                plts[0, 1].legend(["Altitude mm"])
-                plts[1, 1].legend(["Acc_x  g"])
-                plts[2, 1].legend(["Acc_y g"])
-                plts[3, 1].legend(["Acc_z g"])
-                plts[0, 1].set_xlabel("time ms")
-                plts[1, 1].set_xlabel("time ms")
-                plts[2, 1].set_xlabel("time ms")
-                plts[3, 1].set_xlabel("time ms")
-                plts[0, 1].set_ylabel("Altitude Z")
-                plts[1, 1].set_ylabel("Acc_x")
-                plts[2, 1].set_ylabel("Acc_y")
-                plts[3, 1].set_ylabel("Acc_z")
-
-            if enable_save_plot_to_file[0]:
-                plt.savefig("ToF_data_plot_with_pitch_and_roll.svg")
-            if enable_show_plot[0]:
-                plt.show()
-
-    
-    
-
-# Run the get_radio_data_parse_and_send_to_ESP funtionn @ 50Hz
-# run_thread_every_given_interval(0.02, get_radio_data_parse_and_send_to_ESP)
-# run_thread_every_given_interval(0.02, print_receive_data_from_ESP)
-# time_before_thread_starts[0] = time_ns()
-# bzzz.thread_this.run_thread_every_given_interval(0.02, run)
+        allow_data_logging[0] = not switch_a_status[0]

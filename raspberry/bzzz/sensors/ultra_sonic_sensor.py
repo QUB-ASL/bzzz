@@ -1,19 +1,26 @@
 # TODO: implement proper code for a particular sensor
 # TODO: add proper Doc strings
 # NOTE: for now, we are just passing dummy values
+# TODO: review this file (has been tested)
 
 from filters import median_filter
 from time import time_ns, sleep
 import board
 from adafruit_hcsr04 import HCSR04
 
+
 class Sonar:
-    def __init__(self, num_latest_readings_to_keep: int = 5, use_sleep=False, sleep_time = 0.02, trigger_pin=board.D17, echo_pin=board.D27):
+    def __init__(self,
+                 median_filter_length = 5,
+                 use_sleep=False,
+                 sleep_time=0.02,
+                 trigger_pin=board.D17,
+                 echo_pin=board.D27):
         self._current_altitude = None
         self._altitude_readings_list = None
         self._altitude_readings_list_current_index = None
-        self._num_latest_readings_to_keep = num_latest_readings_to_keep
-        
+        self._median_filter_length = median_filter_length
+
         self._previous_altitude = None
         self._last_update_time = None
         self.use_sleep = use_sleep
@@ -26,12 +33,14 @@ class Sonar:
 
     def _init_sonar(self):
         print("Init Ultra-sonic sensor, wait.....")
-        self.sonar = HCSR04(trigger_pin=self.trigger_pin, echo_pin=self.echo_pin)
+        self.sonar = HCSR04(trigger_pin=self.trigger_pin,
+                            echo_pin=self.echo_pin)
         self._last_update_time = time_ns()
         self._altitude_readings_list = list()
         self._altitude_readings_list_current_index = 0
-        for _ in range(self._num_latest_readings_to_keep):
-            self._altitude_readings_list.append(self._get_current_sonar_measurement())
+        for _ in range(self._median_filter_length):
+            self._altitude_readings_list.append(
+                self._get_current_sonar_measurement())
             sleep(self.sleep_time)
         self.update_altitude()
         print("Init  Ultra-sonic sensor, Done!")
@@ -40,7 +49,7 @@ class Sonar:
     def altitude(self):
         self.update_altitude()
         return self._current_altitude
-    
+
     @altitude.setter
     def altitude(self, val):
         self._current_altitude = val
@@ -51,15 +60,17 @@ class Sonar:
         return sonar_distance_reading
 
     def _update_sonar(self):
-        ToF_distance_reading = self._get_current_sonar_measurement()  # dummy value for now, actually should have a proper value
+        # dummy value for now, actually should have a proper value
+        ToF_distance_reading = self._get_current_sonar_measurement()
         if ToF_distance_reading < 0:
             return -1
         self._altitude_readings_list[self._altitude_readings_list_current_index] = ToF_distance_reading
-        if 0 <= self._altitude_readings_list_current_index < self._num_latest_readings_to_keep - 1:
+        if 0 <= self._altitude_readings_list_current_index < self._median_filter_length - 1:
             self._altitude_readings_list_current_index += 1
         else:
             self._altitude_readings_list_current_index = 0
-        self._current_altitude = median_filter(self._altitude_readings_list, self._num_latest_readings_to_keep)
+        self._current_altitude = median_filter(
+            self._altitude_readings_list, self._median_filter_length)
 
     def update_altitude(self):
         if not self.use_sleep:
@@ -77,7 +88,7 @@ class Sonar:
             else:
                 print("ToF sensor returning -ve distance....\nretrying....")
             sleep(self.sleep_time)
-        
+
     def kill(self):
         print("Killing sonar, wait...")
         self.sonar.deinit()
@@ -88,11 +99,5 @@ if __name__ == "__main__":
     sonar = Sonar(use_sleep=True)
     for i in range(100):
         sonar.update_altitude()
-        print("Altitude in cm: %d   itr: %d" %(sonar.altitude, i))
+        print("Altitude in cm: %d   itr: %d" % (sonar.altitude, i))
     sonar.kill()
-    
-
-        
-        
-          
-    

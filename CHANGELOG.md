@@ -11,6 +11,30 @@ The following subsections are used:
 - **Fixed**: bug fixes
 - **Changed**: other code changes
 
+<!-- ---------------------
+      v0.2.0
+     --------------------- -->
+
+## [v0.2.0] - 28 August 2023
+
+### Added
+
+- First implementation of altitude hold mode.
+- Data logging on Raspberry Pi (data is saved in CSV file).
+- A fail-safe to shut down the drone when the receiver connection is timed-out due to a possible loss of connection.
+- Yaw rate controller.
+- Schematics for electronic board with ESP32.
+
+
+### Fixed
+
+- Fixed the unnecessary yawing of the drone (the drone now yaws only when commanded)
+- Packaged Python code
+- Fixed incompatibility between ThreeWaySwitch and bit shift operator
+
+### Changed
+
+- Communication protocol between ESP32 and Raspberry Pi
 
 
 <!-- ---------------------
@@ -18,7 +42,7 @@ The following subsections are used:
      --------------------- -->
 ## [v0.1.0] - 1 June 2023
 
-### Added 
+### Added
 
 - Average initial attitude computed in AHRS (see `averageQuaternion`)
 - Calibrate with initial angular velocities
@@ -28,13 +52,13 @@ The following subsections are used:
 - Clip signals to motors
 - Wait for Raspberry Pi to send data over serial
 
-### Fixed 
+### Fixed
 
 - Removed hard-coded magnetometer and other parameters from `main.cpp`
 - Deactivate all printing while flying
 - Significant fix for arming issue (new communication protocol between RPi and ESP32)
 
-### Changed 
+### Changed
 
 - Change all `Serial.print` to `logSerial`
 - Delete `config.cpp`
@@ -42,5 +66,5 @@ The following subsections are used:
 - `logSerial`, `setupBuzzer`, `buzz` and `waitForPiSerial` go to `util`
 - Update hardware tests
 
-
 [v0.1.0]: https://github.com/QUB-ASL/bzzz/releases/tag/v0.1.1
+[v0.2.0]: https://github.com/QUB-ASL/bzzz/releases/tag/v0.2.0
