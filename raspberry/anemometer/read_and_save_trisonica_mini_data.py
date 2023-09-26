@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 import serial
 import numpy as np
-from datetime import datetime
+import datetime
 import csv
 
 index = 0
-filename = datetime.now().strftime("%d-%m-%y--%H:%M.csv")
+index_2 = datetime.datetime.now()
+index_2 = index_2.replace(second=0, microsecond=0)
+
+filename = datetime.datetime.now().strftime("%d-%m-%y--%H:%M.csv")
 
 with open(filename, "w", newline="") as f:
     # creating the writer
     writer = csv.writer(f)
     # using writerow to write individual record one by one
-    writer.writerow(["index","date_time","wind_speed", "wind_speed_2D", "H_direction", "V_direction", "U_axis", "V_axis", "W_axis"])
+    writer.writerow(["index", "index_2", "date_time", "wind_speed", "wind_speed_2D", "H_direction", "V_direction", "U_axis", "V_axis", "W_axis"])
     f.close()
 
 if __name__ == '__main__':
@@ -25,9 +28,10 @@ if __name__ == '__main__':
             # print(line)
 
             index = index + 1
+            index_2 = index_2 + datetime.timedelta(microseconds=25000)
 
             # Getting the current date and time
-            dt = datetime.now()
+            dt = datetime.datetime.now()
 
             all_data = line.split()
 
@@ -43,7 +47,7 @@ if __name__ == '__main__':
                 # creating the writer
                 writer = csv.writer(f)
                 # using writerow to write individual record one by one
-                writer.writerow([index, dt, wind_speed, wind_speed_2D, H_direction, V_direction, U_axis, V_axis, W_axis])
+                writer.writerow([index, index_2, dt, wind_speed, wind_speed_2D, H_direction, V_direction, U_axis, V_axis, W_axis])
                 f.close()
             
             # print("Date and time is:", dt)
