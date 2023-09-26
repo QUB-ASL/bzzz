@@ -1,4 +1,4 @@
-index,index_2,date_time,wind_speed,wind_speed_2D,H_direction,V_direction,U_axis,V_axis,W_axis
+Index,Index_2,Date_Time,Wind_Speed,Wind_Speed_2D,H_direction,V_direction,U_axis,V_axis,W_axis
 1,18:35:00.025000,2023-09-16 18:35:20.388485,1.11,1.11,347.0,0.0,0.25,-1.08,0.0
 2,18:35:00.050000,2023-09-16 18:35:20.413538,1.44,1.44,4.0,0.0,-0.1,-1.44,0.0
 3,18:35:00.075000,2023-09-16 18:35:20.438536,0.96,0.96,360.0,0.0,0.0,-0.96,0.0

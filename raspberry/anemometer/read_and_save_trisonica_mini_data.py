@@ -14,7 +14,7 @@ with open(filename, "w", newline="") as f:
     # creating the writer
     writer = csv.writer(f)
     # using writerow to write individual record one by one
-    writer.writerow(["index", "index_2", "date_time", "wind_speed", "wind_speed_2D", "H_direction", "V_direction", "U_axis", "V_axis", "W_axis"])
+    writer.writerow(["Index", "Index_2", "Date_Time", "Wind_Speed", "Wind_Speed_2D", "H_direction", "V_direction", "U_axis", "V_axis", "W_axis"])
     f.close()
 
 if __name__ == '__main__':
