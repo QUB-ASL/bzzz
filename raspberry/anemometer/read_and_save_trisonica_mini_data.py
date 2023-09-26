@@ -8,7 +8,7 @@ index = 0
 index_2 = datetime.datetime.now()
 index_2 = index_2.replace(second=0, microsecond=0)
 
-filename = datetime.datetime.now().strftime("%d-%m-%y--%H:%M.csv")
+filename = datetime.datetime.now().strftime("%d-%m-%y--%H-%M.csv")
 
 with open(filename, "w", newline="") as f:
     # creating the writer
