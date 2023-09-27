@@ -81,9 +81,6 @@ namespace bzzz
                 return false;
             }
             m_encodedSwitchesData = m_rawEncodedSwtchsData;
-            if(this->m_replyWithIMUData){
-                this->sendIMUDataToPi(q1, q2, q3, ax, ay, az);
-            }
             return true;
         }
         return false;

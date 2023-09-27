@@ -81,7 +81,7 @@ void loop()
   float angularVelocityCorrected[3];
 
   // if radio data received update the last data read time.
-  if (radio.readPiData(IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5]))
+  if (radio.readPiData())
   {
     radio.sendFlightDataToPi(IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5], motorFL, motorFR, motorBL, motorBR);
     failSafes.setLastRadioReceptionTime(micros());
