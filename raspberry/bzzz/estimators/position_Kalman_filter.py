@@ -5,7 +5,11 @@ import math
 
 # NOTE: This model is based example shown here (https://am-press.github.io/posts/maths/kalman-6/#imperfect-knowledge-of-the-input).
 class PositionKalmanFilter:
-    def __init__(self, sampling_frequency=10, initial_Tt=0., initial_alpha_t=0., initial_input=np.zeros((2, 1)), x_tilde_0=np.zeros((4, 1)), P_0=np.eye(4, 4)*100, cache_values=False, overwrite_x_MU=None, overwrite_sigma_MU=None) -> None:
+    def __init__(self, sampling_frequency=10, initial_Tt=0.,
+                  initial_alpha_t=0., initial_input=np.zeros((2, 1)),
+                    x_tilde_0=np.zeros((4, 1)), P_0=np.eye(4, 4)*100,
+                      cache_values=False, overwrite_x_MU=None,
+                        overwrite_sigma_MU=None):
         # sampling frequency
         self.__fs = sampling_frequency
         self.__Ts = 1/self.__fs

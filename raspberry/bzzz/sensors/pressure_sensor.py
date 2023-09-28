@@ -28,8 +28,8 @@ def _getUshort(data, index):
 
 class PressureSensor:
     def __init__(self,
-                 DEVICE_ADDRESS: int = 0x77,
-                 median_filter_length: int = 5,
+                 DEVICE_ADDRESS = 0x77,
+                 median_filter_length = 5,
                  reference_pressure_at_sea_level=None):
         self._current_pressure = None
         self._previous_pressure = None
