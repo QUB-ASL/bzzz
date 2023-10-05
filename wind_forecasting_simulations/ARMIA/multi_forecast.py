@@ -11,34 +11,35 @@ from statsmodels.tsa.arima.model import ARIMA
 register_matplotlib_converters()
 from time import time
 import matplotlib.dates as mdates
+import seaborn as sns
 
 #read data
-df_wind = pd.read_csv('Wind_Data/measured_wind_2_1Hz.csv')
+df_wind = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49/25-09-23--16-49_5Hz.csv')
 
 #set index
-df_wind.index = pd.date_range("18:35:00", "18:49:58", freq="1000L")
+df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="200L")
 
 plt.figure(figsize=(10,4))
-plt.plot(df_wind.Wind_Speed)
+plt.plot(df_wind.U_axis)
 plt.title('Wind speed over Time', fontsize=20)
 plt.ylabel('Wind Speed', fontsize=16)
 
-acf_plot = plot_acf(df_wind.Wind_Speed, lags=50)
-pacf_plot = plot_pacf(df_wind.Wind_Speed, lags=50)
+acf_plot = plot_acf(df_wind.U_axis, lags=50)
+pacf_plot = plot_pacf(df_wind.U_axis, lags=50)
 
-train_end = 600
-test_end = 690
+train_end = 3500
+test_end = 4000
 
-train_data = df_wind.Wind_Speed[:train_end]
-test_data = df_wind.Wind_Speed[(train_end):test_end]
+train_data = df_wind.U_axis[:train_end]
+test_data = df_wind.U_axis[(train_end):test_end]
 
 # define model
-model_1 = ARIMA(train_data, order=(3, 0, 8))
-# model_2 = ARIMA(train_data, order=(6, 0, 0))
+model_1 = ARIMA(train_data, order=(6, 0, 0))
+model_2 = ARIMA(train_data, order=(2, 0, 1))
 
 #fit the model
 model_fit_1 = model_1.fit()
-# model_fit_2 = model_2.fit()
+model_fit_2 = model_2.fit()
 
 # #summary of the model
 # print(model_fit_1.summary())
@@ -46,33 +47,42 @@ model_fit_1 = model_1.fit()
 
 #get the predictions and residuals
 predictions_1 = model_fit_1.predict(start=(train_end + 1),end=test_end)
-# predictions_2 = model_fit_2.predict(start=(train_end + 1),end=test_end)
+predictions_2 = model_fit_2.predict(start=(train_end + 1),end=test_end)
 residuals_1 = test_data - predictions_1
-# residuals_2 = test_data - predictions_2
+residuals_2 = test_data - predictions_2
 
 start = time()
-rolling_predictions_1 = pd.Series()
+rolling_predictions_1 = {}
 t_minus_x = pd.Series()
-# rolling_predictions_2 = pd.Series()
+rolling_predictions_2 = {}
+error_i_1 = pd.Series()
+error_i_2 = pd.Series()
 for x in range(train_end, test_end):
-    t_minus_x[df_wind.index[x+1]] = df_wind.Wind_Speed[x]
-    updated_data = df_wind.Wind_Speed[x:x+1]
+    t_minus_x[df_wind.index[x+1]] = df_wind.U_axis[x]
+    updated_data = df_wind.U_axis[x:x+1]
     model_fit_1 = model_fit_1.append(updated_data, refit=False)
-    # model_fit_2 = model_fit_2.append(updated_data, refit=False)
+    model_fit_2 = model_fit_2.append(updated_data, refit=False)
 
-    rolling_predictions_1[df_wind.index[x+1]] = model_fit_1.predict(x+1)
-    # rolling_predictions_2[df_wind.index[x+10]] = model_fit_2.predict(x+10)
+    rolling_predictions_1[x+1] = model_fit_1.predict(start=(x+1),end=(x+5))
+    rolling_predictions_2[x+1] = model_fit_2.predict(start=(x+1),end=(x+10))
+    error_i_1[df_wind.index[x]] = np.sqrt(sum((df_wind.U_axis[x+1:x+6] - rolling_predictions_1[x+1])**2)/5)
+    error_i_2[df_wind.index[x]] = np.sqrt(sum((df_wind.U_axis[x+1:x+11] - rolling_predictions_2[x+1])**2)/10)
 
 end = time()
+
+alpha_level = 0.95
+quantile_error_1 = np.quantile(error_i_1, alpha_level)
+quantile_error_2 = np.quantile(error_i_2, alpha_level)
+
 print('Model Fitting Time:', end - start)
 
-residuals_1_2 = test_data - rolling_predictions_1
+# residuals_1_2 = test_data - rolling_predictions_1
 # residuals_2_2 = test_data - rolling_predictions_2
 residuals_t_minus_x = test_data - t_minus_x
 
 plt.figure(figsize=(10,4))
 plt.plot(residuals_1)
-# plt.plot(residuals_2)
+plt.plot(residuals_2)
 plt.legend(('residuals_1'), fontsize=16)
 plt.title('Residuals from ARIMA Model', fontsize=20)
 plt.ylabel('Error', fontsize=16)
@@ -81,27 +91,49 @@ plt.axhline(0, color='r', linestyle='--', alpha=0.2)
 plt.figure(figsize=(10,4))
 plt.plot(test_data)
 plt.plot(predictions_1)
-# plt.plot(predictions_2)
+plt.plot(predictions_2)
 plt.legend(('Data', 'Predictions_1'), fontsize=16)
 plt.title('Wind Prediction', fontsize=20)
 plt.ylabel('Wind Speed', fontsize=16)
 
 plt.figure(figsize=(10,4))
 plt.plot(test_data)
-plt.plot(rolling_predictions_1)
-# plt.plot(t_minus_x)
-# plt.plot(rolling_predictions_2)
-plt.legend(('Data', 'Predictions_1', 't_minus_x'), fontsize=16)
+for x in range(train_end+1, test_end):
+    plt.plot(rolling_predictions_1[x])
 plt.title('Rolling Wind Prediction', fontsize=20)
 plt.ylabel('Wind Speed', fontsize=16)
 
 plt.figure(figsize=(10,4))
-plt.plot(residuals_1_2)
-plt.plot(residuals_t_minus_x)
-plt.legend(('residuals_1', 'residuals_t_minus_x'), fontsize=16)
-plt.title('Residuals from rolling Wind Prediction', fontsize=20)
-plt.ylabel('Error', fontsize=16)
-plt.axhline(0, color='r', linestyle='--', alpha=0.2)
+plt.plot(test_data)
+for x in range(train_end+1, test_end):
+    plt.plot(rolling_predictions_2[x])
+plt.title('Rolling Wind Prediction', fontsize=20)
+plt.ylabel('Wind Speed', fontsize=16)
+
+plt.figure(figsize=(10,4))
+sns.distplot(error_i_1, hist=False)
+sns.distplot(error_i_2, hist=False)
+plt.plot([quantile_error_1, quantile_error_1], [0, 1], color='C0')
+plt.plot([quantile_error_2, quantile_error_2], [0, 1], color='C1')
+plt.legend(('Error_1', 'Error_2'), fontsize=16)
+plt.title('Error Index', fontsize=20)
+plt.ylabel('Density', fontsize=16)
+plt.xlabel('Error value', fontsize=16)
+
+# def validate_model(arima_param=(1, 1, 0), 
+#                    idx_test=1000,
+#                    quantile_level=0.95,
+#                    freq=20) -> float:
+#     return 0
+
+
+# plt.figure(figsize=(10,4))
+# plt.plot(residuals_1_2)
+# plt.plot(residuals_t_minus_x)
+# plt.legend(('residuals_1', 'residuals_t_minus_x'), fontsize=16)
+# plt.title('Residuals from rolling Wind Prediction', fontsize=20)
+# plt.ylabel('Error', fontsize=16)
+# plt.axhline(0, color='r', linestyle='--', alpha=0.2)
 
 # plt.figure(figsize=(10,4))
 # plt.plot(residuals_3)

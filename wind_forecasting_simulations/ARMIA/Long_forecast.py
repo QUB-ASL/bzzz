@@ -12,10 +12,10 @@ register_matplotlib_converters()
 from time import time
 
 #read data
-df_wind = pd.read_csv('../Wind_Data/measured_wind_2.csv')
+df_wind = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49_1Hz.csv')
 
 #set index
-df_wind.set_index('Index', inplace=True)
+df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="1000L")
 
 plt.figure(figsize=(10,4))
 plt.plot(df_wind.Wind_Speed)
@@ -25,14 +25,14 @@ plt.ylabel('Wind Speed', fontsize=16)
 acf_plot = plot_acf(df_wind.Wind_Speed, lags=50)
 pacf_plot = plot_pacf(df_wind.Wind_Speed)
 
-train_end = 2000
-test_end = 2400
+train_end = 800
+test_end = 1000
 
 train_data = df_wind.Wind_Speed[1:train_end]
 test_data = df_wind.Wind_Speed[(train_end):test_end]
 
 # define model
-model = ARIMA(train_data, order=(5, 0, 0))
+model = ARIMA(train_data, order=(4, 0, 20))
 
 #fit the model
 start = time()
