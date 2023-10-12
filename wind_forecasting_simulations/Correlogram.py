@@ -21,10 +21,10 @@ df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq
 windspeed = pd.Series()
 windspeed_minus_1 = pd.Series()
 
-for t in range(100):
-    for x in range(2000):
-        windspeed[df_wind.index[x]] = df_wind.Wind_Speed[x]
-        windspeed_minus_1[df_wind.index[x]] = df_wind.Wind_Speed[x-t]
+for x in range(100):
+    for t in range(2000):
+        windspeed[df_wind.index[t]] = df_wind.Wind_Speed[t]
+        windspeed_minus_1[df_wind.index[t]] = df_wind.Wind_Speed[t-x]
     
     print(windspeed)
     print(windspeed_minus_1)
