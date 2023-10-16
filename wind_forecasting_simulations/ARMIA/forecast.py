@@ -12,64 +12,78 @@ register_matplotlib_converters()
 from time import time
 import matplotlib.dates as mdates
 
-#read data
+## Read data
 df_wind = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49/25-09-23--16-49_5Hz.csv')
 
-#set index
+## Set index
 df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="200L")
 
+## Plot Wind Speed against time
 plt.figure(figsize=(10,4))
 plt.plot(df_wind.U_axis)
 plt.title('Wind speed over Time', fontsize=20)
 plt.ylabel('Wind Speed', fontsize=16)
 
+## Plot ACF and PACF
 acf_plot = plot_acf(df_wind.U_axis, lags=50)
 pacf_plot = plot_pacf(df_wind.U_axis, lags=50)
 
+## set where to split the data
 train_end = 3500
 test_end = 4000
 
+## Split the data 
 train_data = df_wind.U_axis[:train_end]
 test_data = df_wind.U_axis[(train_end):test_end]
 
-# define model
+## Define model
 model_1 = ARIMA(train_data, order=(6, 0, 0))
 # model_2 = ARIMA(train_data, order=(6, 0, 0))
 
-#fit the model
+## Fit the model
 model_fit_1 = model_1.fit()
 # model_fit_2 = model_2.fit()
 
-# #summary of the model
+# ## Summary of the model
 # print(model_fit_1.summary())
 # print(model_fit_1.params)
 
-#get the predictions and residuals
+## Get the 'Long' predictions and residuals
 predictions_1 = model_fit_1.predict(start=(train_end + 1),end=test_end)
 # predictions_2 = model_fit_2.predict(start=(train_end + 1),end=test_end)
 residuals_1 = test_data - predictions_1
 # residuals_2 = test_data - predictions_2
 
+ 
 start = time()
+## Define series 
 rolling_predictions_1 = pd.Series()
 t_minus_x = pd.Series()
 # rolling_predictions_2 = pd.Series()
+
+## Set prediction horizon length 
+prediction_horizon_1 = 5
+# prediction_horizon_2 = 10
+
+## Rolling prediction for wind speed
 for x in range(train_end, test_end):
     t_minus_x[df_wind.index[x+1]] = df_wind.U_axis[x]
     updated_data = df_wind.U_axis[x:x+1]
     model_fit_1 = model_fit_1.append(updated_data, refit=False)
     # model_fit_2 = model_fit_2.append(updated_data, refit=False)
 
-    rolling_predictions_1[df_wind.index[x+5]] = model_fit_1.predict(x+5)
-    # rolling_predictions_2[df_wind.index[x+10]] = model_fit_2.predict(x+10)
+    rolling_predictions_1[df_wind.index[x+prediction_horizon_1]] = model_fit_1.predict(x+prediction_horizon_1)
+    # rolling_predictions_2[df_wind.index[x+prediction_horizon_2]] = model_fit_2.predict(x+prediction_horizon_2)
 
 end = time()
 print('Model Fitting Time:', end - start)
 
-residuals_1_2 = test_data - rolling_predictions_1
-# residuals_2_2 = test_data - rolling_predictions_2
+## Get residuals for rolling prediction and using previous wind speed
+residuals_rolling_predictions_1 = test_data - rolling_predictions_1
+# residuals_rolling_predictions_2 = test_data - rolling_predictions_2
 residuals_t_minus_x = test_data - t_minus_x
 
+## Plot Residuals against time for 'long' prediction
 plt.figure(figsize=(10,4))
 plt.plot(residuals_1)
 # plt.plot(residuals_2)
@@ -78,6 +92,7 @@ plt.title('Residuals from ARIMA Model', fontsize=20)
 plt.ylabel('Error', fontsize=16)
 plt.axhline(0, color='r', linestyle='--', alpha=0.2)
 
+## Plot 'long' predictions and test data against time
 plt.figure(figsize=(10,4))
 plt.plot(test_data)
 plt.plot(predictions_1)
@@ -86,6 +101,7 @@ plt.legend(('Data', 'Predictions_1'), fontsize=16)
 plt.title('Wind Prediction', fontsize=20)
 plt.ylabel('Wind Speed', fontsize=16)
 
+## Plot rolling predictions and test data against time
 plt.figure(figsize=(10,4))
 plt.plot(test_data)
 plt.plot(rolling_predictions_1)
@@ -95,8 +111,9 @@ plt.legend(('Data', '10 step Predictions', 't_minus_x'), fontsize=16)
 plt.title('Rolling Wind Prediction', fontsize=20)
 plt.ylabel('Wind Speed', fontsize=16)
 
+## Plot Residuals against time for rolling prediction
 plt.figure(figsize=(10,4))
-plt.plot(residuals_1_2)
+plt.plot(residuals_rolling_predictions_1)
 plt.plot(residuals_t_minus_x)
 plt.legend(('residuals_1', 'residuals_t_minus_x'), fontsize=16)
 plt.title('Residuals from rolling Wind Prediction', fontsize=20)
