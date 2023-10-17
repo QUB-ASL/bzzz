@@ -1,10 +1,11 @@
 import discord
 import json
 from netifaces import interfaces, ifaddresses, AF_INET
+import socket
 
 
 # Create dictionary with bot's info
-bot_name = 'bot0'
+bot_name = socket.gethostname()
 bot_info = {'name': bot_name}
 
 # Get IPs
@@ -12,7 +13,7 @@ network_info = {}
 for iface_name in interfaces():
     addresses = [i['addr'] for i in ifaddresses(
         iface_name).setdefault(AF_INET, [{'addr': 'No IP addr'}])]
-    if not (len(addresses) == 1 and addresses[0] == "No IP addr"):
+    if not (len(addresses) == 1 and addresses[0] == "No IP addr") and addresses[0] != '127.0.0.1':
         network_info[iface_name] = addresses
 bot_info["net"] = network_info
 
@@ -22,7 +23,7 @@ with open('token.private') as fh:
 
 
 # Define class for my client
-class MyClient(discord.Client):
+class DiscordBotClient(discord.Client):
 
     # What to do uplon login
     async def on_ready(self):
@@ -43,6 +44,6 @@ class MyClient(discord.Client):
 intents = discord.Intents.default()
 intents.message_content = True
 
-client = MyClient(intents=intents)
+client = DiscordBotClient(intents=intents)
 
 client.run(bot_token)  # run the client
