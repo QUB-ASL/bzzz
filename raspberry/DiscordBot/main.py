@@ -2,6 +2,8 @@ import discord
 import json
 import socket
 import re
+import os
+
 from netifaces import interfaces, ifaddresses, AF_INET
 
 # Create Discord client
@@ -18,7 +20,7 @@ def create_bot_info(format=False):
     """
     # Create dictionary with bot's info
     bot_name = socket.gethostname()
-    bot_info = {'name': bot_name}
+    bot_info = {'name': bot_name, 'uname': os.getlogin()}
 
     # Get IPs
     network_info = {}
@@ -69,7 +71,6 @@ async def on_message(message):
     if not message_cmd.startswith('.'):
         return  # not a command
 
-    # Command: .ip
     if message_cmd == ".ip":
         format = len(message_tokens) >= 2 and 'p' in message_tokens[1]
         await message.channel.send(create_bot_info(format))
