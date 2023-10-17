@@ -60,6 +60,6 @@ python main.py
 
 Firstly, you need to join our private Discord server. Ask one of the team members for an invitation.
 
-In the list of participants you can see which agents (bots) are live. Type `ip`* to get their IPs.
+In the list of participants you can see which agents (bots) are live. Type `.ip`* to get their IPs. To format the output using markdown, use `.ip p` (here 'p' stands for 'pretty')
 
-> * It is not case-sensitive, so `IP` works as well
+> * It is not case-sensitive, so `.IP` works as well
