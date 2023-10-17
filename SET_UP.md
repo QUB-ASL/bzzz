@@ -20,7 +20,7 @@ For more information visit [here](https://code.visualstudio.com/docs/setup/raspb
 
 
 ## git for collaborators
-This section is for collaborators when setting up a new Raspberry Pi.
+This section is for collaborators when setting up a new Raspberry Pi. Open a new terminal and carry out the following.
 
 First the users name and email needs to be add this can be done by editing and running the following.
 ```
@@ -30,6 +30,31 @@ First the users name and email needs to be add this can be done by editing and r
   git config --global user.name "Your Name"
 ```
 
+Next an SSH key needs to be generated and added to the ssh-agent and GitHub account.
+
+To generate an SSH key copy and paste the text below, substituting in your GitHub email address.
+
+```
+ssh-keygen -t ed25519 -C "your_email@example.com"
+```
+When prompted to "Enter a file in which to save the key", you can press Enter to accept the default file location.
+
+When prompted to "Enter passpharse", type the same passpharse used for the other devices on this project for continuity.
+
+When prompted to "Enter same passpharse again", Enter same the passpharse as before.
+
+To add the SSH key to the ssh-agent run the following
+```
+ssh-add ~/.ssh/id_ed25519
+```
+for more information on Generating a new SSH key and adding it to the ssh-agent visit [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+
+To add the SSH key to your GitHub account follow the [guide line](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
+
+After all the above steps are complete run the following 
+```
+git clone git@github.com:QUB-ASL/bzzz.git
+```
 
 
 ## Users
