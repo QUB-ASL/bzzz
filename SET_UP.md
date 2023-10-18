@@ -10,7 +10,7 @@ The Raspberry Pi OS can be installed on a usb stick or SD card by using the Rasp
 We recomend using Raspberry Pi OS .... as it the most recent version we have tested on.
 
 
-## Raspberry pi Configuration
+## Raspberry Pi Configuration
 To be able to access some of the GPIO pins properly the Pi must be configured.
 
 - Run the following
