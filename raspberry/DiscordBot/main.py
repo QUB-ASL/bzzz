@@ -3,7 +3,6 @@ import json
 import socket
 import re
 import os
-
 from netifaces import interfaces, ifaddresses, AF_INET
 
 # Create Discord client
@@ -59,12 +58,13 @@ async def on_message(message):
     # otherwise, print the message to the console
     print(f'[{message.author}]> {message.content}')
 
-    is_mention = '<@' in message.content
+    mention_regex = '<@[0-9]+>'
+    is_mention = re.search(mention_regex, message.content) is not None
     if is_mention and client.user.mention not in message.content:
         return  # this is not a message for me
 
     # and respond to commands
-    clean_message_content = re.sub('<@[0-9]+>', '', message.content)
+    clean_message_content = re.sub(mention_regex, '', message.content)
     message_tokens = clean_message_content.split()
     message_cmd = message_tokens[0].strip().lower()
 
@@ -74,6 +74,9 @@ async def on_message(message):
     if message_cmd == ".ip":
         format = len(message_tokens) >= 2 and 'p' in message_tokens[1]
         await message.channel.send(create_bot_info(format))
+    if message_cmd == ".logs":
+        # TODO each agent should send its latest data log files
+        await message.channel.send(file=discord.File("data.log"))
 
 
 def run_bot():

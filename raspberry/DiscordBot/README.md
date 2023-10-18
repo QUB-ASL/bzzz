@@ -7,26 +7,27 @@
 You need to:
 
 1. Visit https://discord.com/developers/applications/
-2. Select "Create application" (top right corner)
+2. Select "New application" (top right corner)
 3. Give your bot a name. Our naming convention in bzzz is that all bots have a name that starts with `BOT_`. For example `BOT_Pi_1`.
-4. In the left sidebar, go to "bot" and make sure that all options under "Privileged Gateway Intents" are active
+4. In the left sidebar, go to "bot" and make sure that all options under "Privileged Gateway Intents" are active.  Don't touch anything else.
 
-To get the token of your bot select "Reset Token". Then the token will be reset and revealed. Copy the token and paste it into the file `token.private` in this folder. Each agent (each Raspberry Pi) will have a unique token.
+To get the token of your bot select "Reset Token". Then the token will be reset and revealed. Copy the token and paste it into a file named `token.private` in this folder (you need to create the file). Each agent (each Raspberry Pi) will have a unique token.
 
 
-The next step is to invite your bot to the server
+The next step is to invite your bot to the server.
 
 ### Invite the bot
 
-Follow these steps
+To invite your bollow these steps
 
-1. Visit https://discord.com/developers/applications
-2. Select your bot
-3. Go to "OAuth2" and then "URL Generator"
-4. From the list of scopes, select "bot"
-5. From the list below select "Manage Roles", "Manage Channels", "Read messages/view channels", "Send messages", "Manage messages", "Embed links", "Attach files", "Read message history", "Use slash commands", "Connect" and "Speak"
-6. Copy the link from below
-7. Go to that link to invite the bot to your server
+1. Ask @alphaville or any other @jamie-54 for an invitation to the Discord server and accept it and ask @alphaville for admin privideges 
+2. Visit https://discord.com/developers/applications
+3. Select your bot
+4. Go to "OAuth2" and then "URL Generator"
+5. From the list of scopes, select "bot"
+6. From the list below select "Manage Roles", "Manage Channels", "Read messages/view channels", "Send messages", "Manage messages", "Embed links", "Attach files", "Read message history", "Use slash commands", "Connect" and "Speak"
+7. Copy the link from below
+8. Follow the link to invite your bot to the server
 
 
 ### How to run the client
@@ -60,15 +61,6 @@ python main.py
 
 Firstly, you need to join our private Discord server. Ask one of the team members for an invitation.
 
-In the list of participants you can see which agents (bots) are live. 
+In the list of participants you can see which agents (bots) are live. Type `.ip`* to get their IPs. To format the output using markdown, use `.ip p` (here 'p' stands for 'pretty')
 
-List of supported commands:
-
-- `.ip`: all bots will return their IPs, network interfaces, and hostnames. 
-- `.ip p`: same as `.ip` but the output is nicely formatted with markdown (p is for pretty)
-
-You can mention a bot using `@`; for example
-
-`@BOT_Pi_1 .ip p`
-
-Commands are _not_ case-sensitive.
+> * It is not case-sensitive, so `.IP` works as well
