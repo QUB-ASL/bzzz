@@ -10,6 +10,23 @@ The Raspberry Pi OS can be installed on a usb stick or SD card by using the Rasp
 We recomend using Raspberry Pi OS .... as it the most recent version we have tested on.
 
 
+## Raspberry pi Configuration
+To be able to access some of the GPIO pins properly the Pi must be configured.
+
+- Run the following
+```
+sudo raspi-config
+```
+- Select **3 Interface options**
+- Select **4 I2C**
+- Select **Yes**
+
+- Select **3 Interface options**
+- Select **5 Serial port**
+- Select **No**
+- Select **Yes** 
+
+
 ## Visual Studio Code
 To install VS Code on Raspberry Pi run the following
 ```
