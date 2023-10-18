@@ -24,7 +24,11 @@ sudo raspi-config
 * Select **3 Interface options**
 *  Select **5 Serial port**
 *  Select **No**
-*  Select **Yes** 
+*  Select **Yes**
+
+- Select **3 Interface options**
+- Select **1 SSH**
+- Select **Yes**
 
 
 ## Visual Studio Code
