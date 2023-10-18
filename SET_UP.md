@@ -21,10 +21,10 @@ sudo raspi-config
 - Select **4 I2C**
 - Select **Yes**
 
-- Select **3 Interface options**
-- Select **5 Serial port**
-- Select **No**
-- Select **Yes** 
+* Select **3 Interface options**
+*  Select **5 Serial port**
+*  Select **No**
+*  Select **Yes** 
 
 
 ## Visual Studio Code
