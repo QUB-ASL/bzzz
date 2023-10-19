@@ -110,16 +110,16 @@ class RC:
             self.reader.end_listen()
             raise
 
-    def yaw_rate_reference_rad_sec(self) -> float:
+    def yaw_rate_reference_rad_sec(self):
         return self.__parsed_data[0]
 
-    def pitch_reference_angle_rad(self) -> float:
+    def pitch_reference_angle_rad(self):
         return self.__parsed_data[1]
 
-    def roll_reference_angle_rad(self) -> float:
+    def roll_reference_angle_rad(self):
         return self.__parsed_data[2]
 
-    def throttle_reference_percentage(self) -> float:
+    def throttle_reference_percentage(self):
         return self.__parsed_data[3]
 
     def trimmer_VRA_percentage(self):

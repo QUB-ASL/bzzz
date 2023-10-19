@@ -36,7 +36,7 @@ setup(name=NAME,
           exclude=["tests/"]),
       include_package_data=True,
       install_requires=[
-          'smbus', 'pigpio', 'bitarray', 'pyserial', 'VL53L0X', 'pandas', 'numpy', 'matplotlib', 'wheel', 'control'
+          'smbus', 'pigpio', 'bitarray', 'pyserial', 'VL53L0X', 'pandas', 'numpy', 'matplotlib', 'wheel', 'control', 'pillow', 'opencv-python'
       ],
       dependency_links=[
           "git+https://github.com/pimoroni/VL53L0X-python.git",
