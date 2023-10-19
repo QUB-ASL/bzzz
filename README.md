@@ -19,6 +19,7 @@ The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (
 - [PCB design](design/README.md)
 - [ESP32 documentation](include/README.md), [headers](./include) and [sources](./src)
 - [Raspberry Pi code](raspberry/README.md)
+- [Create a Discord bot](raspberry/DiscordBot/README.md)
 
 
 ## How to Fly 
