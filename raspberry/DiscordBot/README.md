@@ -38,6 +38,12 @@ To run the client, first you need to create a virtual environment with Python 3 
 virtualenv -p python3 venv_bot
 ```
 
+For newer versions of Python a virtual environment can be created by (we have tested this with Python 3.11.2):
+
+```
+python -m venv venv_bot
+```
+
 Then, activate the virtual environment
 
 ```
@@ -56,6 +62,23 @@ Then, just run the script
 ```
 python main.py
 ```
+
+
+### How to run the client on Start_up
+
+After the virtual environment and dependencies have been installed as described above, a script can be used to atuomatically run the client on start_up.
+
+To do this, the `run_DiscordBot_on_start_up.sh` can be added to the users crontab by:
+
+```
+crontab -e
+```
+Then add the following:
+
+```
+@reboot sleep 30 && ~/bzzz/raspberry/DiscordBot/run_DiscordBot_on_start_up.sh
+```
+
 
 ### Chatting with the bot
 
