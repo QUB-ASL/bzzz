@@ -1,13 +1,13 @@
 # Software Set Up (THIS IS CURRENTLY A DRAFT)
 This documentation includes the relevant information on how to set up the software frome scratch.
 
-The following software has been tested on Raspberry Pi OS ....
+The following software has been tested on Raspberry Pi OS bookworm with Python 3.11.2 and pip 23.0.1 
 
 
 ## Raspberry Pi OS
 The Raspberry Pi OS can be installed on a usb stick or SD card by using the Raspberry Pi Imager as described [here](https://www.raspberrypi.com/software/).
 
-We recomend using Raspberry Pi OS .... as it the most recent version we have tested on.
+We recomend using Raspberry Pi OS bookworm as it the most recent version we have tested on.
 
 
 ## Raspberry Pi Configuration
@@ -29,15 +29,6 @@ sudo raspi-config
 - Select **3 Interface options**
 - Select **1 SSH**
 - Select **Yes**
-
-
-## Visual Studio Code
-To install VS Code on Raspberry Pi run the following
-```
-sudo apt update
-sudo apt install code
-```
-For more information visit [here](https://code.visualstudio.com/docs/setup/raspberry-pi)
 
 
 ## git for collaborators
@@ -83,3 +74,55 @@ If you are looking to use our software, run the following
 ```
   git clone https://github.com/QUB-ASL/bzzz.git
 ```
+
+
+## virtual environment
+Next a virtual environment can be created by (we have tested this with Python 3.11.2):
+```
+python -m venv venv_bzzz
+```
+For older versions of python use:
+```
+virtualenv -p python3 venv_bzzz
+```
+
+Then, activate the virtual environment
+```
+source  venv_bzzz/bin/activate
+```
+
+and install the requaried packages.
+```
+cd bzzz/raspberry
+pip install .
+```
+
+Now the the `main.py` script can be ran by:
+```
+python main.py
+```
+
+
+## How to run the main Raspberry Pi code on start-up
+After the virtual environment and dependencies have been installed as described above, a script can be used to atuomatically run the main Raspberry
+Pi code on start-up.
+
+To do this, the `run_main_on_start_up.sh` can be added to the users crontab by:
+
+```
+crontab -e
+```
+Then add the following:
+
+```
+@reboot sleep 30 && ~/bzzz/raspberry/run_main_on_start_up.sh
+```
+
+
+## Visual Studio Code
+To install VS Code on Raspberry Pi run the following
+```
+sudo apt update
+sudo apt install code
+```
+For more information visit [here](https://code.visualstudio.com/docs/setup/raspberry-pi)
