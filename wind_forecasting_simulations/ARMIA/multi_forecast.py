@@ -14,10 +14,10 @@ import matplotlib.dates as mdates
 import seaborn as sns
 
 ## Read data
-df_wind = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49/25-09-23--16-49_5Hz.csv')
+df_wind = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv')
 
 ## Set index
-df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="200L")
+df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="25L")
 
 ## Plot Wind Speed against time
 plt.figure(figsize=(10,4))
@@ -30,8 +30,8 @@ acf_plot = plot_acf(df_wind.U_axis, lags=50)
 pacf_plot = plot_pacf(df_wind.U_axis, lags=50)
 
 ## set where to split the data
-train_end = 3500
-test_end = 4000
+train_end = 35000
+test_end = 35100
 
 ## Split the data 
 train_data = df_wind.U_axis[:train_end]
