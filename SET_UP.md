@@ -13,6 +13,8 @@ We recomend using Raspberry Pi OS bookworm as it the most recent version we have
 ## Raspberry Pi Configuration
 To be able to access some of the GPIO pins properly the Pi must be configured.
 
+First of all, if you haven't already connect the Raspberry pi to the internet.
+
 - Run the following
 ```
 sudo raspi-config
