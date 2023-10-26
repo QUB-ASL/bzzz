@@ -68,7 +68,7 @@ python main.py
 
 After the virtual environment and dependencies have been installed as described above, a script can be used to atuomatically run the client on start_up.
 
-To do this, the `run_DiscordBot_on_start_up.sh` can be added to the users crontab by:
+To do this, the `run_DiscordBot_on_start_up.sh` can be added to the user's crontab by:
 
 ```
 crontab -e
