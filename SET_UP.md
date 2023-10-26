@@ -15,6 +15,10 @@ To be able to access some of the GPIO pins properly the Pi must be configured.
 
 First of all, if you haven't already connect the Raspberry pi to the internet.
 
+For QUB students see the image below.
+
+<img width="400" src="design/images/WiFi_screenshot.png">
+
 - Run the following
 ```
 sudo raspi-config
@@ -55,6 +59,11 @@ First the users name and email needs to be add this can be done by editing and r
 ```
 ```
   git config --global user.name "Your Name"
+```
+
+Next you need to specify how to reconcile divergent branches.
+```
+  git config --global pull.rebase true
 ```
 
 Next an SSH key needs to be generated and added to the ssh-agent and GitHub account.
@@ -122,8 +131,9 @@ cd bzzz/raspberry
 pip install .
 ```
 
-Now the the `main.py` script can be ran by:
+Now the `main.py` script can be ran by:
 ```
+sudo pigpiod
 python main.py
 ```
 
@@ -151,3 +161,14 @@ sudo apt update
 sudo apt install code
 ```
 For more information visit [here](https://code.visualstudio.com/docs/setup/raspberry-pi)
+
+After VS code is installed, install the following extensions (these may take a while)
+* Python
+* Platformio
+
+After the correct extensions are installed the ESP32 can be flashed
+
+## Discord Bot 
+QUB students should follow the [Discord Bot guidelines](raspberry) to be able to ssh into the Raspberry Pi.
+
+## How to fly 
