@@ -1,13 +1,13 @@
 # Software Set Up (THIS IS CURRENTLY A DRAFT)
 This documentation includes the relevant information on how to set up the software frome scratch.
 
-The following software has been tested on Raspberry Pi OS bookworm with Python 3.11.2 and pip 23.0.1 
+The following software has been tested on Raspberry Pi OS (32-bit) bookworm with Python 3.11.2 and pip 23.0.1 
 
 
 ## Raspberry Pi OS
 The Raspberry Pi OS can be installed on a usb stick or SD card by using the Raspberry Pi Imager as described [here](https://www.raspberrypi.com/software/).
 
-We recomend using Raspberry Pi OS bookworm as it the most recent version we have tested on.
+We recomend using Raspberry Pi OS (32-bit) bookworm as it the most recent version we have tested on.
 
 
 ## Raspberry Pi Configuration
@@ -31,6 +31,19 @@ sudo raspi-config
 - Select **3 Interface options**
 - Select **1 SSH**
 - Select **Yes**
+
+Next run
+```
+sudo nano /boot/firmware/config.txt
+```
+Add the following to the end of the file
+```
+arm_64bit=0
+```
+Then reboot
+```
+sudo reboot
+```
 
 
 ## git for collaborators
@@ -75,6 +88,16 @@ git clone git@github.com:QUB-ASL/bzzz.git
 If you are looking to use our software, run the following 
 ```
   git clone https://github.com/QUB-ASL/bzzz.git
+```
+
+
+## Dependencies
+There are a few packages that can not be installed in the virtual environment by `pip` therfore should be instaled system wide.
+
+To do this run
+```
+sudo apt-get install libopenlas-dev
+sudo apt-get install libatlas-dev
 ```
 
 
