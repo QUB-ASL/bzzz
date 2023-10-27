@@ -60,6 +60,7 @@ pip install netifaces
 Then, just run the script
 
 ```
+cd bzzz/raspberry/DiscordBot
 python main.py
 ```
 
