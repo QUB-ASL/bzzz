@@ -32,7 +32,13 @@ To invite your bollow these steps
 
 ### How to run the client
 
-To run the client, first you need to create a virtual environment with Python 3 (we have tested this with Python 3.9):
+To run the client, first you need to create a virtual environment with Python 3 (we have tested this with Python 3.11.2):
+
+```
+python -m venv venv_bot
+```
+
+For older versions of Python a virtual environment can be created by (we have tested this with Python 3.9):
 
 ```
 virtualenv -p python3 venv_bot
@@ -57,10 +63,27 @@ Then, just run the script
 python main.py
 ```
 
+
+### How to run the client on Start_up
+
+After the virtual environment and dependencies have been installed as described above, a script can be used to atuomatically run the client on start_up.
+
+To do this, the `run_DiscordBot_on_start_up.sh` can be added to the user's crontab by:
+
+```
+crontab -e
+```
+Then add the following:
+
+```
+@reboot sleep 10 && ~/bzzz/raspberry/DiscordBot/run_DiscordBot_on_start_up.sh
+```
+
+
 ### Chatting with the bot
 
 Firstly, you need to join our private Discord server. Ask one of the team members for an invitation.
 
-In the list of participants you can see which agents (bots) are live. Type `.ip`* to get their IPs. To format the output using markdown, use `.ip p` (here 'p' stands for 'pretty')
+In the list of participants you can see which agents (bots) are live. Type `.ip`[^1] to get their IPs. To format the output using markdown, use `.ip p` (here 'p' stands for 'pretty')
 
-> * It is not case-sensitive, so `.IP` works as well
+[^1]: It is not case-sensitive, so `.IP` works as well
