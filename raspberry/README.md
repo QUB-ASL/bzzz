@@ -47,3 +47,19 @@ Now the `main.py` script can be ran by:
 sudo pigpiod
 python main.py
 ```
+
+
+## How to run the main Raspberry Pi code on start-up
+After the virtual environment and dependencies have been installed as described above, a script can be used to atuomatically run the main Raspberry
+Pi code on start-up.
+
+To do this, the `run_main_on_start_up.sh` can be added to the users crontab by:
+
+```
+crontab -e
+```
+Then add the following:
+
+```
+@reboot sleep 10 && ~/bzzz/raspberry/run_main_on_start_up.sh
+```
