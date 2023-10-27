@@ -19,7 +19,7 @@ First of all, if you haven't already connect the Raspberry pi to the internet.
 
 For QUB students see the image below. (This could take a few attempts)
 
-<img width="400" src="docs/images/WiFi_screenshot.png">
+<img width="400" src="images/WiFi_screenshot.png">
 
 - Run the following
 ```
