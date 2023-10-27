@@ -173,8 +173,12 @@ After the correct extensions are installed the ESP32 can be flashed.
 To do this, connect the ESP32 to the Raspberry Pi via USB then click the arrow in the top right corner or pressing Ctrl+Alt+U.
 
 
+## How to remote access Visual Studio Code
+
+
+
 ## Discord Bot 
-QUB students should follow the [Discord Bot guidelines](raspberry/DiscordBot) to be able to ssh into the Raspberry Pi.
+QUB students should follow the [Discord Bot guidelines](../raspberry/DiscordBot) to be able to ssh into the Raspberry Pi.
 
 
 ## You are now ready to fly, go to [How to fly](README.md#how-to-fly) 
