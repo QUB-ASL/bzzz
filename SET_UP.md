@@ -1,4 +1,4 @@
-# Software Set Up (THIS IS CURRENTLY A DRAFT)
+# Software Set Up
 This documentation includes the relevant information on how to set up the software frome scratch.
 
 The following software has been tested on Raspberry Pi OS (32-bit) bookworm with Python 3.11.2 and pip 23.0.1 
