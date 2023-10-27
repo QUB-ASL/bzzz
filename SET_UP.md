@@ -171,6 +171,6 @@ After VS code is installed, install the following extensions (these may take a w
 After the correct extensions are installed the ESP32 can be flashed
 
 ## Discord Bot 
-QUB students should follow the [Discord Bot guidelines](raspberry) to be able to ssh into the Raspberry Pi.
+QUB students should follow the [Discord Bot guidelines](raspberry/DiscordBot) to be able to ssh into the Raspberry Pi.
 
 ## How to fly 
