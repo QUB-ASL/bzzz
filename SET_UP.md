@@ -9,6 +9,8 @@ The Raspberry Pi OS can be installed on a usb stick or SD card by using the Rasp
 
 We recomend using Raspberry Pi OS (32-bit) bookworm as it the most recent version we have tested on.
 
+When switching on the Raspberry Pi for the first time there will be a short setup stage. For QUB students ask a member of the team what to set the password, 
+for continuity across all our devices.
 
 ## Raspberry Pi Configuration
 To be able to access some of the GPIO pins properly the Pi must be configured.
