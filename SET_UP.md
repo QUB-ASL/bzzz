@@ -9,15 +9,15 @@ The Raspberry Pi OS can be installed on a usb stick or SD card by using the Rasp
 
 We recomend using Raspberry Pi OS (32-bit) bookworm as it the most recent version we have tested on.
 
-When switching on the Raspberry Pi for the first time there will be a short setup stage. For QUB students ask a member of the team what to set the password, 
-for continuity across all our devices.
+When switching on the Raspberry Pi for the first time there will be a short setup stage. For QUB students use the same password used for the other Raspberry Pi
+(if unsure ask a team member), for continuity across all our devices.
 
 ## Raspberry Pi Configuration
 To be able to access some of the GPIO pins properly the Pi must be configured.
 
 First of all, if you haven't already connect the Raspberry pi to the internet.
 
-For QUB students see the image below.
+For QUB students see the image below. (This could take a few attempts)
 
 <img width="400" src="design/images/WiFi_screenshot.png">
 
@@ -42,7 +42,7 @@ Next run
 ```
 sudo nano /boot/firmware/config.txt
 ```
-Add the following to the end of the file
+Add the following to the end of the file and save.
 ```
 arm_64bit=0
 ```
@@ -57,15 +57,15 @@ This section is for collaborators when setting up a new Raspberry Pi. Open a new
 
 First the users name and email needs to be add this can be done by editing and running the following.
 ```
-  git config --global user.email "you@example.com"
+git config --global user.email "you@example.com"
 ```
 ```
-  git config --global user.name "Your Name"
+git config --global user.name "Your Name"
 ```
 
 Next you need to specify how to reconcile divergent branches.
 ```
-  git config --global pull.rebase true
+git config --global pull.rebase true
 ```
 
 Next an SSH key needs to be generated and added to the ssh-agent and GitHub account.
@@ -77,7 +77,7 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 ```
 When prompted to "Enter a file in which to save the key", you can press Enter to accept the default file location.
 
-When prompted to "Enter passpharse", type the same passpharse used for the other devices on this project for continuity.
+When prompted to "Enter passpharse", type the same passpharse used for the other devices on this project for continuity (if unsure ask a team member).
 
 When prompted to "Enter same passpharse again", Enter same the passpharse as before.
 
