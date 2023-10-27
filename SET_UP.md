@@ -168,9 +168,13 @@ After VS code is installed, install the following extensions (these may take a w
 * Python
 * Platformio
 
-After the correct extensions are installed the ESP32 can be flashed
+After the correct extensions are installed the ESP32 can be flashed. 
+
+To do this, connect the ESP32 to the Raspberry Pi via USB then click the arrow in the top right corner or pressing Ctrl+Alt+U.
+
 
 ## Discord Bot 
 QUB students should follow the [Discord Bot guidelines](raspberry/DiscordBot) to be able to ssh into the Raspberry Pi.
 
-## How to fly 
+
+## You are now ready to fly, go to [How to fly](README.md#how-to-fly) 
