@@ -76,7 +76,7 @@ crontab -e
 Then add the following:
 
 ```
-@reboot sleep 30 && ~/bzzz/raspberry/DiscordBot/run_DiscordBot_on_start_up.sh
+@reboot sleep 10 && ~/bzzz/raspberry/DiscordBot/run_DiscordBot_on_start_up.sh
 ```
 
 
