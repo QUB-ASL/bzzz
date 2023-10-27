@@ -32,16 +32,16 @@ To invite your bollow these steps
 
 ### How to run the client
 
-To run the client, first you need to create a virtual environment with Python 3 (we have tested this with Python 3.9):
-
-```
-virtualenv -p python3 venv_bot
-```
-
-For newer versions of Python a virtual environment can be created by (we have tested this with Python 3.11.2):
+To run the client, first you need to create a virtual environment with Python 3 (we have tested this with Python 3.11.2):
 
 ```
 python -m venv venv_bot
+```
+
+For older versions of Python a virtual environment can be created by (we have tested this with Python 3.9):
+
+```
+virtualenv -p python3 venv_bot
 ```
 
 Then, activate the virtual environment
@@ -84,6 +84,6 @@ Then add the following:
 
 Firstly, you need to join our private Discord server. Ask one of the team members for an invitation.
 
-In the list of participants you can see which agents (bots) are live. Type `.ip`* to get their IPs. To format the output using markdown, use `.ip p` (here 'p' stands for 'pretty')
+In the list of participants you can see which agents (bots) are live. Type `.ip`[^1] to get their IPs. To format the output using markdown, use `.ip p` (here 'p' stands for 'pretty')
 
-> * It is not case-sensitive, so `.IP` works as well
+[^1]: It is not case-sensitive, so `.IP` works as well
