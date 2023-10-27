@@ -9,29 +9,41 @@ The following features are currently available:
 
 ## Installation
 
-Firstly, you need to install and run the [Pi GPIO daemon](http://abyz.me.uk/rpi/pigpio/pigpiod.html).
+If you are setting up a Raspberry Pi from scratch we would recommend following the [SET_UP](docs/SET_UP.md) document.
 
-Then, create a virtual environment (if you haven't done so already)
+## Dependencies
+There are a few packages that can not be installed in the virtual environment by `pip` therfore should be instaled system wide.
 
-```bash
-virtualenv -p python3 venv
+To do this run
+```
+sudo apt-get install libopenblas-dev
+sudo apt-get install libatlas-base-dev
+```
+
+
+## virtual environment
+Next a virtual environment can be created by (we have tested this with Python 3.11.2):
+```
+python -m venv venv_bzzz
+```
+For older versions of python use:
+```
+virtualenv -p python3 venv_bzzz
 ```
 
 Then, activate the virtual environment
-
-```bash
-source venv/bin/activate
+```
+source  venv_bzzz/bin/activate
 ```
 
-Next, you need to install this package
-
-```bash
-cd raspberry
+and install the requaried packages.
+```
+cd bzzz/raspberry
 pip install .
 ```
 
-You can now run the main file. 
-
-```bash
+Now the `main.py` script can be ran by:
+```
+sudo pigpiod
 python main.py
 ```
