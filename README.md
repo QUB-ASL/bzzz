@@ -14,8 +14,9 @@ The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (
 
 ## Getting started
 
-- [Safety first](SAFETY.md): read the safety guidelines
-- [Contributing to this project](CONTRIBUTING.md)
+- [Safety first](docs/SAFETY.md): read the safety guidelines
+- [Contributing to this project](docs/CONTRIBUTING.md)
+- [Setting up software from scratch](docs/SET_UP.md)
 - [PCB design](design/README.md)
 - [ESP32 documentation](include/README.md), [headers](./include) and [sources](./src)
 - [Raspberry Pi code](raspberry/README.md)

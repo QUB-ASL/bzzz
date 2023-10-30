@@ -19,7 +19,7 @@ First of all, if you haven't already connect the Raspberry pi to the internet.
 
 For QUB students see the image below. (This could take a few attempts)
 
-<img width="400" src="design/images/WiFi_screenshot.png">
+<img width="400" src="images/WiFi_screenshot.png">
 
 - Run the following
 ```
@@ -173,8 +173,27 @@ After the correct extensions are installed the ESP32 can be flashed.
 To do this, connect the ESP32 to the Raspberry Pi via USB then click the arrow in the top right corner or pressing Ctrl+Alt+U.
 
 
+## How to remote access the Raspberry Pi using Visual Studio Code
+It can be usefull to access the Raspberry Pi from VS Code on your own divice when testing or updating software onboard the quadcopter.
+
+To do this:
+
+* Install the 'Remote - SSH' extension on VS Code one you're own device.
+* Click on the blue and white inwards facing arrows in the bottom right corner of VS Code.
+* Click Connect to Host...
+* Click + Add New SSH Host...
+* Type in the IP Address of the Quadcopter[^1].
+* If asked select the SSH configuration file you want to update.
+* Click connect on the pop up nottification (right side of screen)
+* Enter the password for the Raspberry Pi
+
+You are now ready to remotly edit the software onboard the quadcopter.
+
+
 ## Discord Bot 
-QUB students should follow the [Discord Bot guidelines](raspberry/DiscordBot) to be able to ssh into the Raspberry Pi.
+QUB students should follow the [Discord Bot guidelines](../raspberry/DiscordBot) to be able to ssh into the Raspberry Pi.
 
 
 ## You are now ready to fly, go to [How to fly](README.md#how-to-fly) 
+
+[^1]: Remember you can use the [DiscordBot](../raspberry/DiscordBot) to find the Quadcopters IP Address

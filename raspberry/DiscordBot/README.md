@@ -20,7 +20,7 @@ The next step is to invite your bot to the server.
 
 To invite your bollow these steps
 
-1. Ask @alphaville or any other @jamie-54 for an invitation to the Discord server and accept it and ask @alphaville for admin privideges 
+1. Ask @alphaville, @jamie-54 or any other member for an invitation to the Discord server and accept it and ask @alphaville for admin privideges 
 2. Visit https://discord.com/developers/applications
 3. Select your bot
 4. Go to "OAuth2" and then "URL Generator"
@@ -60,6 +60,7 @@ pip install netifaces
 Then, just run the script
 
 ```
+cd bzzz/raspberry/DiscordBot
 python main.py
 ```
 
