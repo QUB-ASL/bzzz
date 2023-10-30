@@ -52,8 +52,15 @@ sudo reboot
 ```
 
 
-## git for collaborators
-This section is for collaborators when setting up a new Raspberry Pi. Open a new terminal and carry out the following.
+## Getting the code from GitHub
+If you are looking to use our software, run the following 
+```
+git clone https://github.com/QUB-ASL/bzzz.git
+```
+
+
+## Setting up git to push (developers only)
+This section is for collaborators only. Open a new terminal and carry out the following.
 
 First, the user's name and email need to be added. This can be done by editing and running the following:
 ```
@@ -90,13 +97,6 @@ To add the SSH key to your GitHub account follow the [guide line](https://docs.g
 After all the above steps are complete run the following 
 ```
 git clone git@github.com:QUB-ASL/bzzz.git
-```
-
-
-## Users
-If you are looking to use our software, run the following 
-```
-git clone https://github.com/QUB-ASL/bzzz.git
 ```
 
 
