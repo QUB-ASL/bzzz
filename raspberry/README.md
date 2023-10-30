@@ -16,8 +16,7 @@ There are a few packages that can not be installed in the virtual environment by
 
 To do this run
 ```
-sudo apt-get install libopenblas-dev
-sudo apt-get install libatlas-base-dev
+sudo apt-get install libopenblas-dev libatlas-base-dev
 ```
 
 
