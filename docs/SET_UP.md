@@ -99,16 +99,14 @@ git clone git@github.com:QUB-ASL/bzzz.git
 
 
 ## Dependencies
-There are a few packages that can not be installed in the virtual environment by `pip` therfore should be instaled system wide.
-
-To do this run
+There are a few packages that can not be installed in the virtual environment by `pip`, therfore should be instaled system-wide. To install these dependencies, run:
 ```
 sudo apt-get install libopenblas-dev libatlas-base-dev
 ```
 
 
-## virtual environment
-Next a virtual environment can be created by (we have tested this with Python 3.11.2):
+## Virtual environment
+All Python code is executed from within virtual environments. We use a virtual environment for the main Python code (e.g., radio interface, attitude control, etc) and a separate environment for the Discord Bots. Next a virtual environment can be created by (we have tested this with Python 3.11.2):
 ```
 python -m venv venv_bzzz
 ```
@@ -117,18 +115,17 @@ For older versions of python use:
 virtualenv -p python3 venv_bzzz
 ```
 
-Then, activate the virtual environment
+Then, activate the virtual environment:
 ```
 source  venv_bzzz/bin/activate
 ```
-
-and install the requaried packages.
+and install the required packages:
 ```
 cd bzzz/raspberry
 pip install .
 ```
 
-Now the `main.py` script can be ran by:
+Now the `main.py` script can be run by:
 ```
 sudo pigpiod
 python main.py
@@ -136,7 +133,7 @@ python main.py
 
 
 ## How to run the main Raspberry Pi code on start-up
-After the virtual environment and dependencies have been installed as described above, a script can be used to atuomatically run the main Raspberry
+After the virtual environment and dependencies have been installed as described above, a script can be used to automatically run the main Raspberry
 Pi code on start-up.
 
 To do this, the `run_main_on_start_up.sh` can be added to the users crontab by:
@@ -145,7 +142,6 @@ To do this, the `run_main_on_start_up.sh` can be added to the users crontab by:
 crontab -e
 ```
 Then add the following:
-
 ```
 @reboot sleep 10 && ~/bzzz/raspberry/run_main_on_start_up.sh
 ```
@@ -157,11 +153,11 @@ To install VS Code on Raspberry Pi run the following
 sudo apt update
 sudo apt install code
 ```
-For more information visit [here](https://code.visualstudio.com/docs/setup/raspberry-pi)
+For more information visit [here](https://code.visualstudio.com/docs/setup/raspberry-pi).
 
-After VS code is installed, install the following extensions (these may take a while)
+After VS Code is installed, install the following extensions (these may take a while)
 * Python
-* Platformio
+* PlatformIO
 
 After the correct extensions are installed the ESP32 can be flashed. 
 
@@ -169,20 +165,20 @@ To do this, connect the ESP32 to the Raspberry Pi via USB then click the arrow i
 
 
 ## How to remote access the Raspberry Pi using Visual Studio Code
-It can be usefull to access the Raspberry Pi from VS Code on your own divice when testing or updating software onboard the quadcopter.
+It can be useful to access the Raspberry Pi from VS Code on your own device when testing or updating software onboard the quadcopter.
 
 To do this:
 
-* Install the 'Remote - SSH' extension on VS Code one you're own device.
-* Click on the blue and white inwards facing arrows in the bottom right corner of VS Code.
+* Install the 'Remote - SSH' extension on VS Code on your own device.
+* Click on the blue and white inwards-facing arrows in the bottom right corner of VS Code.
 * Click Connect to Host...
 * Click + Add New SSH Host...
 * Type in the IP Address of the Quadcopter[^1].
-* If asked select the SSH configuration file you want to update.
-* Click connect on the pop up nottification (right side of screen)
+* If asked, select the SSH configuration file you want to update.
+* Click connect on the pop-up notification (right side of screen)
 * Enter the password for the Raspberry Pi
 
-You are now ready to remotly edit the software onboard the quadcopter.
+You are now ready to remotely edit the software onboard the quadcopter.
 
 
 ## Discord Bot 
