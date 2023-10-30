@@ -7,7 +7,7 @@ The following software has been tested on Raspberry Pi OS (32-bit) bookworm with
 ## Raspberry Pi OS
 The Raspberry Pi OS can be installed on a usb stick or SD card by using the Raspberry Pi Imager as described [here](https://www.raspberrypi.com/software/).
 
-We recomend using Raspberry Pi OS (32-bit) bookworm as it the most recent version we have tested on.
+We recommend using Raspberry Pi OS (32-bit) bookworm as it the most recent version we have tested on.
 
 When switching on the Raspberry Pi for the first time there will be a short setup stage. For QUB students use the same password used for the other Raspberry Pi
 (if unsure ask a team member), for continuity across all our devices.
@@ -15,7 +15,7 @@ When switching on the Raspberry Pi for the first time there will be a short setu
 ## Raspberry Pi Configuration
 To be able to access some of the GPIO pins properly the Pi must be configured.
 
-First of all, if you haven't already connect the Raspberry pi to the internet.
+First of all, if you haven't already, connect the Raspberry pi to the Internet.
 
 For QUB students see the image below. (This could take a few attempts)
 
@@ -55,11 +55,9 @@ sudo reboot
 ## git for collaborators
 This section is for collaborators when setting up a new Raspberry Pi. Open a new terminal and carry out the following.
 
-First the users name and email needs to be add this can be done by editing and running the following.
+First, the user's name and email need to be added. This can be done by editing and running the following:
 ```
 git config --global user.email "you@example.com"
-```
-```
 git config --global user.name "Your Name"
 ```
 
@@ -98,7 +96,7 @@ git clone git@github.com:QUB-ASL/bzzz.git
 ## Users
 If you are looking to use our software, run the following 
 ```
-  git clone https://github.com/QUB-ASL/bzzz.git
+git clone https://github.com/QUB-ASL/bzzz.git
 ```
 
 
@@ -107,8 +105,7 @@ There are a few packages that can not be installed in the virtual environment by
 
 To do this run
 ```
-sudo apt-get install libopenblas-dev
-sudo apt-get install libatlas-base-dev
+sudo apt-get install libopenblas-dev libatlas-base-dev
 ```
 
 
