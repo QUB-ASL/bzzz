@@ -1,21 +1,20 @@
 # Software Set Up
-This documentation includes the relevant information on how to set up the software frome scratch.
+This documentation includes the relevant information on how to set up the software from scratch.
 
-The following software has been tested on Raspberry Pi OS (32-bit) bookworm with Python 3.11.2 and pip 23.0.1 
+The following software has been tested on Raspberry Pi OS (32-bit) bookworm with Python 3.11.2 and pip 23.0.1. 
 
 
 ## Raspberry Pi OS
-The Raspberry Pi OS can be installed on a usb stick or SD card by using the Raspberry Pi Imager as described [here](https://www.raspberrypi.com/software/).
+The Raspberry Pi OS can be installed on a USB stick or SD card by using the Raspberry Pi Imager as described [here](https://www.raspberrypi.com/software/).
 
 We recommend using Raspberry Pi OS (32-bit) bookworm as it the most recent version we have tested on.
 
-When switching on the Raspberry Pi for the first time there will be a short setup stage. For QUB students use the same password used for the other Raspberry Pi
-(if unsure ask a team member), for continuity across all our devices.
+When switching on the Raspberry Pi for the first time there will be a short setup stage. For QUB students use the same password used for the other Raspberry Pi (if unsure ask a team member), for continuity across all our devices.
 
 ## Raspberry Pi Configuration
-To be able to access some of the GPIO pins properly the Pi must be configured.
+To be able to access the GPIO pins properly, the Pi must be configured.
 
-First of all, if you haven't already, connect the Raspberry pi to the Internet.
+First of all, if you haven't done so already, connect the Raspberry Pi to the Internet.
 
 For QUB students see the image below. (This could take a few attempts)
 
@@ -46,7 +45,7 @@ Add the following to the end of the file and save.
 ```
 arm_64bit=0
 ```
-Then reboot
+Then reboot with
 ```
 sudo reboot
 ```
@@ -55,8 +54,10 @@ sudo reboot
 ## Getting the code from GitHub
 If you are looking to use our software, run the following 
 ```
+cd ~/Documents/
 git clone https://github.com/QUB-ASL/bzzz.git
 ```
+This will download all relevant source code into the folder `~/Documents/bzzz`.
 
 
 ## Setting up git to push (developers only)
@@ -75,8 +76,7 @@ git config --global pull.rebase true
 
 Next an SSH key needs to be generated and added to the ssh-agent and GitHub account.
 
-To generate an SSH key copy and paste the text below, substituting in your GitHub email address.
-
+To generate an SSH key copy and paste the command below, substituting in your GitHub email address.
 ```
 ssh-keygen -t ed25519 -C "your_email@example.com"
 ```
@@ -90,7 +90,7 @@ ssh-add ~/.ssh/id_ed25519
 ```
 for more information on Generating a new SSH key and adding it to the ssh-agent visit [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 
-To add the SSH key to your GitHub account follow the [guide line](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
+To add the SSH key to your GitHub account follow these [guidelines](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
 
 After all the above steps are complete run the following 
 ```
@@ -99,7 +99,7 @@ git clone git@github.com:QUB-ASL/bzzz.git
 
 
 ## Dependencies
-There are a few packages that can not be installed in the virtual environment by `pip`, therfore should be instaled system-wide. To install these dependencies, run:
+There are a few packages that can not be installed in the virtual environment by `pip`, therefore should be installed system-wide. To install these dependencies, run:
 ```
 sudo apt-get install libopenblas-dev libatlas-base-dev
 ```
