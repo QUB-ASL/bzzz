@@ -54,10 +54,10 @@ sudo reboot
 ## Getting the code from GitHub
 If you are looking to use our software, run the following 
 ```
-cd ~/Documents/
+cd ~
 git clone https://github.com/QUB-ASL/bzzz.git
 ```
-This will download all relevant source code into the folder `~/Documents/bzzz`.
+This will download all relevant source code into the folder `~/bzzz`.
 
 
 ## Setting up git to push (developers only)
