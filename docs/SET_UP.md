@@ -82,9 +82,7 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 ```
 When prompted to "Enter a file in which to save the key", you can press Enter to accept the default file location.
 
-When prompted to "Enter passpharse", type the same passpharse used for the other devices on this project for continuity (if unsure ask a team member).
-
-When prompted to "Enter same passpharse again", Enter same the passpharse as before.
+When prompted to "Enter passpharse", just hit enter without providing a passphrase. When prompted to "Enter same passpharse again", hit enter again.
 
 To add the SSH key to the ssh-agent run the following
 ```
