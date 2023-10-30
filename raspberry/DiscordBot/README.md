@@ -8,7 +8,7 @@ You need to:
 
 1. Visit https://discord.com/developers/applications/
 2. Select "New application" (top right corner)
-3. Give your bot a name. Our naming convention in bzzz is that all bots have a name that starts with `BOT_`. For example `BOT_Pi_1`.
+3. Give your bot a name. Our naming convention in bzzz is that all bots have a name that starts with `BOT_`. For example `BOT_Pi_1`. Choose a unique name for your bot.
 4. In the left sidebar, go to "bot" and make sure that all options under "Privileged Gateway Intents" are active.  Don't touch anything else.
 
 To get the token of your bot select "Reset Token". Then the token will be reset and revealed. Copy the token and paste it into a file named `token.private` in this folder (you need to create the file). Each agent (each Raspberry Pi) will have a unique token.
@@ -18,9 +18,9 @@ The next step is to invite your bot to the server.
 
 ### Invite the bot
 
-To invite your bollow these steps
+To invite your bot, follow these steps
 
-1. Ask @alphaville, @jamie-54 or any other member for an invitation to the Discord server and accept it and ask @alphaville for admin privideges 
+1. Ask @alphaville, @jamie-54 or any other member for an invitation to the Discord server and accept it. Ask @alphaville for admin privileges 
 2. Visit https://discord.com/developers/applications
 3. Select your bot
 4. Go to "OAuth2" and then "URL Generator"
@@ -67,7 +67,7 @@ python main.py
 
 ### How to run the client on Start_up
 
-After the virtual environment and dependencies have been installed as described above, a script can be used to atuomatically run the client on start_up.
+After the virtual environment and dependencies have been installed as described above, a script can be used to automatically run the client on start_up.
 
 To do this, the `run_DiscordBot_on_start_up.sh` can be added to the user's crontab by:
 
