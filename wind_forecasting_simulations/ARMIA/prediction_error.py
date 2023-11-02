@@ -43,10 +43,10 @@ train_end = 3500
 test_end = 4000
 
 #read data
-df_wind = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49/25-09-23--16-49_5Hz.csv')
+df_wind = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv')
 
 #set index
-df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="200L")
+df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="25L")
 
 #split data set
 train_data_U = df_wind.U_axis[:train_end]
@@ -140,7 +140,7 @@ def validate_model(ARIMA_p,
 
 for i in range(10):
     for j in range(10):
-        validate_model(i,0,j,5,0.95)
+        validate_model(i,0,j,10,0.95)
 
 # validate_model(1,0,1,10,0.95)
 
