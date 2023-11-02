@@ -36,10 +36,7 @@ setup(name=NAME,
           exclude=["tests/"]),
       include_package_data=True,
       install_requires=[
-          'smbus', 'pigpio', 'bitarray', 'pyserial', 'VL53L0X', 'pandas', 'numpy', 'matplotlib', 'wheel', 'control'
-      ],
-      dependency_links=[
-          "git+https://github.com/pimoroni/VL53L0X-python.git",
+          'pigpio', 'smbus', 'bitarray', 'pyserial', 'VL53L0X @ git+https://github.com/pimoroni/VL53L0X-python.git', 'pandas', 'numpy==1.24', 'control'
       ],
       classifiers=[
           'Topic :: Software Development :: Embedded Systems'
