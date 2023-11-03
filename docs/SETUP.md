@@ -173,7 +173,7 @@ To do this:
 * Click on the blue and white inwards-facing arrows in the bottom left corner of VS Code.
 * Click Connect to Host...
 * Click + Add New SSH Host...
-* Type in the Username of the Pi followed IP Address of the Quadcopter[^1], e.g. `bzzz1@123.456.789`.
+* Type in the Username of the Pi followed by the IP Address of the Quadcopter[^1], e.g. `bzzz1@123.456.789`.
 * If asked, select the SSH configuration file you want to update.
 * Click connect on the pop-up notification (right side of screen)
 * Enter the password for the Raspberry Pi
