@@ -4,9 +4,22 @@ import numpy as np
 import datetime
 import csv
 
+index_array = []
+index_2_array = []
+dt_array = []
+wind_speed = []
+wind_speed_2D = []
+H_direction =[]
+V_direction = []
+U_axis = []
+V_axis = []
+W_axis = []
+
 index = 0
 index_2 = datetime.datetime.now()
 index_2 = index_2.replace(second=0, microsecond=0)
+start_time = datetime.datetime.now()
+start_time = start_time.replace(second=0, microsecond=0)
 
 filename = datetime.datetime.now().strftime("%d-%m-%y--%H-%M.csv")
 
@@ -15,7 +28,6 @@ with open(filename, "w", newline="") as f:
     writer = csv.writer(f)
     # using writerow to write individual record one by one
     writer.writerow(["Index", "Index_2", "Date_Time", "Wind_Speed", "Wind_Speed_2D", "H_direction", "V_direction", "U_axis", "V_axis", "W_axis"])
-    f.close()
 
 if __name__ == '__main__':
     ser = serial.Serial('/dev/ttyS0', 115200, timeout=1)
@@ -25,7 +37,6 @@ if __name__ == '__main__':
         if ser.in_waiting > 0:
 
             line = ser.readline().decode('utf-8').rstrip()
-            # print(line)
 
             index = index + 1
             index_2 = index_2 + datetime.timedelta(microseconds=25000)
@@ -34,28 +45,25 @@ if __name__ == '__main__':
             dt = datetime.datetime.now()
 
             all_data = line.split()
-
-            wind_speed = float(all_data[0])
-            wind_speed_2D = float(all_data[1])
-            H_direction = float(all_data[2])
-            V_direction = float(all_data[3])
-            U_axis = float(all_data[4])
-            V_axis = float(all_data[5])
-            W_axis = float(all_data[6])
-
-            with open(filename, "a+", newline="") as f:
-                # creating the writer
-                writer = csv.writer(f)
-                # using writerow to write individual record one by one
-                writer.writerow([index, index_2, dt, wind_speed, wind_speed_2D, H_direction, V_direction, U_axis, V_axis, W_axis])
-                f.close()
             
-            # print("Date and time is:", dt)
-            # print(all_data)
-            # print(wind_speed)
-            # print(wind_speed_2D)
-            # print(H_direction)
-            # print(V_direction)
-            # print(U_axis)
-            # print(V_axis)
-            # print(W_axis)
+            index_array.append(index)
+            index_2_array.append(index_2)
+            dt_array.append(dt)
+            wind_speed.append(float(all_data[0]))
+            wind_speed_2D.append(float(all_data[1]))
+            H_direction.append(float(all_data[2]))
+            V_direction.append(float(all_data[3]))
+            U_axis.append(float(all_data[4]))
+            V_axis.append(float(all_data[5]))
+            W_axis.append(float(all_data[6]))
+
+            # Saving All data after set time has passed
+            if index_2 == (start_time + datetime.timedelta(minutes = 10)):
+                
+                with open(filename, "a+", newline="") as f:
+                    # creating the writer
+                    writer = csv.writer(f)
+                    # using writerow to write individual record one by one
+                    data_to_save = [index_array, index_2_array, dt_array, wind_speed, wind_speed_2D, H_direction, V_direction, U_axis, V_axis, W_axis]
+                    data_to_save = zip(*data_to_save)
+                    writer.writerows(data_to_save)
