@@ -14,29 +14,21 @@ The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (
 
 ## Getting started
 
-- [Safety first](SAFETY.md): read the safety guidelines
+- [Safety first](docs/SAFETY.md): read the safety guidelines
 - [Contributing to this project](CONTRIBUTING.md)
+- [Setting up software from scratch](docs/SETUP.md)
 - [PCB design](design/README.md)
 - [ESP32 documentation](include/README.md), [headers](./include) and [sources](./src)
 - [Raspberry Pi code](raspberry/README.md)
 - [Create a Discord bot](raspberry/DiscordBot/README.md)
+- [Changelog](CHANGELOG.md)
 
 
 ## How to Fly 
-*This is the current set up for how to fly the quadcopter. In the future the user will not have to SSH into the Pi*
+*This is the current set up for how to fly the quadcopter*
 
 - Make sure the quadcopter is in a safe place to fly
 - Power on the battery
-- SSH into the Raspberry Pi
-- Make sure the Pi is on the correct branch and the ESP32 is uploaded with correct code
-- Activate the virtual environment located on the `Desktop` by
-```
-source ../venv/bin/activate
-```
-- Run the main python script by 
-```
-python raspberry/main.py
-```
 - Turn on the remote and wait to connect
 - Arm the quadcopter by switch B
 - Fly safely
