@@ -67,7 +67,7 @@ prediction_horizon_1 = 5
 
 ## Rolling prediction for wind speed
 for x in range(train_end, test_end):
-    t_minus_x[df_wind.index[x+1]] = df_wind.U_axis[x]
+    t_minus_x[df_wind.index[x+10]] = df_wind.U_axis[x]
     updated_data = df_wind.U_axis[x:x+1]
     model_fit_1 = model_fit_1.append(updated_data, refit=False)
     # model_fit_2 = model_fit_2.append(updated_data, refit=False)
@@ -105,7 +105,7 @@ plt.ylabel('Wind Speed', fontsize=16)
 plt.figure(figsize=(10,4))
 plt.plot(test_data)
 plt.plot(rolling_predictions_1)
-# plt.plot(t_minus_x)
+plt.plot(t_minus_x)
 # plt.plot(rolling_predictions_2)
 plt.legend(('Data', '10 step Predictions', 't_minus_x'), fontsize=16)
 plt.title('Rolling Wind Prediction', fontsize=20)

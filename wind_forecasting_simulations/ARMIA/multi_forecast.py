@@ -38,8 +38,8 @@ train_data = df_wind.U_axis[:train_end]
 test_data = df_wind.U_axis[(train_end):test_end]
 
 ## Define models
-model_1 = ARIMA(train_data, order=(6, 0, 0))
-model_2 = ARIMA(train_data, order=(2, 0, 1))
+model_1 = ARIMA(train_data, order=(6, 0, 6))
+model_2 = ARIMA(train_data, order=(1, 0, 0))
 
 ## Fit the models
 model_fit_1 = model_1.fit()
@@ -64,7 +64,7 @@ error_i_1 = pd.Series()
 error_i_2 = pd.Series()
 
 ## Set prediction horizon length 
-prediction_horizon_1 = 5
+prediction_horizon_1 = 10
 prediction_horizon_2 = 10
 
 ## multiple Rolling predictions and errors for wind speed
