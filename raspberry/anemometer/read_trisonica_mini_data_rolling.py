@@ -1,3 +1,6 @@
+
+### I DON'T THINK THIS WILL BE USED ###
+
 #!/usr/bin/env python3
 import serial
 import numpy as np
