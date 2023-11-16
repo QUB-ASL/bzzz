@@ -13,11 +13,11 @@ from bzzz.controllers.altitude_LQR import LQR  # altitude hold controller
 from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
 from bzzz.scheduler import Scheduler
 from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
-from bzzz.read_sbus import RC  # for radio data receving, encoding and sending to ESP
+from bzzz.read_sbus import RC  # for radio data receiving, encoding and sending to ESP
 
 
 # NOTE: The scheduler supports both multi-threading and time-based function calling
-# Although threading guarantees consistent function call rates, the actual process handeling is not done
+# Although threading guarantees consistent function call rates, the actual process handling is not done
 # within the python environment which could cause unwanted behaviour.
 
 if __name__ == '__main__':
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     roll_cache = []
     motor_PWM_cache = []
     throttle_ref_cache = []
-    accelrometer_cache = []
+    accelerometer_cache = []
     altitude_reference_cache_mts = []
     radio_data_cache = []
     KF_data_cache = []
@@ -161,7 +161,7 @@ if __name__ == '__main__':
             pitch_cache.append(euler[1])
             roll_cache.append(euler[2])
             motor_PWM_cache.append(motor_PWM[:])
-            accelrometer_cache.append(acc[:])
+            accelerometer_cache.append(acc[:])
             time_cache.append(
                 (time_ns() - time_before_thread_starts[0])/1000000)
             altitude_reference_cache_mts.append(
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     def process_radio_data():
         """This function does three jobs:
         1. Reads the radio data from the receiver, parses it and sends the 
-           encoded data to ESP using a fucntion from RC class.
+           encoded data to ESP using a function from RC class.
         2. Updates shared variable values using radio data.
         3. Calls cache_values function.
         """
@@ -186,17 +186,17 @@ if __name__ == '__main__':
                 min_altitude_to_activate_AltiHold_mts[0], altitude_ref_mts[0])
 
         # read, encode, and send the radio data to ESP.
-        # if altitude hold is on the thorttle value from the RC will be overwritten
+        # if altitude hold is on the throttle value from the RC will be overwritten
         # by the throttle reference from the LQR.
         # NOTE: There is this weird conversion for LQR throttle reference below,
         # this is because the PI needs to send throttle reference in the range [300, 1400],
         # which is the actual range of the RC throttle stick.
-        shit = int((throttle_ref_from_LQR[0] - 1000) * 1400/900 +
+        shift = int((throttle_ref_from_LQR[0] - 1000) * 1400/900 +
                    300) if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1
         channel_data[0] = rc.get_radio_data_parse_and_send_to_ESP(return_channel_data=True,
                                                                   force_send_fake_data=False,
                                                                   fake_data="S,0,0,0,0,0,0,0,0,0",
-                                                                  over_write_throttle_ref_to=shit)
+                                                                  over_write_throttle_ref_to=shift)
         # update shared variables using RC data
         # is data logging killed and data saving requested?
         # is altitude hold enabled?
@@ -213,9 +213,9 @@ if __name__ == '__main__':
 
     def process_ESP_data():
         """Process ESP data, this function does two jobs:
-        1. Receives flight data as a string of space seperated values formatted as "FD: q1 q2 q3 ax ay az".
+        1. Receives flight data as a string of space separated values formatted as "FD: q1 q2 q3 ax ay az".
         2. Checks the received flight data for corruption. 
-           If string is not None and starts with "FD:", and if there are 7 space seperated values
+           If string is not None and starts with "FD:", and if there are 7 space separated values
            then convert the 7 values to floats and update shared variables.
         """
         # process ESP data
@@ -275,7 +275,7 @@ if __name__ == '__main__':
         roll_cache.clear()
         motor_PWM_cache.clear()
         throttle_ref_cache.clear()
-        accelrometer_cache.clear()
+        accelerometer_cache.clear()
         altitude_reference_cache_mts.clear()
         radio_data_cache.clear()
         KF_data_cache.clear()
@@ -292,7 +292,7 @@ if __name__ == '__main__':
         # send current altitude as desired altitude to LQR so it has no control.
 
         # Reading the tof altitude invokes the automatic update from the sensor,
-        # no need to read the sensor explictly
+        # no need to read the sensor explicitly
         temp = tof.altitude
 
         if temp == -1:
@@ -375,7 +375,7 @@ if __name__ == '__main__':
         # Cache saving
         if is_kill[0] and switch_a_status[0] and allow_data_logging[0]:
             print("[LOGGER] saving data")
-            accelrometer_cache_ = np.array(accelrometer_cache)
+            accelerometer_cache_ = np.array(accelerometer_cache)
             motor_PWM_cache_ = np.array(motor_PWM_cache)
             KF_data_cache_ = np.array(KF_data_cache)
 
@@ -384,9 +384,9 @@ if __name__ == '__main__':
                                           for t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta
                                           in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache,
                                                  tof.altitude_cache(),
-                                                 accelrometer_cache_[:, 0],
-                                                 accelrometer_cache_[:, 1],
-                                                 accelrometer_cache_[:, 2],
+                                                 accelerometer_cache_[:, 0],
+                                                 accelerometer_cache_[:, 1],
+                                                 accelerometer_cache_[:, 2],
                                                  altitude_reference_cache_mts,
                                                  radio_data_cache,
                                                  motor_PWM_cache_[:, 0],
@@ -400,7 +400,7 @@ if __name__ == '__main__':
                                          columns=['timestamp', 'throttle_ref', 'yaw', 'pitch', 'roll',
                                                   'tof_measurement', 'accX', 'accY', 'accZ',
                                                   'altitude_ref', 'RC_data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
-                                                  'KF_altitutde_est', 'KF_velocity_z_est', 'KF_alpha_est', 'KF_beta_est'])
+                                                  'KF_altitude_est', 'KF_velocity_z_est', 'KF_alpha_est', 'KF_beta_est'])
             data_cache_df.to_csv(
                 f"/home/bzzz/Desktop/logs/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_at_{date_time_now.hour}h{date_time_now.minute}m{date_time_now.second}s.csv",
                 index=False,
@@ -411,6 +411,6 @@ if __name__ == '__main__':
 
             # TODO change this to print the dataframe (all rows and columns)
             if enable_printing_cache_to_screen[0]:
-                print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelrometer_cache_} \nalti_ref_mts{altitude_reference_cache_mts}")
+                print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelerometer_cache_} \nalti_ref_mts{altitude_reference_cache_mts}")
 
         allow_data_logging[0] = not switch_a_status[0]
