@@ -33,7 +33,7 @@ The following images are to scale, to see larger images see `*_x2.5.png` files.
 
 <img width="600" src="SENSOR_PCB/SENSOR_PCB_FPC/SENSOR_SCH_FPC.png">
 
-#BOM
+# BOM
 
 ## Genral Parts
 
