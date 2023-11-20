@@ -45,7 +45,7 @@ The following images are to scale, to see larger images see `*_x2.5.png` files.
 ## ESP board
 
 * [ESP32](https://www.amazon.co.uk/dp/B0BYMWQT37?_encoding=UTF8&ref_=cm_sw_r_cp_ud_dp_3BHTPX8BNFBTKMHN5VE3&th=1)
-* [MPU9250 IMU]
+* [MPU9250 IMU](https://hobbycomponents.com/sensors/720-mpu9250-9-axis-9dof-acc-gyro-compass-module)
 * [BMI088 IMU](https://uk.rs-online.com/web/p/sensor-development-tools/2457082?cm_mmc=UK-PLA-DS3A-_-google-_-CSS_UK_EN_PMAX_Catch+All-_--_-2457082&matchtype=&&gad_source=4&gclid=CjwKCAiAu9yqBhBmEiwAHTx5p9FL-s87i7N0P-j0bJjJdbTe7omJcmibXyPWR6qu7ruucasVfeKdkhoClogQAvD_BwE&gclsrc=aw.ds)
 * [BNO055](https://thepihut.com/products/adafruit-9-dof-absolute-orientation-imu-fusion-breakout-bno055?variant=27739963281&currency=GBP&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic&gad_source=4&gclid=CjwKCAiAu9yqBhBmEiwAHTx5pzdU2ze-9KP97st2B0JWUeNqcFlp-qshGu5NTyjn5N5z49Czmh_1bhoCe-oQAvD_BwE)
 * [Molex KK Pin Header, 4 X 1](https://uk.rs-online.com/web/p/pcb-headers/4838483)
@@ -69,7 +69,7 @@ The following images are to scale, to see larger images see `*_x2.5.png` files.
 
 * [Teraranger Evo](https://www.terabee.com/sensors-modules/lidar-tof-range-finders/#individual-distance-measurement-sensors)
 * [VL53L0X Time of Flight sensor](https://uk.rs-online.com/web/p/sensor-development-tools/1845087?cm_mmc=UK-PLA-DS3A-_-google-_-CSS_UK_EN_PMAX_Catch+All-_--_-1845087&matchtype=&&gad_source=4&gclid=Cj0KCQiApOyqBhDlARIsAGfnyMogJW5-n7Hy47oy_984a3rkO070Cs7pechJcznmtiaSQt-vjJSGeswaAoiyEALw_wcB&gclsrc=aw.ds)
-* [BPM180]
+* [BMP180](https://www.amazon.co.uk/AZDelivery-BMP180-Barometric-Pressure-Sensor/dp/B07D8S617X?th=1)
 * [Molex KK Pin Header, 4 X 1](https://uk.rs-online.com/web/p/pcb-headers/4838483)
 * [Molex KK Connector Housing 4 x 1](https://uk.rs-online.com/web/p/wire-housings-plugs/6795388)
 * [14 way FFC Connector](https://uk.rs-online.com/web/p/fpc-connectors/7632578)
