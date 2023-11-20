@@ -69,7 +69,7 @@ The following images are to scale, to see larger images see `*_x2.5.png` files.
 
 * [Teraranger Evo](https://www.terabee.com/sensors-modules/lidar-tof-range-finders/#individual-distance-measurement-sensors)
 * [VL53L0X Time of Flight sensor](https://uk.rs-online.com/web/p/sensor-development-tools/1845087?cm_mmc=UK-PLA-DS3A-_-google-_-CSS_UK_EN_PMAX_Catch+All-_--_-1845087&matchtype=&&gad_source=4&gclid=Cj0KCQiApOyqBhDlARIsAGfnyMogJW5-n7Hy47oy_984a3rkO070Cs7pechJcznmtiaSQt-vjJSGeswaAoiyEALw_wcB&gclsrc=aw.ds)
-* [BPM180]()
+* [BPM180]
 * [Molex KK Pin Header, 4 X 1](https://uk.rs-online.com/web/p/pcb-headers/4838483)
 * [Molex KK Connector Housing 4 x 1](https://uk.rs-online.com/web/p/wire-housings-plugs/6795388)
 * [14 way FFC Connector](https://uk.rs-online.com/web/p/fpc-connectors/7632578)
