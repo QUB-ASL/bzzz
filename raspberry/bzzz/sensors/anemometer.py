@@ -1,6 +1,35 @@
 import serial
 import numpy as np
 from threading import Thread
+import abc
+
+
+class DataProcessor(abc.ABC):
+
+    def __init__(self):
+        pass
+
+    @abc.abstractmethod
+    def process(self, data, cursor=0):
+        pass
+
+
+class AverageFilter(DataProcessor):
+
+    def __init__(self):
+        super().__init__()
+
+    def process(self, data):
+        return np.nanmean(data, axis=0)
+
+
+class MedianFilter(DataProcessor):
+
+    def __init__(self):
+        super().__init__()
+
+    def process(self, data):
+        return np.nanmedian(data, axis=0)
 
 
 class Anemometer:
@@ -13,13 +42,15 @@ class Anemometer:
     def __init__(self,
                  serial_path='/dev/ttyS0',
                  baud=115200,
-                 window_length=2):
+                 window_length=3,
+                 data_processor=MedianFilter()):
         """
         Create a new instance of Anemometer
 
         :param serial_path: serial path; defaults to /dev/ttyS0 on RPi
         :param baud: baud rate of serial communication; defaults to 115200
         :param window_length: length of window of measurements; default: 2
+        :param data_processor: data processor on buffer of measurements
 
         Note: We assume that we receive 7 measurements from the anemometer
         """
@@ -30,6 +61,7 @@ class Anemometer:
         self.__window_length = window_length
         self.__values_cache = np.tile(np.nan, (self.__window_length, 7))
         self.__cursor = 0
+        self.data_processor = data_processor
 
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
@@ -58,33 +90,35 @@ class Anemometer:
 
     @property
     def all_sensor_data(self):
-        return np.nanmean(self.__values_cache, axis=0)
+        return self.data_processor.process(self.__values_cache)
 
     @property
     def wind_speed_3d(self):
-        return np.nanmean(self.__values_cache[:, 0])
+        return self.data_processor.process(self.__values_cache[:, 0])
 
     @property
     def wind_speed_2d(self):
-        return np.nanmean(self.__values_cache[:, 1])
+        return self.data_processor.process(self.__values_cache[:, 1])
 
     @property
     def horizontal_wind_direction(self):
-        return np.nanmean(self.__values_cache[:, 2])
+        return self.data_processor.process(self.__values_cache[:, 2])
 
     @property
     def vertical_wind_direction(self):
-        return np.nanmean(self.__values_cache[:, 3])
+        return self.data_processor.process(self.__values_cache[:, 3])
 
     @property
     def wind_velocities(self):
-        return np.nanmean(self.__values_cache[:, -3:], axis=0)
+        return self.data_processor.process(self.__values_cache[:, -3:])
 
 
 if __name__ == '__main__':
     import time
 
-    with Anemometer() as sensor:
+    processor = AverageFilter()
+    with Anemometer(data_processor=processor) as sensor:
+        time.sleep(0.5)
         for i in range(20):
             print(sensor.all_sensor_data)
             time.sleep(0.1)
