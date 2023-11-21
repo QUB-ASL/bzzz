@@ -1,6 +1,6 @@
 import serial
 import numpy as np
-from threading import Thread
+from threading import Thread, Lock
 import abc
 
 
@@ -50,10 +50,13 @@ class Anemometer:
         :param serial_path: serial path; defaults to /dev/ttyS0 on RPi
         :param baud: baud rate of serial communication; defaults to 115200
         :param window_length: length of window of measurements; default: 2
-        :param data_processor: data processor on buffer of measurements
+        :param data_processor: data processor on buffer of measurements; default: MedianFilter()
 
         Note: We assume that we receive 7 measurements from the anemometer
         """
+        # A lock is used to guarantee that we won't be reading the data
+        # while the thread in the background is writing it
+        self.__lock = Lock()
         self.__thread = Thread(target=self.__get_measurements_in_background_t,
                                args=[serial_path, baud])
         self.__thread.start()
@@ -77,8 +80,9 @@ class Anemometer:
                 split_data_float = np.array(
                     [float(x) for x in split_data],
                     dtype=np.float64)
-                self.__values_cache[self.__cursor, :] = split_data_float
-                self.__cursor = (self.__cursor + 1) % self.__window_length
+                with self.__lock:
+                    self.__values_cache[self.__cursor, :] = split_data_float
+                    self.__cursor = (self.__cursor + 1) % self.__window_length
                 if not self.__keep_going:
                     ser.close()
                     return
@@ -89,28 +93,39 @@ class Anemometer:
     def __exit__(self, *args):
         self.__keep_going = False
 
+    def __wait_for_lock_release(self):
+        """Wait for the lock to be released"""
+        while self.__lock.locked():
+            pass
+
     @property
     def all_sensor_data(self):
+        self.__wait_for_lock_release()
         return self.data_processor.process(self.__values_cache)
 
     @property
     def wind_speed_3d(self):
+        self.__wait_for_lock_release()
         return self.data_processor.process(self.__values_cache[:, 0])
 
     @property
     def wind_speed_2d(self):
+        self.__wait_for_lock_release()
         return self.data_processor.process(self.__values_cache[:, 1])
 
     @property
     def horizontal_wind_direction(self):
+        self.__wait_for_lock_release()
         return self.data_processor.process(self.__values_cache[:, 2])
 
     @property
     def vertical_wind_direction(self):
+        self.__wait_for_lock_release()
         return self.data_processor.process(self.__values_cache[:, 3])
 
     @property
     def wind_velocities(self):
+        self.__wait_for_lock_release()
         return self.data_processor.process(self.__values_cache[:, -3:])
 
 
@@ -120,7 +135,7 @@ if __name__ == '__main__':
     processor = AverageFilter()
     with Anemometer(window_length=5, data_processor=processor) as sensor:
         time.sleep(0.5)
-        for i in range(20):
+        for i in range(200):
             print(sensor.all_sensor_data)
             time.sleep(0.1)
 
