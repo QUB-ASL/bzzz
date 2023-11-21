@@ -93,40 +93,35 @@ class Anemometer:
     def __exit__(self, *args):
         self.__keep_going = False
 
-    def __wait_for_lock_release(self):
-        """Wait for the lock to be released"""
-        while self.__lock.locked():
-            pass
-
     @property
     def all_sensor_data(self):
-        self.__wait_for_lock_release()
-        return self.data_processor.process(self.__values_cache)
+        with self.__lock:
+            return self.data_processor.process(self.__values_cache)
 
     @property
     def wind_speed_3d(self):
-        self.__wait_for_lock_release()
-        return self.data_processor.process(self.__values_cache[:, 0])
+        with self.__lock:
+            return self.data_processor.process(self.__values_cache[:, 0])
 
     @property
     def wind_speed_2d(self):
-        self.__wait_for_lock_release()
-        return self.data_processor.process(self.__values_cache[:, 1])
+        with self.__lock:
+            return self.data_processor.process(self.__values_cache[:, 1])
 
     @property
     def horizontal_wind_direction(self):
-        self.__wait_for_lock_release()
-        return self.data_processor.process(self.__values_cache[:, 2])
+        with self.__lock:
+            return self.data_processor.process(self.__values_cache[:, 2])
 
     @property
     def vertical_wind_direction(self):
-        self.__wait_for_lock_release()
-        return self.data_processor.process(self.__values_cache[:, 3])
+        with self.__lock:
+            return self.data_processor.process(self.__values_cache[:, 3])
 
     @property
     def wind_velocities(self):
-        self.__wait_for_lock_release()
-        return self.data_processor.process(self.__values_cache[:, -3:])
+        with self.__lock:
+            return self.data_processor.process(self.__values_cache[:, -3:])
 
 
 if __name__ == '__main__':
