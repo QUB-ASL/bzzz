@@ -80,6 +80,7 @@ class Anemometer:
                 self.__values_cache[self.__cursor, :] = split_data_float
                 self.__cursor = (self.__cursor + 1) % self.__window_length
                 if not self.__keep_going:
+                    ser.close()
                     return
 
     def __enter__(self):
@@ -117,7 +118,7 @@ if __name__ == '__main__':
     import time
 
     processor = AverageFilter()
-    with Anemometer(data_processor=processor) as sensor:
+    with Anemometer(window_length=5, data_processor=processor) as sensor:
         time.sleep(0.5)
         for i in range(20):
             print(sensor.all_sensor_data)
