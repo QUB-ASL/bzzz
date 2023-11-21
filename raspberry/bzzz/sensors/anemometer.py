@@ -49,7 +49,7 @@ class Anemometer:
 
         :param serial_path: serial path; defaults to /dev/ttyS0 on RPi
         :param baud: baud rate of serial communication; defaults to 115200
-        :param window_length: length of window of measurements; default: 2
+        :param window_length: length of window of measurements; default: 3
         :param data_processor: data processor on buffer of measurements; default: MedianFilter()
 
         Note: We assume that we receive 7 measurements from the anemometer
