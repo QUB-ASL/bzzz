@@ -4,71 +4,89 @@ from threading import Thread
 
 
 class Anemometer:
+    """
+    Anemometer sensor
 
-    def __init__(self, serial_path='/dev/ttyS0', baud=115200):
-        thread = Thread(target=self.get_measurements_in_background,
-                        args=[serial_path, baud])
-        thread.start()
-        self.__split_data_float = None
-        self.__window_length = 5
-        self.__values_cache = np.zeros((self.__window_length, 7))
+    This class is used to interface the anemometer
+    """
+
+    def __init__(self,
+                 serial_path='/dev/ttyS0',
+                 baud=115200,
+                 window_length=2):
+        """
+        Create a new instance of Anemometer
+
+        :param serial_path: serial path; defaults to /dev/ttyS0 on RPi
+        :param baud: baud rate of serial communication; defaults to 115200
+        :param window_length: length of window of measurements; default: 2
+
+        Note: We assume that we receive 7 measurements from the anemometer
+        """
+        self.__thread = Thread(target=self.__get_measurements_in_background_t,
+                               args=[serial_path, baud])
+        self.__thread.start()
+        self.__keep_going = True
+        self.__window_length = window_length
+        self.__values_cache = np.tile(np.nan, (self.__window_length, 7))
         self.__cursor = 0
 
-    def get_measurements_in_background(self, serial_path, baud):
+    def __get_measurements_in_background_t(self, serial_path, baud):
+        """
+        This is a thread that runs in the background to connect to the 
+        serial and collect measurements, which are stored in a buffer
+        """
         ser = serial.Serial(serial_path, baud, timeout=1)
         ser.reset_input_buffer()
         while True:
             if ser.in_waiting > 0:
                 sensor_data = ser.readline().decode('utf-8').strip()
                 split_data = sensor_data.split()
-                self.__split_data_float = np.array(
+                split_data_float = np.array(
                     [float(x) for x in split_data],
                     dtype=np.float64)
-                self.__values_cache[self.__cursor, :] = self.__split_data_float
+                self.__values_cache[self.__cursor, :] = split_data_float
                 self.__cursor = (self.__cursor + 1) % self.__window_length
-                print(self.__values_cache)
+                if not self.__keep_going:
+                    return
 
-    # @property
-    # def all_sensor_data(self):
-    #     if self.__split_data_float is not None:
-    #         return self.__split_data_float
+    def __enter__(self):
+        return self
 
-    # @property
-    # def wind_speed_3d(self):
-    #     if self.__split_data_float is not None:
-    #         return self.__split_data_float[0]
+    def __exit__(self, *args):
+        self.__keep_going = False
 
-    # @property
-    # def wind_speed_2d(self):
-    #     if self.__split_data_float is not None:
-    #         return self.__split_data_float[1]
+    @property
+    def all_sensor_data(self):
+        return np.nanmean(self.__values_cache, axis=0)
 
-    # @property
-    # def horizontal_wind_direction(self):
-    #     if self.__split_data_float is not None:
-    #         return self.__split_data_float[2]
+    @property
+    def wind_speed_3d(self):
+        return np.nanmean(self.__values_cache[:, 0])
 
-    # @property
-    # def vertical_wind_direction(self):
-    #     if self.__split_data_float is not None:
-    #         return self.__split_data_float[3]
+    @property
+    def wind_speed_2d(self):
+        return np.nanmean(self.__values_cache[:, 1])
 
-    # @property
-    # def wind_velocities(self):
-    #     if self.__split_data_float is not None:
-    #         return self.__split_data_float[-3:]
+    @property
+    def horizontal_wind_direction(self):
+        return np.nanmean(self.__values_cache[:, 2])
 
-    # def update_sensor_data(self):
-    #     current_all_sensor_data = self.__split_data_float
-    #     if self.__split_data_float != self.__split_data_float:
-    #         return self.__split_data_float
+    @property
+    def vertical_wind_direction(self):
+        return np.nanmean(self.__values_cache[:, 3])
+
+    @property
+    def wind_velocities(self):
+        return np.nanmean(self.__values_cache[:, -3:], axis=0)
 
 
 if __name__ == '__main__':
-    sensor = Anemometer()
-    # for i in range(10):
-    #     sensor.get_measurements_in_background()
-    #     x = sensor.all_sensor_data
-    #     y = sensor.wind_velocities
-    #     print(x)
-    #     print(y)
+    import time
+
+    with Anemometer() as sensor:
+        for i in range(20):
+            print(sensor.all_sensor_data)
+            time.sleep(0.1)
+
+    # The thread stops running once we exit the `with` block
