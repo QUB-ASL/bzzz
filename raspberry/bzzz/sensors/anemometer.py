@@ -46,16 +46,22 @@ class DataLogger:
 
     def __init__(self, num_features, max_samples=1e4, feature_names=None):
         self.__data_vault = np.zeros((max_samples, num_features), dtype=np.float64)
+        self.__timestamps_vault = np.array([datetime.datetime.now()] * max_samples)
+        self.__feature_names = feature_names
         self.__cursor = 0
     
     def record(self, timespamp, datum):
-        self.__data_vault[self.__cursor, :] = datum
+        self.__data_vault[self.__cursor, :] = datum        
         self.__cursor = self.__cursor + 1
 
     def save_to_csv(self, filename):
         with open(filename, "w") as fh:
             writer = csv.writer(fh)
-            writer.writerows(self.__data_vault[:self.__cursor, :])
+            writer.writerow(self.__feature_names)
+        with open(filename, "a+") as fh:
+            writer = csv.writer(fh)
+            data_to_record = np.hstack((np.reshape(self.__timestamps_vault[:self.__cursor], (self.__cursor, 1)), self.__data_vault[:self.__cursor, :]))
+            writer.writerows(data_to_record)
 
 
 class Anemometer:
@@ -89,12 +95,13 @@ class Anemometer:
         self.__keep_going = True
         self.__window_length = window_length
         self.__values_cache = np.tile(np.nan, (self.__window_length, 7))
-        self.__timestamps_cache = np.array([datetime.datetime.now()] * self.__window_length)
         self.__cursor = 0
         self.__data_processor = data_processor
         self.__log_file = log_file
         if log_file is not None:
-            self.__logger = DataLogger(num_features=7, max_samples=100000)
+            self.__logger = DataLogger(num_features=7, 
+                                       max_samples=100000, 
+                                       feature_names=("Date_Time", "Wind_Speed", "Wind_Speed_2D", "H_direction", "V_direction", "U_axis", "V_axis", "W_axis"))
         self.__thread.start()
 
     def __get_measurements_in_background_t(self, serial_path, baud):
@@ -112,10 +119,11 @@ class Anemometer:
                     [float(x) for x in split_data],
                     dtype=np.float64)
                 with self.__lock:                    
-                    self.__timestamps_cache = datetime.datetime.now()
                     self.__values_cache[self.__cursor, :] = split_data_float                    
                     if self.__log_file is not None:
-                        self.__logger.record(-1, self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor))
+                        data_to_log = self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)
+                        current_timestamp = datetime.datetime.now()
+                        self.__logger.record(current_timestamp, data_to_log)
                     self.__cursor = (self.__cursor + 1) % self.__window_length
                 if not self.__keep_going:
                     ser.close()
@@ -135,43 +143,42 @@ class Anemometer:
     @property
     def all_sensor_data(self):
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, :])
+            return self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)
 
     @property
     def wind_speed_3d(self):
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 0])
+            return self.__data_processor.process(self.__values_cache[:, 0], cursor=self.__cursor)
 
     @property
     def wind_speed_2d(self):
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 1])
+            return self.__data_processor.process(self.__values_cache[:, 1], cursor=self.__cursor)
 
     @property
     def horizontal_wind_direction(self):
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 2])
+            return self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
 
     @property
     def vertical_wind_direction(self):
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 3])
+            return self.__data_processor.process(self.__values_cache[:, 3], cursor=self.__cursor)
 
     @property
     def wind_velocities(self):
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, -3:])
+            return self.__data_processor.process(self.__values_cache[:, -3:], cursor=self.__cursor)
 
 
 if __name__ == '__main__':
-    import time
 
     processor = NoFilter()
     with Anemometer(window_length=5, 
                     data_processor=processor, 
                     log_file="out.csv") as sensor:
         time.sleep(0.5)
-        for i in range(15):
+        for i in range(20):
             print(sensor.all_sensor_data)
             time.sleep(0.05)
     
