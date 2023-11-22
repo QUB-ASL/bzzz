@@ -2,7 +2,9 @@ import serial
 import numpy as np
 from threading import Thread, Lock
 import abc
-
+import time
+import datetime
+import csv
 
 class DataProcessor(abc.ABC):
 
@@ -32,6 +34,30 @@ class MedianFilter(DataProcessor):
         return np.nanmedian(data, axis=0)
 
 
+class NoFilter(DataProcessor):
+
+    def __init__(self):
+        super().__init__()
+
+    def process(self, data, cursor):
+        return data[cursor]
+
+class DataLogger:
+
+    def __init__(self, num_features, max_samples=1e4, feature_names=None):
+        self.__data_vault = np.zeros((max_samples, num_features), dtype=np.float64)
+        self.__cursor = 0
+    
+    def record(self, timespamp, datum):
+        self.__data_vault[self.__cursor, :] = datum
+        self.__cursor = self.__cursor + 1
+
+    def save_to_csv(self, filename):
+        with open(filename, "w") as fh:
+            writer = csv.writer(fh)
+            writer.writerows(self.__data_vault[:self.__cursor, :])
+
+
 class Anemometer:
     """
     Anemometer sensor
@@ -43,7 +69,8 @@ class Anemometer:
                  serial_path='/dev/ttyS0',
                  baud=115200,
                  window_length=3,
-                 data_processor=MedianFilter()):
+                 data_processor=MedianFilter(),
+                 log_file=None):
         """
         Create a new instance of Anemometer
 
@@ -58,13 +85,17 @@ class Anemometer:
         # while the thread in the background is writing it
         self.__lock = Lock()
         self.__thread = Thread(target=self.__get_measurements_in_background_t,
-                               args=[serial_path, baud])
-        self.__thread.start()
+                               args=[serial_path, baud])        
         self.__keep_going = True
         self.__window_length = window_length
         self.__values_cache = np.tile(np.nan, (self.__window_length, 7))
+        self.__timestamps_cache = np.array([datetime.datetime.now()] * self.__window_length)
         self.__cursor = 0
-        self.data_processor = data_processor
+        self.__data_processor = data_processor
+        self.__log_file = log_file
+        if log_file is not None:
+            self.__logger = DataLogger(num_features=7, max_samples=100000)
+        self.__thread.start()
 
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
@@ -80,58 +111,67 @@ class Anemometer:
                 split_data_float = np.array(
                     [float(x) for x in split_data],
                     dtype=np.float64)
-                with self.__lock:
-                    self.__values_cache[self.__cursor, :] = split_data_float
+                with self.__lock:                    
+                    self.__timestamps_cache = datetime.datetime.now()
+                    self.__values_cache[self.__cursor, :] = split_data_float                    
+                    if self.__log_file is not None:
+                        self.__logger.record(-1, self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor))
                     self.__cursor = (self.__cursor + 1) % self.__window_length
                 if not self.__keep_going:
                     ser.close()
                     return
+                
 
     def __enter__(self):
         return self
 
     def __exit__(self, *args):
         self.__keep_going = False
+        time.sleep(0.05)
+        self.__logger.save_to_csv(self.__log_file)
+
+
 
     @property
     def all_sensor_data(self):
         with self.__lock:
-            return self.data_processor.process(self.__values_cache)
+            return self.__data_processor.process(self.__values_cache[:, :])
 
     @property
     def wind_speed_3d(self):
         with self.__lock:
-            return self.data_processor.process(self.__values_cache[:, 0])
+            return self.__data_processor.process(self.__values_cache[:, 0])
 
     @property
     def wind_speed_2d(self):
         with self.__lock:
-            return self.data_processor.process(self.__values_cache[:, 1])
+            return self.__data_processor.process(self.__values_cache[:, 1])
 
     @property
     def horizontal_wind_direction(self):
         with self.__lock:
-            return self.data_processor.process(self.__values_cache[:, 2])
+            return self.__data_processor.process(self.__values_cache[:, 2])
 
     @property
     def vertical_wind_direction(self):
         with self.__lock:
-            return self.data_processor.process(self.__values_cache[:, 3])
+            return self.__data_processor.process(self.__values_cache[:, 3])
 
     @property
     def wind_velocities(self):
         with self.__lock:
-            return self.data_processor.process(self.__values_cache[:, -3:])
+            return self.__data_processor.process(self.__values_cache[:, -3:])
 
 
 if __name__ == '__main__':
     import time
 
-    processor = AverageFilter()
-    with Anemometer(window_length=5, data_processor=processor) as sensor:
+    processor = NoFilter()
+    with Anemometer(window_length=5, 
+                    data_processor=processor, 
+                    log_file="out.csv") as sensor:
         time.sleep(0.5)
-        for i in range(200):
+        for i in range(15):
             print(sensor.all_sensor_data)
-            time.sleep(0.1)
-
-    # The thread stops running once we exit the `with` block
+            time.sleep(0.05)
+    
