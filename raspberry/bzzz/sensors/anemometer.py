@@ -65,6 +65,7 @@ class DataLogger:
 
     def record(self, timespamp, datum):
         self.__data_vault[self.__cursor, :] = datum
+        self.__timestamps_vault[self.__cursor :] = timespamp
         self.__cursor = self.__cursor + 1
 
     def save_to_csv(self, filename):
