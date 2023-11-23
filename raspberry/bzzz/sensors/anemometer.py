@@ -139,7 +139,6 @@ class Anemometer:
         while True:
             if ser.in_waiting > 0:
                 sensor_data = ser.readline().decode('utf-8').strip()
-                print(sensor_data)
                 split_data = sensor_data.split()
                 split_data_float = np.array(
                     [float(x) for x in split_data],
@@ -198,7 +197,7 @@ class Anemometer:
 
 if __name__ == '__main__':
 
-    processor = MedianFilter()
+    processor = AverageFilter()
     with Anemometer(window_length=5,
                     data_processor=processor,
                     log_file="out.csv") as sensor:
