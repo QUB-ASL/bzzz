@@ -160,7 +160,8 @@ class Anemometer:
     def __exit__(self, *args):
         self.__keep_going = False
         time.sleep(0.05)
-        self.__logger.save_to_csv(self.__log_file)
+        if self.__log_file is not None:
+            self.__logger.save_to_csv(self.__log_file)
 
     @property
     def all_sensor_data(self):
