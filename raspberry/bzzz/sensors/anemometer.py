@@ -200,7 +200,14 @@ class Anemometer:
 
         This method returns all sensor data after the application of the data 
         preprocessor specified in the construtor. The data is returned as a numpy 
-        array.
+        array with the following data (in this order):
+          - magnitude of wind speed in m/s
+          - magnitude of 2D wind speed in m/s
+          - horizontal direction in degrees
+          - vertical direction in degrees
+          - wind speed along u-axis in m/s
+          - wind speed along v-axis in m/s
+          - wind speed along w-axis in m/s
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)
@@ -208,7 +215,7 @@ class Anemometer:
     @property
     def wind_speed_3d(self):
         """
-        Returns the 3D wind speed (processed)
+        Returns the 3D wind speed magnitude in m/s (processed)
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 0], cursor=self.__cursor)
@@ -216,7 +223,7 @@ class Anemometer:
     @property
     def wind_speed_2d(self):
         """
-        Returns the 2D wind speed (processed)
+        Returns the 2D wind speed magnitude in m/s (processed)
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 1], cursor=self.__cursor)
@@ -224,7 +231,7 @@ class Anemometer:
     @property
     def horizontal_wind_direction(self):
         """
-        Returns the horizontal wind direction (processed)
+        Returns the horizontal wind direction in degrees (processed)
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
@@ -232,7 +239,7 @@ class Anemometer:
     @property
     def vertical_wind_direction(self):
         """
-        Returns the vertical wind direction (processed)
+        Returns the vertical wind direction in degrees (processed)
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 3], cursor=self.__cursor)
@@ -240,7 +247,7 @@ class Anemometer:
     @property
     def wind_velocities(self):
         """
-        Returns the horizontal wind velocity vector (processed)
+        Returns the horizontal wind velocity vector in m/s (processed)
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, -3:], cursor=self.__cursor)
