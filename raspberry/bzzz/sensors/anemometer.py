@@ -15,6 +15,12 @@ class DataProcessor(abc.ABC):
 
     @abc.abstractmethod
     def process(self, data, cursor=0):
+        """
+        Data processing method (abstract; no implementation)
+
+        :param data: numpy array of data  
+        :param cursor: index of the *current* measurement 
+        """
         pass
 
 
@@ -24,7 +30,7 @@ class AverageFilter(DataProcessor):
     def __init__(self):
         super().__init__()
 
-    def process(self, data, cursor):
+    def process(self, data, cursor=0):
         return np.nanmean(data, axis=0)
 
 
@@ -38,7 +44,7 @@ class MedianFilter(DataProcessor):
     def __init__(self):
         super().__init__()
 
-    def process(self, data, cursor):
+    def process(self, data, cursor=0):
         return np.nanmedian(data, axis=0)
 
 
@@ -55,7 +61,14 @@ class NoFilter(DataProcessor):
 class DataLogger:
     """A data logger to be used with a sensor"""
 
-    def __init__(self, num_features, max_samples=1e4, feature_names=None):
+    def __init__(self, num_features, max_samples=10000, feature_names=None):
+        """
+        Construct a new instance of DataLogger
+
+        :param num_features: number of features
+        :param max_samples: buffer size (maximum number of samples); default: 10000
+        :param feature_names: list of feature names (str)
+        """
         self.__data_vault = np.zeros(
             (max_samples, num_features), dtype=np.float64)
         self.__timestamps_vault = np.array(
@@ -64,11 +77,22 @@ class DataLogger:
         self.__cursor = 0
 
     def record(self, timespamp, datum):
+        """
+        Record/log data in memory
+
+        :param timestamp: timestamp of measurement(s)
+        :param datum: measurement (float or numpy array)
+        """
         self.__data_vault[self.__cursor, :] = datum
-        self.__timestamps_vault[self.__cursor :] = timespamp
+        self.__timestamps_vault[self.__cursor:] = timespamp
         self.__cursor = self.__cursor + 1
 
     def save_to_csv(self, filename):
+        """
+        Save the data to a CSV file
+
+        :param filename: file name (relative or absolute path)
+        """
         with open(filename, "w") as fh:
             writer = csv.writer(fh)
             writer.writerow(self.__feature_names)
@@ -91,7 +115,8 @@ class Anemometer:
                  baud=115200,
                  window_length=3,
                  data_processor=MedianFilter(),
-                 log_file=None):
+                 log_file=None,
+                 max_samples=100000):
         """
         Create a new instance of Anemometer
 
@@ -100,6 +125,7 @@ class Anemometer:
         :param window_length: length of window of measurements; default: 3
         :param data_processor: data processor on buffer of measurements; default: MedianFilter()
         :param log_file: file name to log data; default: None 
+        :param max_samples: maximum number of samples to record; default: 100000
 
         If `log_file` is None, the data is not logged; otherwise, on exit, 
         the data are stored in a CSV file
@@ -117,12 +143,13 @@ class Anemometer:
         self.__cursor = 0
         self.__data_processor = data_processor
         self.__log_file = log_file
+        self.__max_samples = max_samples
         if log_file is not None:
             feature_names = ("Date_Time", "Wind_Speed", "Wind_Speed_2D",
                              "H_direction", "V_direction", "U_axis",
                              "V_axis", "W_axis")
             self.__logger = DataLogger(num_features=7,
-                                       max_samples=100000,
+                                       max_samples=max_samples,
                                        feature_names=feature_names)
         self.__thread.start()
 
@@ -145,7 +172,9 @@ class Anemometer:
                     dtype=np.float64)
                 with self.__lock:
                     self.__values_cache[self.__cursor, :] = split_data_float
-                    if self.__log_file is not None:
+                    # If the caller wants to log (log_file specified) there is still space
+                    # in the log file, record data
+                    if self.__log_file is not None and self.__cursor < self.__max_samples:
                         data_to_log = self.__data_processor.process(
                             self.__values_cache[:, :], cursor=self.__cursor)
                         current_timestamp = datetime.datetime.now()
@@ -166,31 +195,53 @@ class Anemometer:
 
     @property
     def all_sensor_data(self):
+        """
+        Returns all sensor data 
+
+        This method returns all sensor data after the application of the data 
+        preprocessor specified in the construtor. The data is returned as a numpy 
+        array.
+        """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)
 
     @property
     def wind_speed_3d(self):
+        """
+        Returns the 3D wind speed (processed)
+        """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 0], cursor=self.__cursor)
 
     @property
     def wind_speed_2d(self):
+        """
+        Returns the 2D wind speed (processed)
+        """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 1], cursor=self.__cursor)
 
     @property
     def horizontal_wind_direction(self):
+        """
+        Returns the horizontal wind direction (processed)
+        """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
 
     @property
     def vertical_wind_direction(self):
+        """
+        Returns the vertical wind direction (processed)
+        """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 3], cursor=self.__cursor)
 
     @property
     def wind_velocities(self):
+        """
+        Returns the horizontal wind velocity vector (processed)
+        """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, -3:], cursor=self.__cursor)
 
