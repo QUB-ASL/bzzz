@@ -255,11 +255,9 @@ class Anemometer:
 
 if __name__ == '__main__':
 
+    filename = datetime.datetime.now().strftime("%d-%m-%y--%H-%M.csv")
     processor = AverageFilter()
     with Anemometer(window_length=5,
                     data_processor=processor,
-                    log_file="out.csv") as sensor:
-        time.sleep(0.5)
-        for i in range(20):
-            print(sensor.all_sensor_data)
-            time.sleep(0.05)
+                    log_file=filename) as sensor:
+        time.sleep(60) # set time for how long you want to record data for in seconds
