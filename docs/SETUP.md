@@ -185,6 +185,6 @@ You are now ready to remotely edit the software onboard the quadcopter.
 QUB students should follow the [Discord Bot guidelines](../raspberry/DiscordBot) to be able to ssh into the Raspberry Pi.
 
 
-## You are now ready to fly, go to [How to fly](README.md#how-to-fly) 
+## You are now ready to fly, go to [How to fly](../README.md#how-to-fly) 
 
 [^1]: Remember you can use the [DiscordBot](../raspberry/DiscordBot) to find the Quadcopters IP Address
