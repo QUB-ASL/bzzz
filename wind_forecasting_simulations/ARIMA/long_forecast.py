@@ -9,7 +9,7 @@ register_matplotlib_converters()
 from time import time
 
 ## Read Data
-df_wind = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49_1Hz.csv')
+df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--16-49_1Hz.csv')
 
 ## Set Index
 df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="1000L")

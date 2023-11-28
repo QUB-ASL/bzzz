@@ -13,9 +13,9 @@ from time import time
 import matplotlib.dates as mdates
 
 #read data
-df_wind = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49/25-09-23--16-49.csv')
-df_wind_2 = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49/25-09-23--16-49_N_5.csv')
-df_wind_3 = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv')
+df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49.csv')
+df_wind_2 = pd.read_csv('raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_5.csv')
+df_wind_3 = pd.read_csv('raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv')
 
 #set index
 df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="25L")

@@ -14,53 +14,49 @@ import matplotlib.dates as mdates
 import seaborn as sns
 import csv
 
-
-
-with open("quantile_error_U", "w", newline="") as f:
-    # creating the writer
-    writer = csv.writer(f)
-    # using writerow to write individual record one by one
-    writer.writerow(["ARMIA Model", "Error Index"])
-    f.close()
-
-with open("quantile_error_V", "w", newline="") as f:
-    # creating the writer
-    writer = csv.writer(f)
-    # using writerow to write individual record one by one
-    writer.writerow(["ARMIA Model", "Error Index"])
-    f.close()
-
-with open("quantile_error_W", "w", newline="") as f:
-    # creating the writer
-    writer = csv.writer(f)
-    # using writerow to write individual record one by one
-    writer.writerow(["ARMIA Model", "Error Index"])
-    f.close()
-
-
-#variables 
-train_end = 3500
-test_end = 4000
-
-#read data
-df_wind = pd.read_csv('raspberry/anemometer/wind_data/25-09-23--16-49/25-09-23--16-49_N_5.csv')
-
-#set index
-df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="25L")
-
-#split data set
-train_data_U = df_wind.U_axis[:train_end]
-test_data_U = df_wind.U_axis[(train_end):test_end]
-train_data_V = df_wind.V_axis[:train_end]
-test_data_V = df_wind.V_axis[(train_end):test_end]
-train_data_W = df_wind.W_axis[:train_end]
-test_data_W = df_wind.W_axis[(train_end):test_end]
-
-def validate_model(ARIMA_p,
+def validate_model(file_name,
+                   train_start,
+                   train_end,
+                   test_end,
+                   ARIMA_p,
                    ARIMA_d,
                    ARIMA_q,
                    Prediction_horizon,
-                   quantile_level):
+                   quantile_level,
+                   logger: bool):
+    
+    if logger is True and ARIMA_p==0 and ARIMA_q==0:
+        with open(f'{file_name}_quantile_error_U_{train_start}.csv', "w", newline="") as f:
+            # creating the writer
+            writer = csv.writer(f)
+            # using writerow to write individual record one by one
+            writer.writerow(["ARIMA Model", "Error Index"])
+        
+        with open(f'{file_name}_quantile_error_V_{train_start}.csv', "w", newline="") as f:
+            # creating the writer
+            writer = csv.writer(f)
+            # using writerow to write individual record one by one
+            writer.writerow(["ARIMA Model", "Error Index"])
+        
+        with open(f'{file_name}_quantile_error_W_{train_start}.csv', "w", newline="") as f:
+            # creating the writer
+            writer = csv.writer(f)
+            # using writerow to write individual record one by one
+            writer.writerow(["ARIMA Model", "Error Index"])
+    
+    #read data
+    df_wind = pd.read_csv(f'{file_name}.csv')
+    
+    #set index
+    df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="25L")
+    
+    #split data set
+    train_data_U = df_wind.U_axis[train_start:train_end]
+    test_data_U = df_wind.U_axis[(train_end):test_end]
+    train_data_V = df_wind.V_axis[train_start:train_end]
+    test_data_V = df_wind.V_axis[(train_end):test_end]
+    train_data_W = df_wind.W_axis[train_start:train_end]
+    test_data_W = df_wind.W_axis[(train_end):test_end]
     
     # define model
     model_U = ARIMA(train_data_U, order=(ARIMA_p, ARIMA_d, ARIMA_q))
@@ -106,27 +102,25 @@ def validate_model(ARIMA_p,
     print(f'U_axis = {str(quantile_error_U)}')
     print(f'V_axis = {str(quantile_error_V)}')
     print(f'W_axis = {str(quantile_error_W)}')
+    
+    if logger is True:
+        with open(f'{file_name}_quantile_error_U_{train_start}.csv', "a+", newline="") as f:
+                    # creating the writer
+                    writer = csv.writer(f)
+                    # using writerow to write individual record one by one
+                    writer.writerow([f'({str(ARIMA_p)},0,{str(ARIMA_q)})', quantile_error_U])
 
-    with open("quantile_error_U", "a+", newline="") as f:
-                # creating the writer
-                writer = csv.writer(f)
-                # using writerow to write individual record one by one
-                writer.writerow([f'({str(ARIMA_p)},0,{str(ARIMA_q)})', quantile_error_U])
-                f.close()
+        with open(f'{file_name}_quantile_error_V_{train_start}.csv', "a+", newline="") as f:
+                    # creating the writer
+                    writer = csv.writer(f)
+                    # using writerow to write individual record one by one
+                    writer.writerow([f'({str(ARIMA_p)},0,{str(ARIMA_q)})', quantile_error_V])
 
-    with open("quantile_error_V", "a+", newline="") as f:
-                # creating the writer
-                writer = csv.writer(f)
-                # using writerow to write individual record one by one
-                writer.writerow([f'({str(ARIMA_p)},0,{str(ARIMA_q)})', quantile_error_V])
-                f.close()
-
-    with open("quantile_error_W", "a+", newline="") as f:
-                # creating the writer
-                writer = csv.writer(f)
-                # using writerow to write individual record one by one
-                writer.writerow([f'({str(ARIMA_p)},0,{str(ARIMA_q)})', quantile_error_W])
-                f.close()
+        with open(f'{file_name}_quantile_error_W_{train_start}.csv', "a+", newline="") as f:
+                    # creating the writer
+                    writer = csv.writer(f)
+                    # using writerow to write individual record one by one
+                    writer.writerow([f'({str(ARIMA_p)},0,{str(ARIMA_q)})', quantile_error_W])
 
     # if quantile_error_U < 1.29 :
     #   plt.figure(figsize=(10,4))
@@ -138,10 +132,10 @@ def validate_model(ARIMA_p,
                        
     return 0
 
-for i in range(10):
-    for j in range(10):
-        validate_model(i,0,j,10,0.95)
+# for i in range(10):
+#     for j in range(10):
+#         validate_model('raspberry/data/wind_data/16-09-23--18-35/16-09-23--18-35_N_5',4000,8000,8500,i,0,j,10,0.95)
 
-# validate_model(1,0,1,10,0.95)
+validate_model('raspberry/data/wind_data/16-09-23--18-35/16-09-23--18-35_N_5',0,2000,2005,2,0,2,10,0.95,False)
 
 plt.show()

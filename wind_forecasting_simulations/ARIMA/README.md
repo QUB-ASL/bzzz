@@ -11,7 +11,7 @@ the previous time sample.
 The 'long forecast' is the most simple forecast where it tries to predict the next value at each time sample in the test data without 
 updating the data available to the model. The residuals of the prediction compared to the test data is also plotted. The same predictions
 and residuals are then carried out for the first and second differences of the wind data. This script is useful for visually seeing how
-the prediction detreates over time for each model while the data isn't updated.
+the prediction deteriorates over time for each model while the data isn't updated.
 
 ## `forecast.py`
 In this script, at each time sample a value for a set number of forecasts into the future is predicted (e.g. predict(t+5) for predicting
