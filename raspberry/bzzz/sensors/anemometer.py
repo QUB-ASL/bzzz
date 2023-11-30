@@ -1,106 +1,10 @@
 import serial
 import numpy as np
 from threading import Thread, Lock
-import abc
 import time
 import datetime
-import csv
-
-
-class DataProcessor(abc.ABC):
-    """Abstract data processor"""
-
-    def __init__(self):
-        pass
-
-    @abc.abstractmethod
-    def process(self, data, cursor=0):
-        """
-        Data processing method (abstract; no implementation)
-
-        :param data: numpy array of data  
-        :param cursor: index of the *current* measurement 
-        """
-        pass
-
-
-class AverageFilter(DataProcessor):
-    """Moving average filter"""
-
-    def __init__(self):
-        super().__init__()
-
-    def process(self, data, cursor=0):
-        return np.nanmean(data, axis=0)
-
-
-class MedianFilter(DataProcessor):
-    """
-    Median filter
-
-    The median filter is recommended to be used when the window size is odd.
-    """
-
-    def __init__(self):
-        super().__init__()
-
-    def process(self, data, cursor=0):
-        return np.nanmedian(data, axis=0)
-
-
-class NoFilter(DataProcessor):
-    """No filter: the latest data point is returned"""
-
-    def __init__(self):
-        super().__init__()
-
-    def process(self, data, cursor):
-        return data[cursor]
-
-
-class DataLogger:
-    """A data logger to be used with a sensor"""
-
-    def __init__(self, num_features, max_samples=10000, feature_names=None):
-        """
-        Construct a new instance of DataLogger
-
-        :param num_features: number of features
-        :param max_samples: buffer size (maximum number of samples); default: 10000
-        :param feature_names: list of feature names (str)
-        """
-        self.__data_vault = np.zeros(
-            (max_samples, num_features), dtype=np.float64)
-        self.__timestamps_vault = np.array(
-            [datetime.datetime.now()] * max_samples)
-        self.__feature_names = feature_names
-        self.__cursor = 0
-
-    def record(self, timespamp, datum):
-        """
-        Record/log data in memory
-
-        :param timestamp: timestamp of measurement(s)
-        :param datum: measurement (float or numpy array)
-        """
-        self.__data_vault[self.__cursor, :] = datum
-        self.__timestamps_vault[self.__cursor:] = timespamp
-        self.__cursor = self.__cursor + 1
-
-    def save_to_csv(self, filename):
-        """
-        Save the data to a CSV file
-
-        :param filename: file name (relative or absolute path)
-        """
-        with open(filename, "w") as fh:
-            writer = csv.writer(fh)
-            writer.writerow(self.__feature_names)
-        with open(filename, "a+") as fh:
-            writer = csv.writer(fh)
-            data_to_record = np.hstack((np.reshape(self.__timestamps_vault[:self.__cursor], (
-                self.__cursor, 1)), self.__data_vault[:self.__cursor, :]))
-            writer.writerows(data_to_record)
+from data_logger import DataLogger
+from filters import MedianFilter
 
 
 class Anemometer:
@@ -255,9 +159,10 @@ class Anemometer:
 
 if __name__ == '__main__':
 
-    filename = datetime.datetime.now().strftime("%d-%m-%y--%H-%M.csv")
-    processor = AverageFilter()
-    with Anemometer(window_length=5,
-                    data_processor=processor,
-                    log_file=filename) as sensor:
-        time.sleep(60) # set time for how long you want to record data for in seconds
+    while True:
+        filename = datetime.datetime.now().strftime("%d-%m-%y--%H-%M.csv")
+        processor = MedianFilter()
+        with Anemometer(window_length=5,
+                        data_processor=processor,
+                        log_file=filename) as sensor:
+            time.sleep(600) # set time for how long you want to record data for in seconds
