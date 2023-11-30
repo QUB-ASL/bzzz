@@ -1,108 +1,11 @@
 import serial
-import crcmod.predefined  # To install: pip install crcmod
+import crcmod.predefined 
 import numpy as np
 from threading import Thread, Lock
-import abc
 import time
 import datetime
-import csv
- 
- 
-class DataProcessor(abc.ABC):
-    """Abstract data processor"""
- 
-    def __init__(self):
-        pass
- 
-    @abc.abstractmethod
-    def process(self, data, cursor=0):
-        """
-        Data processing method (abstract; no implementation)
- 
-        :param data: numpy array of data  
-        :param cursor: index of the *current* measurement
-        """
-        pass
- 
- 
-class AverageFilter(DataProcessor):
-    """Moving average filter"""
- 
-    def __init__(self):
-        super().__init__()
- 
-    def process(self, data, cursor=0):
-        return np.nanmean(data, axis=0)
- 
- 
-class MedianFilter(DataProcessor):
-    """
-    Median filter
- 
-    The median filter is recommended to be used when the window size is odd.
-    """
- 
-    def __init__(self):
-        super().__init__()
- 
-    def process(self, data, cursor=0):
-        return np.nanmedian(data, axis=0)
- 
- 
-class NoFilter(DataProcessor):
-    """No filter: the latest data point is returned"""
- 
-    def __init__(self):
-        super().__init__()
- 
-    def process(self, data, cursor):
-        return data[cursor]
- 
- 
-class DataLogger:
-    """A data logger to be used with a sensor"""
- 
-    def __init__(self, num_features, max_samples=10000, feature_names=None):
-        """
-        Construct a new instance of DataLogger
- 
-        :param num_features: number of features
-        :param max_samples: buffer size (maximum number of samples); default: 10000
-        :param feature_names: list of feature names (str)
-        """
-        self.__data_vault = np.zeros(
-            (max_samples, num_features), dtype=np.float64)
-        self.__timestamps_vault = np.array(
-            [datetime.datetime.now()] * max_samples)
-        self.__feature_names = feature_names
-        self.__cursor = 0
- 
-    def record(self, timespamp, datum):
-        """
-        Record/log data in memory
- 
-        :param timestamp: timestamp of measurement(s)
-        :param datum: measurement (float or numpy array)
-        """
-        self.__data_vault[self.__cursor, :] = datum
-        self.__timestamps_vault[self.__cursor:] = timespamp
-        self.__cursor = self.__cursor + 1
- 
-    def save_to_csv(self, filename):
-        """
-        Save the data to a CSV file
- 
-        :param filename: file name (relative or absolute path)
-        """
-        with open(filename, "w") as fh:
-            writer = csv.writer(fh)
-            writer.writerow(self.__feature_names)
-        with open(filename, "a+") as fh:
-            writer = csv.writer(fh)
-            data_to_record = np.hstack((np.reshape(self.__timestamps_vault[:self.__cursor], (
-                self.__cursor, 1)), self.__data_vault[:self.__cursor, :]))
-            writer.writerows(data_to_record)
- 
+from data_logger import DataLogger
+from data_processor_and_filters import NoFilter
  
  
 class EvoSensor:
@@ -130,7 +33,7 @@ class EvoSensor:
         Note: We assume that we receive 1 distance measurement from the Evo time of flight sensor
         """
         # Open the correct port
-        self.__openEvo
+        self.__open_Evo
         # A lock is used to guarantee that we won't be reading the data
         # while the thread in the background is writing it
         self.__lock = Lock()
@@ -151,7 +54,7 @@ class EvoSensor:
         self.__thread.start()
  
    
-    def __openEvo(self, serial_path, baud):
+    def __open_Evo(self, serial_path, baud):
         # Open the Evo and catch any exceptions thrown by the OS
         evo = serial.Serial(serial_path, baud, timeout=2)
         # Send the command "Binary mode"
@@ -186,11 +89,6 @@ class EvoSensor:
                         # Convert binary frame to decimal in shifting by 8 the frame
                         rng = frame[1] << 8
                         rng = rng | (frame[2] & 0xFF)
-                    else:
-                        return "CRC mismatch. Check connection or make sure only one progam access the sensor port."
-                # Check special cases (limit values)
-                else:
-                    return "Wating for frame header"
 
                 # Checking error codes
                 if rng == 65535: # Sensor measuring above its maximum limit
@@ -200,7 +98,7 @@ class EvoSensor:
                 elif rng == 0: # Sensor detecting object below minimum range
                     dec_out = -float('inf')
                 else:
-                    # Convert frame in meters
+                    # Convert to meters
                     dec_out = rng / 1000.0
             
                 with self.__lock:
