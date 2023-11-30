@@ -60,7 +60,7 @@ def median_filter(data_list: list, window_length=5):
     :param window_length: filter window length, must be and int, defaults to 5
     :return: retruns the median of the given data.
 
-    ***THIS FUNCTION IS DEPRECATES! USE MedianFilter INSTEAD!***
+    ***THIS FUNCTION IS DEPRECATED! USE MedianFilter INSTEAD!***
     """
     data_list = data_list[-window_length:]  # take the latest values
     data_list.sort()
