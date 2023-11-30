@@ -1,15 +1,15 @@
 import serial
-import crcmod.predefined 
+import crcmod.predefined
 import numpy as np
 from threading import Thread, Lock
 import time
 import datetime
 from data_logger import DataLogger
 from filters import NoFilter
- 
- 
+
+
 class EvoSensor:
-   
+
     def __init__(self,
                  serial_path='/dev/ttyAMA2',
                  baud=115200,
@@ -19,17 +19,17 @@ class EvoSensor:
                  max_samples=100000):
         """
         Create a new instance of Evo time of flight sensor
- 
+
         :param serial_path: serial path; defaults to /dev/ttyAMA2 (UART2) on RPi
         :param baud: baud rate of serial communication; defaults to 115200
         :param window_length: length of window of measurements; default: 3
         :param data_processor: data processor on buffer of measurements; default: NoFilter()
         :param log_file: file name to log data; default: None
         :param max_samples: maximum number of samples to record; default: 100000
- 
+
         If `log_file` is None, the data is not logged; otherwise, on exit,
         the data are stored in a CSV file
- 
+
         Note: We assume that we receive 1 distance measurement from the Evo time of flight sensor
         """
         # Open the correct port
@@ -47,14 +47,19 @@ class EvoSensor:
         self.__log_file = log_file
         self.__max_samples = max_samples
         if log_file is not None:
-            feature_names = ("Date_Time","Altitude")
+            feature_names = ("Date_Time", "Altitude")
             self.__logger = DataLogger(num_features=1,
                                        max_samples=max_samples,
                                        feature_names=feature_names)
         self.__thread.start()
- 
-   
+
     def __open_Evo(self, serial_path, baud):
+        """
+        Establish a connection with the sensor over serial
+
+        :param serial_path: path to serial 
+        :param baud: baud rate
+        """
         # Open the Evo and catch any exceptions thrown by the OS
         evo = serial.Serial(serial_path, baud, timeout=2)
         # Send the command "Binary mode"
@@ -65,14 +70,13 @@ class EvoSensor:
         evo.write(set_bin)
         # Flush out the buffer
         evo.flushOutput()
-        return #evo
-   
- 
+        return  # evo
+
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
         This is a thread that runs in the background to connect to the
         serial and collect measurements, which are stored in a buffer
- 
+
         :param serial_path: serial path
         :param baud: baud rate of serial communication
         """
@@ -91,16 +95,16 @@ class EvoSensor:
                         rng = rng | (frame[2] & 0xFF)
 
                 # Checking error codes
-                if rng == 65535: # Sensor measuring above its maximum limit
+                if rng == 65535:  # Sensor measuring above its maximum limit
                     dec_out = float('inf')
-                elif rng == 1: # Sensor not able to measure
+                elif rng == 1:  # Sensor not able to measure
                     dec_out = float('nan')
-                elif rng == 0: # Sensor detecting object below minimum range
+                elif rng == 0:  # Sensor detecting object below minimum range
                     dec_out = -float('inf')
                 else:
                     # Convert to meters
                     dec_out = rng / 1000.0
-            
+
                 with self.__lock:
                     self.__values_cache[self.__cursor, :] = dec_out
                     # If the caller wants to log (log_file specified) there is still space
@@ -114,10 +118,10 @@ class EvoSensor:
                 if not self.__keep_going:
                     ser.close()
                     return
- 
+
     def __enter__(self):
         return self
- 
+
     def __exit__(self, *args):
         self.__keep_going = False
         time.sleep(0.05)
@@ -132,17 +136,16 @@ class EvoSensor:
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 0:], cursor=self.__cursor)
 
- 
- 
+
 if __name__ == "__main__":
- 
+
     filename = datetime.datetime.now().strftime("%d-%m-%y--%H-%M.csv")
     processor = NoFilter()
     with EvoSensor(window_length=3,
-                    data_processor=processor,
-                    log_file=filename) as sensor:
+                   data_processor=processor,
+                   log_file=filename) as sensor:
         for i in range(2000):
             time.sleep(0.05)
             print(sensor.distance)
-        time.sleep(60) # set time for how long you want to record data for in seconds
-   
+        # set time for how long you want to record data for in seconds
+        time.sleep(60)
