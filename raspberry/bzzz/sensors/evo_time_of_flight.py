@@ -32,8 +32,7 @@ class EvoSensor:
 
         Note: We assume that we receive 1 distance measurement from the Evo time of flight sensor
         """
-        # Open the correct port
-        self.__open_Evo
+
         # A lock is used to guarantee that we won't be reading the data
         # while the thread in the background is writing it
         self.__lock = Lock()
@@ -52,26 +51,8 @@ class EvoSensor:
                                        max_samples=max_samples,
                                        feature_names=feature_names)
         self.__thread.start()
-
-    def __open_Evo(self, serial_path, baud):
-        """
-        Establish a connection with the sensor over serial
-
-        :param serial_path: path to serial 
-        :param baud: baud rate
-        """
-        # Open the Evo and catch any exceptions thrown by the OS
-        evo = serial.Serial(serial_path, baud, timeout=2)
-        # Send the command "Binary mode"
-        set_bin = (0x00, 0x11, 0x02, 0x4C)
-        # Flush in the buffer
-        evo.flushInput()
-        # Write the binary command to the Evo
-        evo.write(set_bin)
-        # Flush out the buffer
-        evo.flushOutput()
-        return  # evo
-
+   
+ 
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
         This is a thread that runs in the background to connect to the
