@@ -4,7 +4,7 @@ from threading import Thread, Lock
 import time
 import datetime
 from data_logger import DataLogger
-from data_processor_and_filters import MedianFilter
+from filters import MedianFilter
 
 
 class Anemometer:
