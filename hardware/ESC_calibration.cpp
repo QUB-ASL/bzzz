@@ -4,14 +4,18 @@
  
 bzzz::MotorDriver motorDriver;
 // sets the delay value to 5 sec
-#define PERIOD_1 5000. 
+#define DELAY_BETWEEN_HIGH_LOW_SIGNALS 5000.
+// Defining the signal high parameter
+#define High_Sgn 2000.
+// Defining the signal low parameter
+#define Low_Sgn 1000.
 void setup()
 {
     motorDriver.attachEscToPwmPin();
-    motorDriver.writeSpeedToEsc(2000, 2000, 2000, 2000); // Sets the signal to ESC as high
-    delay(PERIOD_1);
-    motorDriver.writeSpeedToEsc(1000, 1000, 1000, 1000); // Sets the signal to ESC as low
-    delay(PERIOD_1);
+    motorDriver.writeSpeedToEsc(High_Sgn, High_Sgn, High_Sgn, High_Sgn); // Sets the signal to ESC as high
+    delay(DELAY_BETWEEN_HIGH_LOW_SIGNALS);
+    motorDriver.writeSpeedToEsc(Low_Sgn, Low_Sgn, Low_Sgn, Low_Sgn); // Sets the signal to ESC as low
+    delay(DELAY_BETWEEN_HIGH_LOW_SIGNALS);
 }
  
  
