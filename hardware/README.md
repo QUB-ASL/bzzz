@@ -13,4 +13,4 @@ After a particular delay the signal to the ESC is set back to low which complete
 * Flash it to the ESP32
 * Power on the ESC
 * 2 short beeps would comfirm that the ESC is in calibration mode
-* 3 shot beeps and 1 long beep would confirm that the ESc is calibrated.
+* 3 shot beeps and 1 long beep would confirm that the ESC is calibrated.
