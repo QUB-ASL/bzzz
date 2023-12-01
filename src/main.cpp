@@ -2,7 +2,7 @@
 #include "quaternion.hpp"
 #include "config.hpp"
 #include "motors.hpp"
-#include "radio.hpp"
+#include "raspberryEsp32Interface.hpp"
 #include "ahrs.hpp"
 #include "controller.hpp"
 #include "fail_safes.hpp"
@@ -11,7 +11,7 @@
 using namespace bzzz;
 
 MotorDriver motorDriver;
-Radio radio(true);
+RaspberryEsp32Interface raspberryEsp32Interface(true);
 AHRS ahrs;
 Controller controller;
 Quaternion initialQuaternion;
@@ -47,7 +47,7 @@ void setup()
   waitForPiSerial(); // wait for the RPi and the RC to connect
   buzz(4);           // 4 beeps => RPi+RC connected
   logSerial(LogVerbosityLevel::Info, "waiting for arm...");
-  radio.waitForArmCommand(); // wait for the RC to send an arming command
+  raspberryEsp32Interface.waitForArmCommand(); // wait for the RC to send an arming command
   logSerial(LogVerbosityLevel::Info, "arming...");
   buzz(2, 400);               // two long beeps => preparation for arming
   motorDriver.attachAndArm(); // attach ESC and arm motors
@@ -64,11 +64,11 @@ void setup()
 void setGainsFromRcTrimmers()
 {
   controller.setQuaternionGain(
-      - QUATERNION_XY_GAIN * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
+      -QUATERNION_XY_GAIN * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
   controller.setAngularVelocityXYGain(
-      - OMEGA_XY_GAIN * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
+      -OMEGA_XY_GAIN * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
   controller.setYawAngularVelocityGain(
-      - OMEGA_Z_GAIN * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+      -OMEGA_Z_GAIN * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 }
 
 /**
@@ -80,14 +80,16 @@ void loop()
   float measuredAngularVelocity[3];
   float angularVelocityCorrected[3];
 
-  // if radio data received update the last data read time.
-  if (radio.readPiData())
+  // if raspberryEsp32Interface data received update the last data read time.
+  if (raspberryEsp32Interface.readPiData())
   {
-    radio.sendFlightDataToPi(IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5], motorFL, motorFR, motorBL, motorBR);
+    raspberryEsp32Interface.sendFlightDataToPi(
+        IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5],
+        motorFL, motorFR, motorBL, motorBR);
     failSafes.setLastRadioReceptionTime(micros());
   }
   // one function to run all fail safe checks
-  if (radio.kill() || failSafes.isSerialTimeout())
+  if (raspberryEsp32Interface.kill() || failSafes.isSerialTimeout())
   {
     motorDriver.disarm();
     logSerial(LogVerbosityLevel::Debug, "Exit loop!");
@@ -104,7 +106,7 @@ void loop()
   angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
   angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
 
-  float yawRateRC = radio.yawRateReferenceRadSec();
+  float yawRateRC = raspberryEsp32Interface.yawRateReferenceRadSec();
   float deadZoneYawRate = 0.017;
   float yawRateReference = 0.;
   if (yawRateRC >= deadZoneYawRate)
@@ -121,8 +123,8 @@ void loop()
 
   Quaternion referenceQuaternion(
       yawReferenceRad,
-      radio.pitchReferenceAngleRad(),
-      radio.rollReferenceAngleRad());
+      raspberryEsp32Interface.pitchReferenceAngleRad(),
+      raspberryEsp32Interface.rollReferenceAngleRad());
 
   Quaternion currentQuaternion(quaternionImuData);
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
@@ -134,7 +136,7 @@ void loop()
   ahrs.getAccelerometerValues(IMUData + 3);
 
   // Throttle from RC to throttle reference
-  float throttleRef = radio.throttleReferencePWM();
+  float throttleRef = raspberryEsp32Interface.throttleReferencePWM();
 
   // Compute control actions and send them to the motors
   controller.motorPwmSignals(attitudeError,
