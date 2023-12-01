@@ -1,4 +1,16 @@
 ## Tests
-This folder includes differnt harware test to be ran on the ESP32.
+This program performs the ESC calibrations. 
 
 ## ESC_calibration.cpp
+This to to calibrate Hobbywing Skywalker ESC only. If another ESC is being used it may require recoding.
+
+The signal to the ESC is set high before the power is provided to the ESC. 
+This sets it to calibration mode.
+After a particular delay the signal to the ESC is set back to low which completes the calibration. 
+
+### Step to calibrate ESC
+* Take the code from `ESC_calibration.cpp` and paste it to the `main.cpp`
+* Flash it to the ESP32
+* Power on the ESC
+* 2 short beeps would comfirm that the ESC is in calibration mode
+* 3 shot beeps and 1 long beep wou;ld confirm that the ESc is calibrated.
