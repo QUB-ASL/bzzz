@@ -43,6 +43,7 @@ sudo nano /boot/firmware/config.txt
 ```
 Add the following to the end of the file and save.
 ```
+dtoverlay=uart2
 arm_64bit=0
 ```
 Then reboot with
