@@ -16,7 +16,7 @@ namespace bzzz
         UP = 2
     };
 
-    class Radio
+    class RaspberryEsp32Interface
     {
 
     private:
@@ -66,19 +66,19 @@ namespace bzzz
 
         /**
          * Boolean to enable sending IMU data to Pi whenever ESP receives radio data
-         * if True: replies with IMU data;  
-        */
-       bool m_replyWithFlightData;
+         * if True: replies with IMU data;
+         */
+        bool m_replyWithFlightData;
 
     public:
         /**
-         * @brief Radio class constructor
+         * @brief RaspberryEsp32Interface class constructor
          * @param replyWithFlightData enables replying to Pi with flight data whenever radio data from Pi is received.
-        */
-        Radio(bool replyWithFlightData = false);
+         */
+        RaspberryEsp32Interface(bool replyWithFlightData = false);
 
         /**
-         * @brief Read the receiver data sent from Pi and send 
+         * @brief Read the receiver data sent from Pi and send
          * @return true iff new data was received from RPi
          */
         bool readPiData();
@@ -155,7 +155,7 @@ namespace bzzz
         void waitForArmCommand();
 
         /**
-         * @brief send flight data: IMU data quaternions, accelerometer values, and motor PWM values 
+         * @brief send flight data: IMU data quaternions, accelerometer values, and motor PWM values
          * (q1, q2, q3, ax, ay, az, motorFL, motorFR, motorBL, motorBR) data to Pi.
          * @param q1 1st element of the vector part of current attitude quaternion
          * @param q2 2nd element of the vector part of current attitude quaternion
@@ -167,10 +167,10 @@ namespace bzzz
          * @param motorFR current Front-Right motor PWM control action
          * @param motorBL current Back-Left motor PWM control action
          * @param motorBR current Back-Right motor PWM control action
-        */
+         */
         void sendFlightDataToPi(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR);
 
-    }; /* end of class Radio */
+    }; /* end of class RaspberryEsp32Interface */
 
 }
 
