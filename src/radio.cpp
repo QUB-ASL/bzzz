@@ -195,7 +195,10 @@ namespace bzzz
     {
         float temp[6];
         readPiData();
-        sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+        if(RADIO_SWITCH_A_BIT==0b01000 && RADIO_SWITCH_B_BIT==0b10000 && RADIO_SWITCH_C_BITS==0b00110 && RADIO_SWITCH_D_BIT==0b00001)
+        {
+            sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1); /*if the postions are not right do nothing*/
+        }
         delay(20);
         while (!armed())
         {
