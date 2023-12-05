@@ -1,4 +1,4 @@
-#include "radio.hpp"
+#include "raspberryEsp32Interface.hpp"
 
 #define RADIO_CHANNEL_YAW_RATE 0
 #define RADIO_CHANNEL_PITCH 1
@@ -11,7 +11,7 @@
 /**
  * In the processed radio data sent from R-Pi, the last element sent is an
  * integer in which the switches' position data is encoded as follows
- *      For switches A, B, and D (since these are only two-way switches), each 
+ *      For switches A, B, and D (since these are only two-way switches), each
  *      were assigned a single bit with 0 indicating that the switch is in off state
  *      and 1 otherwise. For switch C, as it is a three-way switch, it was assigned with
  *      two bits with 00 = DOWN, 01 = MID, and 10 = UP.
@@ -21,24 +21,24 @@
  *      In which bit |B| indicates switch B's position (This is given the first position because it is the arm switch)
  *               bit |A| indicates switch A's position (This is the kill switch)
  *               bits |C|c| together indicate switch C's position
- *               bit |D| indicates switch D's position      
-*/
+ *               bit |D| indicates switch D's position
+ */
 #define RADIO_SWITCH_A_BIT 0b01000  // Bit position of switch A
 #define RADIO_SWITCH_B_BIT 0b10000  // Bit position of switch B
-#define RADIO_SWITCH_C_BITS 0b00110  // Bits' position of switch C
+#define RADIO_SWITCH_C_BITS 0b00110 // Bits' position of switch C
 #define RADIO_SWITCH_D_BIT 0b00001  // Bit position of switch D
-
 
 // These are the number of data channles. We do not count the switch data channels.
 #define NUM_RADIO_CHANNELS 8
 
 namespace bzzz
 {
-    Radio::Radio(bool replyWithFlightData /*=false*/){
+    RaspberryEsp32Interface::RaspberryEsp32Interface(bool replyWithFlightData /*=false*/)
+    {
         this->m_replyWithFlightData = replyWithFlightData;
     };
-    
-    bool Radio::readPiData()
+
+    bool RaspberryEsp32Interface::readPiData()
     {
         String allDataFromPi;
         int data_count = 0;
@@ -46,8 +46,9 @@ namespace bzzz
         if (Serial.available() > 0)
         {
             allDataFromPi = Serial.readStringUntil('\n');
-            
-            if(allDataFromPi.substring(0, allDataFromPi.indexOf(",")) != "S") return false;
+
+            if (allDataFromPi.substring(0, allDataFromPi.indexOf(",")) != "S")
+                return false;
             // cut the channelData string after the first occurence of a comma
             allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
 
@@ -61,14 +62,14 @@ namespace bzzz
                 // cut the channelData string after the first occurence of a comma
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
             }
-            // Check if 8 data points are received and return false if not. 
+            // Check if 8 data points are received and return false if not.
             // if yes, copy the data to the actual array
             // this helps to retain previous data if corrupted data is received
-            if(data_count != NUM_RADIO_CHANNELS) 
+            if (data_count != NUM_RADIO_CHANNELS)
             {
                 return false;
             }
-            for(int i = 0; i < NUM_RADIO_CHANNELS; i++) 
+            for (int i = 0; i < NUM_RADIO_CHANNELS; i++)
             {
                 m_refData[i] = m_rawRefData[i];
             }
@@ -76,7 +77,7 @@ namespace bzzz
             // get the encoded switches data
             m_rawEncodedSwtchsData = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toInt();
             // the max value possible for encoded switch data in binary is 0b{1 1 10 1} = 29
-            if (m_rawEncodedSwtchsData <0 || m_rawEncodedSwtchsData > 29)
+            if (m_rawEncodedSwtchsData < 0 || m_rawEncodedSwtchsData > 29)
             {
                 return false;
             }
@@ -86,112 +87,123 @@ namespace bzzz
         return false;
     }
 
-    void Radio::sendFlightDataToPi(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR)
+    void RaspberryEsp32Interface::sendFlightDataToPi(
+        float q1,
+        float q2,
+        float q3,
+        float ax,
+        float ay,
+        float az,
+        float motorFL,
+        float motorFR,
+        float motorBL,
+        float motorBR)
     {
-            if(this->m_replyWithFlightData){
-                // if replyWithFlightData is enabled, send flight data to Pi
-                Serial.print("FD: ");
-                Serial.print(q1);
-                Serial.print(' ');
-                Serial.print(q2);
-                Serial.print(' ');
-                Serial.print(q3);
-                Serial.print(' ');
-                Serial.print(ax);
-                Serial.print(' ');
-                Serial.print(ay);
-                Serial.print(' ');
-                Serial.print(az);
-                Serial.print(' ');
-                Serial.print(motorFL);
-                Serial.print(' ');
-                Serial.print(motorFR);
-                Serial.print(' ');
-                Serial.print(motorBL);
-                Serial.print(' ');
-                Serial.println(motorBR);
-            }
+        if (this->m_replyWithFlightData)
+        {
+            // if replyWithFlightData is enabled, send flight data to Pi
+            Serial.print("FD: ");
+            Serial.print(q1);
+            Serial.print(' ');
+            Serial.print(q2);
+            Serial.print(' ');
+            Serial.print(q3);
+            Serial.print(' ');
+            Serial.print(ax);
+            Serial.print(' ');
+            Serial.print(ay);
+            Serial.print(' ');
+            Serial.print(az);
+            Serial.print(' ');
+            Serial.print(motorFL);
+            Serial.print(' ');
+            Serial.print(motorFR);
+            Serial.print(' ');
+            Serial.print(motorBL);
+            Serial.print(' ');
+            Serial.println(motorBR);
+        }
     }
 
-    float Radio::pitchReferenceAngleRad()
+    float RaspberryEsp32Interface::pitchReferenceAngleRad()
     {
         return m_refData[RADIO_CHANNEL_PITCH];
     }
 
-    float Radio::rollReferenceAngleRad()
+    float RaspberryEsp32Interface::rollReferenceAngleRad()
     {
         return m_refData[RADIO_CHANNEL_ROLL];
     }
 
-    float Radio::yawRateReferenceRadSec()
+    float RaspberryEsp32Interface::yawRateReferenceRadSec()
     {
         return m_refData[RADIO_CHANNEL_YAW_RATE];
     }
 
-    float Radio::throttleReferencePWM()
+    float RaspberryEsp32Interface::throttleReferencePWM()
     {
         return m_refData[RADIO_CHANNEL_THROTTLE];
     }
 
-    float Radio::throttleReferencePercentage()
+    float RaspberryEsp32Interface::throttleReferencePercentage()
     {
         // Since PWM range is [1000, 2000], we subtract 1000 to calculate the percentage
         //   percentage = (Referance_PWM - 1000)/1000
         //=> percentage = Reference_PWM/1000 - 1
-        return m_refData[RADIO_CHANNEL_THROTTLE]/1000 - 1;
+        return m_refData[RADIO_CHANNEL_THROTTLE] / 1000 - 1;
     }
 
-    bool Radio::armed()
+    bool RaspberryEsp32Interface::armed()
     {
         return m_encodedSwitchesData & RADIO_SWITCH_B_BIT;
     }
 
-    bool Radio::kill()
+    bool RaspberryEsp32Interface::kill()
     {
         return m_encodedSwitchesData & RADIO_SWITCH_D_BIT;
     }
 
-    ThreeWaySwitch Radio::switchC()
+    ThreeWaySwitch RaspberryEsp32Interface::switchC()
     {
-        switch((m_encodedSwitchesData & RADIO_SWITCH_C_BITS) >> 1)
+        switch ((m_encodedSwitchesData & RADIO_SWITCH_C_BITS) >> 1)
         {
-            case 0:
-                return ThreeWaySwitch::DOWN;
-            case 1:
-                return ThreeWaySwitch::MID;
-            case 2:
-                return ThreeWaySwitch::UP;
-            default:
-                return ThreeWaySwitch::DOWN;
+        case 0:
+            return ThreeWaySwitch::DOWN;
+        case 1:
+            return ThreeWaySwitch::MID;
+        case 2:
+            return ThreeWaySwitch::UP;
+        default:
+            return ThreeWaySwitch::DOWN;
         }
     }
 
-    bool Radio::switchD()
+    bool RaspberryEsp32Interface::switchD()
     {
         return m_encodedSwitchesData & RADIO_SWITCH_D_BIT;
     }
 
-    float Radio::trimmerVRAPercentage()
+    float RaspberryEsp32Interface::trimmerVRAPercentage()
     {
         return m_refData[RADIO_CHANNEL_VRA];
     }
 
-    float Radio::trimmerVRCPercentage()
+    float RaspberryEsp32Interface::trimmerVRCPercentage()
     {
         return m_refData[RADIO_CHANNEL_VRC];
     }
 
-    float Radio::trimmerVRBPercentage()
+    float RaspberryEsp32Interface::trimmerVRBPercentage()
     {
         return m_refData[RADIO_CHANNEL_VRB];
     }
 
-    float Radio::trimmerVREPercentage()
+    float RaspberryEsp32Interface::trimmerVREPercentage()
     {
         return m_refData[RADIO_CHANNEL_VRE];
     }
 
-    void Radio::waitForArmCommand()
+    void RaspberryEsp32Interface::waitForArmCommand()
     {
         float temp[6];
         readPiData();
