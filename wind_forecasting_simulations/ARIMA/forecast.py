@@ -792,8 +792,8 @@ def fix_params_and_forecast(file_name,
 
 fix_params_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv',
                         train_end = 20,
-                        test_end = 10000,
-                        prediction_horizon = 10,
+                        test_end = 1020,
+                        prediction_horizon = 1,
                         ARIMA_p_1 = 5,
                         ARIMA_d_1 = 0,
                         ARIMA_q_1 = 8,
@@ -815,8 +815,8 @@ fix_params_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25
                         ARIMA_q_2 = None,
                         fix_params_2 = None,
                         wind_velocity_at_T_minus_prediction_horizon = True,
-                        combined_wind_speed = False,
-                        U = True,
+                        combined_wind_speed = True,
+                        U = False,
                         V = False,
                         W = False)
 
