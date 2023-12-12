@@ -76,6 +76,10 @@ void setGainsFromRcTrimmers()
  */
 void loop()
 {
+  if (raspberryEsp32Interface.throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE)
+  {
+    PreviousKill=0;
+  }
   float quaternionImuData[4];
   float measuredAngularVelocity[3];
   float angularVelocityCorrected[3];
