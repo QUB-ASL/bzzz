@@ -6,14 +6,25 @@ import threading
 
 
 class RC:
-    SBUS_PIN = 25  # pin where sbus wire is plugged in
+    """
+    This class is used to interface the remote control (receiver) with the Raspberry Pi.
+    """
 
-    def __init__(self):
+    def __init__(self,
+                 serial_path='/dev/ttyUSB0',
+                 baud=500000,
+                 sbus_pin = 25):
+        """
+        Create a new instance of RC
+
+        :param serial_path: serial path; defaults to /dev/ttyUSB0 on RPi
+        :param baud: baud rate of serial communication; defaults to 500000
+        :param sbus_pin: RPi GPIO pin where RC receiver sbus wire is plugged in
+        """
         # serial connection between Pi and ESP32
-        self.ser = serial.Serial('/dev/ttyUSB0', 500000, timeout=1)
+        self.ser = serial.Serial(serial_path, baud, timeout=1)
         self.ser.reset_input_buffer()
-        self.reader = bzzz.read_sbus.read_sbus_from_GPIO.SbusReader(
-            RC.SBUS_PIN)
+        self.reader = bzzz.read_sbus.read_sbus_from_GPIO.SbusReader(sbus_pin)
         self.reader.begin_listen()
 
         # wait until connection is established
@@ -32,6 +43,15 @@ class RC:
         self.__parsed_data = None
 
     def get_radio_data(self):
+        """
+        Checks if the radio is connected, determines when the last RC data was received
+        and reads the 16 channels of data received from the RC
+
+        Returns:
+        If the receiver is connected
+        When the last RC data was received
+        16 channels of data received from RC
+        """
         is_connected = self.reader.is_connected()
         packet_age = self.reader.get_latest_packet_age()  # milliseconds
 
@@ -40,7 +60,13 @@ class RC:
 
         return is_connected, packet_age, channel_data
 
-    def parse_radio_data(self, channel_data, over_write_throttle_ref_to=-1):
+    def parse_radio_data(self, 
+                         channel_data,
+                         over_write_throttle_ref_to=-1):
+        """
+        :param channel_data: 
+        :param over_write_throttle_ref_to:
+        """
         # check if data is in range [1000, 2000]
         self.parser.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (
             2000 if int(x) > 2000 else int(x)), channel_data.strip().split(",")))
