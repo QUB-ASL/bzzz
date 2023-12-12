@@ -111,6 +111,11 @@ namespace bzzz
         float yawRateReferenceRadSec();
 
         /**
+         * @brief value of switch A
+         */
+        bool switchA();
+
+        /**
          * @brief whether the arm switch is on
          */
         bool armed();
