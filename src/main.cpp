@@ -7,7 +7,7 @@
 #include "controller.hpp"
 #include "fail_safes.hpp"
 #include "util.hpp"
-int PreviousKill=0;
+
 using namespace bzzz;
 
 MotorDriver motorDriver;
@@ -20,7 +20,7 @@ float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 float IMUData[6];
 int motorFL, motorFR, motorBL, motorBR;
-
+int PreviousKill=0;
 /**
  * Setup the AHRS
  */
