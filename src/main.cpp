@@ -7,7 +7,7 @@
 #include "controller.hpp"
 #include "fail_safes.hpp"
 #include "util.hpp"
-
+int PreviousKill=0;
 using namespace bzzz;
 
 MotorDriver motorDriver;
@@ -93,6 +93,7 @@ void loop()
   {
     motorDriver.disarm();
     logSerial(LogVerbosityLevel::Debug, "Exit loop!");
+    PreviousKill=1;
     return; // exit the loop
   }
 
@@ -139,12 +140,24 @@ void loop()
   float throttleRef = raspberryEsp32Interface.throttleReferencePWM();
 
   // Compute control actions and send them to the motors
-  controller.motorPwmSignals(attitudeError,
+  if(PreviousKill==0)
+  {
+      controller.motorPwmSignals(attitudeError,
                              angularVelocityCorrected,
                              yawRateReference,
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
-  motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
+      motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
+  }
+  else 
+  {
+      controller.motorPwmSignals(attitudeError,
+                             angularVelocityCorrected,
+                             yawRateReference,
+                             throttleRef,
+                             motorFL, motorFR, motorBL, motorBR);
+      motorDriver.writeSpeedToEsc(1000, 1000, 1000, 1000);
+  }
 
   logSerial(LogVerbosityLevel::Debug, "PR: %f %f\n",
             IMUData[1], IMUData[2]);
