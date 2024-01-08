@@ -37,6 +37,7 @@ class PressureSensor:
                  DEVICE_ADDRESS: int = 0x77,
                  median_filter_length: int = 5,
                  reference_pressure_at_sea_level=None):
+        Thread.__init__(self)
         self._current_pressure = None
         self._previous_pressure = None
         self._pressure_readings_list = None
@@ -52,29 +53,15 @@ class PressureSensor:
         self.__pressure = None
         self.__temperature = None
         self.reference_pressure_at_sea_level = reference_pressure_at_sea_level
-###################################################################################################################################
-# A lock is used to guarantee that we won't be reading the data
-        # while the thread in the background is writing it
-        self.__lock = Lock()
-        self.__thread = Thread(target=self.__get_measurements_in_background_t,
-                               args=[serial_path, baud])
-        self.__keep_going = True
-        self.__window_length = window_length
-        self.__values_cache = np.tile(np.nan, (self.__window_length, 7))
-        self.__cursor = 0
-        self.__data_processor = data_processor
-        self.__log_file = log_file
-        self.__max_samples = max_samples
-        if log_file is not None:
-            feature_names = ("Date_Time", "Altitude", "Pressure")
-            self.__logger = DataLogger(num_features=2,
-                                       max_samples=max_samples,
-                                       feature_names=feature_names)
-        self.__thread.start()
-        def __get_measurements_in_background_t(self, serial_path, baud):
-###################################################################################################################################
+        self._init_pressure_sensor()
+        #Initilize Data Logger
+        self.data_logger = DataLogger()
+    def run(self):
+        while True:
             self._init_pressure_sensor()
-  
+            # Log the data
+            self.data_logger.log(self._current_pressure, self._current_altitude)
+            time.sleep(1)
     def _init_pressure_sensor(self):
         self._pressure_readings_list = list()
         self._pressure_readings_list_current_index = 0
