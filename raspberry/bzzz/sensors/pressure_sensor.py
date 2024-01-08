@@ -7,6 +7,12 @@ from filters import median_filter
 import smbus
 import time
 from ctypes import c_short
+import serial
+import numpy as np
+from threading import Thread, Lock
+import datetime
+from data_logger import DataLogger
+from filters import MedianFilter
 
 
 # NOTE: below three functions are adapted from https://www.raspberrypi-spy.co.uk/2015/04/bmp180-i2c-digital-barometric-pressure-sensor/
@@ -46,9 +52,29 @@ class PressureSensor:
         self.__pressure = None
         self.__temperature = None
         self.reference_pressure_at_sea_level = reference_pressure_at_sea_level
-
-        self._init_pressure_sensor()
-
+###################################################################################################################################
+# A lock is used to guarantee that we won't be reading the data
+        # while the thread in the background is writing it
+        self.__lock = Lock()
+        self.__thread = Thread(target=self.__get_measurements_in_background_t,
+                               args=[serial_path, baud])
+        self.__keep_going = True
+        self.__window_length = window_length
+        self.__values_cache = np.tile(np.nan, (self.__window_length, 7))
+        self.__cursor = 0
+        self.__data_processor = data_processor
+        self.__log_file = log_file
+        self.__max_samples = max_samples
+        if log_file is not None:
+            feature_names = ("Date_Time", "Altitude", "Pressure")
+            self.__logger = DataLogger(num_features=2,
+                                       max_samples=max_samples,
+                                       feature_names=feature_names)
+        self.__thread.start()
+        def __get_measurements_in_background_t(self, serial_path, baud):
+###################################################################################################################################
+            self._init_pressure_sensor()
+  
     def _init_pressure_sensor(self):
         self._pressure_readings_list = list()
         self._pressure_readings_list_current_index = 0
