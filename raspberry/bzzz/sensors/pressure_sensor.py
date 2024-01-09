@@ -7,14 +7,10 @@ from filters import median_filter
 import smbus
 import time
 from ctypes import c_short
-import serial
-import numpy as np
-from threading import Thread, Lock
-import datetime
+import threading
 from data_logger import DataLogger
-from filters import MedianFilter
-
-
+from filters import NoFilter
+import datetime
 # NOTE: below three functions are adapted from https://www.raspberrypi-spy.co.uk/2015/04/bmp180-i2c-digital-barometric-pressure-sensor/
 def _convertToString(data):
     # Simple function to convert binary data into
@@ -31,40 +27,30 @@ def _getUshort(data, index):
     # return two bytes from data as an unsigned 16-bit value
     return (data[index] << 8) + data[index + 1]
 
-
-class PressureSensor:
-    def __init__(self,
-                 DEVICE_ADDRESS: int = 0x77,
-                 median_filter_length: int = 5,
-                 reference_pressure_at_sea_level=None):
-        Thread.__init__(self)
-        self._current_pressure = None
-        self._previous_pressure = None
-        self._pressure_readings_list = None
-        self._pressure_readings_list_current_index = None
-        self._median_filter_length = median_filter_length
+class PressureSensor(threading.Thread):
+    def __init__(self, DEVICE_ADDRESS=0x77, median_filter_length=5, reference_pressure_at_sea_level=None):
+        threading.Thread.__init__(self)
+        self.daemon = True
 
         self.DEVICE_ADDRESS = DEVICE_ADDRESS
         self.smbus = smbus.SMBus(1)
+        self._median_filter_length = median_filter_length
+        self.reference_pressure_at_sea_level = reference_pressure_at_sea_level
 
+        # Initialize these attributes before calling _init_pressure_sensor
+        self._current_pressure = None
+        self._previous_pressure = None
+        self._pressure_readings_list = [0] * median_filter_length  # Initialize with zeroes or a default value
+        self._pressure_readings_list_current_index = 0
         self._current_altitude = None
         self._previous_altitude = None
 
-        self.__pressure = None
-        self.__temperature = None
-        self.reference_pressure_at_sea_level = reference_pressure_at_sea_level
         self._init_pressure_sensor()
-        #Initilize Data Logger
-        self.data_logger = DataLogger()
-    def run(self):
-        while True:
-            self._init_pressure_sensor()
-            # Log the data
-            self.data_logger.log(self._current_pressure, self._current_altitude)
-            time.sleep(1)
+        self.stop_thread = threading.Event()
+
     def _init_pressure_sensor(self):
         self._pressure_readings_list = list()
-        self._pressure_readings_list_current_index = 0
+        #self._pressure_readings_list_current_index = 0
         # TODO: add code to init pressure sensor
         for i in range(self._median_filter_length):
             self._pressure_readings_list.append(
@@ -187,7 +173,6 @@ class PressureSensor:
             self._pressure_readings_list_current_index = 0
         self._current_pressure = median_filter(
             self._pressure_readings_list, self._median_filter_length)
-
     def _calculate_altitude_from_pressure(self):
         # TODO: add code to calculate altitude from pressure
         self._current_altitude = 44330 * \
@@ -197,10 +182,23 @@ class PressureSensor:
         self._update_pressure()
         self._calculate_altitude_from_pressure()
 
+    def run(self):
+        while not self.stop_thread.is_set():
+            self.update_altitude()
+            print(f'Pressure: {self.pressure}, Altitude: {self.altitude}')
+            time.sleep(0.5)
+
+    def stop(self):
+        self.stop_thread.set()
 
 if __name__ == "__main__":
-    psen = PressureSensor(reference_pressure_at_sea_level=102500)
-    while True:
-        psen.update_altitude()
-        print(psen.pressure, psen.altitude)
-        time.sleep(0.5)
+    psensor = PressureSensor(reference_pressure_at_sea_level=102500)
+    psensor.start()  # Start the thread
+
+    try:
+        while True:
+            time.sleep(1)  # Main thread doing other tasks
+    except KeyboardInterrupt:
+        print("Stopping sensor thread...")
+        psensor.stop()
+        psensor.join()
