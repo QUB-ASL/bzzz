@@ -28,16 +28,18 @@ def _getUshort(data, index):
     return (data[index] << 8) + data[index + 1]
 
 class PressureSensor(threading.Thread):
-    def __init__(self, DEVICE_ADDRESS=0x77, median_filter_length=5, reference_pressure_at_sea_level=None):
+    def __init__(self, DEVICE_ADDRESS=0x77, median_filter_length=5, 
+                 reference_pressure_at_sea_level=None, log_file=None):
         threading.Thread.__init__(self)
         self.daemon = True
 
+        # Sensor parameters
         self.DEVICE_ADDRESS = DEVICE_ADDRESS
         self.smbus = smbus.SMBus(1)
         self._median_filter_length = median_filter_length
         self.reference_pressure_at_sea_level = reference_pressure_at_sea_level
 
-        # Initialize these attributes before calling _init_pressure_sensor
+        # Data attributes
         self._current_pressure = None
         self._previous_pressure = None
         self._pressure_readings_list = [0] * median_filter_length  # Initialize with zeroes or a default value
@@ -45,19 +47,27 @@ class PressureSensor(threading.Thread):
         self._current_altitude = None
         self._previous_altitude = None
 
+        # Logger
+        self.log_file = log_file
+        if log_file is not None:
+            feature_names = ("Date_Time", "Pressure", "Altitude")
+            self.logger = DataLogger(num_features=2, 
+                                     feature_names=feature_names)
+        
+        # Sensor initialization
         self._init_pressure_sensor()
         self.stop_thread = threading.Event()
 
     def _init_pressure_sensor(self):
-        self._pressure_readings_list = list()
-        #self._pressure_readings_list_current_index = 0
-        # TODO: add code to init pressure sensor
+        
         for i in range(self._median_filter_length):
-            self._pressure_readings_list.append(
-                self._get_current_pressure_measurement())
+            self._pressure_readings_list[i] = self._get_current_pressure_measurement()
+
+        # If reference pressure at sea level is not provided, calculate it
         if self.reference_pressure_at_sea_level is None:
-            self.reference_pressure_at_sea_level = median_filter(
-                self._pressure_readings_list)
+            self.reference_pressure_at_sea_level = median_filter(self._pressure_readings_list)
+
+        # Update the altitude based on the initial pressure readings
         self.update_altitude()
 
     # NOTE: adapted from https://www.raspberrypi-spy.co.uk/2015/04/bmp180-i2c-digital-barometric-pressure-sensor/
@@ -164,6 +174,7 @@ class PressureSensor(threading.Thread):
         return pressure_reading
 
     def _update_pressure(self):
+        
         pressure_reading = self._get_current_pressure_measurement()
         self._previous_pressure = self._current_pressure
         self._pressure_readings_list[self._pressure_readings_list_current_index] = pressure_reading
@@ -173,7 +184,9 @@ class PressureSensor(threading.Thread):
             self._pressure_readings_list_current_index = 0
         self._current_pressure = median_filter(
             self._pressure_readings_list, self._median_filter_length)
+        
     def _calculate_altitude_from_pressure(self):
+        
         # TODO: add code to calculate altitude from pressure
         self._current_altitude = 44330 * \
             (1 - (self._current_pressure/self.reference_pressure_at_sea_level)**(1/5.255))
@@ -183,22 +196,31 @@ class PressureSensor(threading.Thread):
         self._calculate_altitude_from_pressure()
 
     def run(self):
+        
         while not self.stop_thread.is_set():
             self.update_altitude()
-            print(f'Pressure: {self.pressure}, Altitude: {self.altitude}')
-            time.sleep(0.5)
+            
+            if self.log_file is not None:
+                
+                current_timestamp = datetime.datetime.now()
+                data_to_log = (self.pressure, self.altitude)
+                self.logger.record(current_timestamp, data_to_log)
+                time.sleep(0.5)
 
     def stop(self):
         self.stop_thread.set()
+        if self.log_file is not None:
+            self.logger.save_to_csv(self.log_file)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
 
 if __name__ == "__main__":
-    psensor = PressureSensor(reference_pressure_at_sea_level=102500)
+    log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_PressureSensor.csv")
+    psensor = PressureSensor(reference_pressure_at_sea_level=102500, log_file=log_filename)
     psensor.start()  # Start the thread
-
-    try:
-        while True:
-            time.sleep(1)  # Main thread doing other tasks
-    except KeyboardInterrupt:
-        print("Stopping sensor thread...")
-        psensor.stop()
-        psensor.join()
+    with psensor:
+        time.sleep(60)
