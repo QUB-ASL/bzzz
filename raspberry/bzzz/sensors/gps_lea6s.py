@@ -25,7 +25,7 @@ def deg_min_sec_to_decimal(
 class GpsLea6SReader:
 
     def __init__(self,
-                 serial_path="/dev/tty.usbmodem141301",
+                 serial_path="/dev/tty.usbmodem142201",
                  baud=500000):
         # Initialise objects to store various measurements
         self.__gpgll_latitude = None
@@ -69,7 +69,7 @@ class GpsLea6SReader:
                         altitude = float(tokens[5])
                     # Update GPS data with the new values
                     self.__gpgsv_num_sats = number_of_satellites
-                    print(f"Processed GPGSV data: Number of Satellites = {number_of_satellites}, Altitude = {altitude}")
+                    #print(f"Processed GPGSV data: Number of Satellites = {number_of_satellites}, Altitude = {altitude}")
 
                         
                 except Exception as e:
@@ -90,7 +90,7 @@ class GpsLea6SReader:
         """
         return self.__gpgll_longitude
 
-my_sensor = GpsLea6SReader(serial_path="/dev/tty.usbmodem141201")
+my_sensor = GpsLea6SReader(serial_path="/dev/tty.usbmodem142201")
 while True:    
     lat = my_sensor.latitude
     lon = my_sensor.longitude
