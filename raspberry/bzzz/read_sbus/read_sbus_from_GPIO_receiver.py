@@ -64,8 +64,11 @@ class RC:
                          channel_data,
                          over_write_throttle_ref_to=-1):
         """
-        :param channel_data: 
-        :param over_write_throttle_ref_to:
+        This function checks that the channel data from the remote is in the correct range and then formates it correctly to be sent to the ESP32.
+        
+        :param channel_data: The channel data from the remote that we want to check is in the correct range
+        :param over_write_throttle_ref_to: When altitude hold is active we want to overwrite the throttle reference from the remote. 
+               This sends the new throttle value, if set to -1 the reference throttle is kept; default: -1.
         """
         # check if data is in range [1000, 2000]
         self.parser.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (
@@ -94,7 +97,8 @@ class RC:
         self.ser.write(f'S,{channel_data}\n'.encode())
 
     def receive_data_from_ESP(self):
-        """Read data from ESP32 via UART.
+        """
+        Read data from ESP32 via UART.
 
         :return: String if data is received, None otherwise.
         """
@@ -112,7 +116,14 @@ class RC:
                                              force_send_fake_data=False,
                                              fake_data="",
                                              over_write_throttle_ref_to=-1):
-        """Read the radio data, process it, format it into a string, and send it via UART.
+        """
+        Read the radio data, process it, format it into a string, and send it via UART.
+
+        :param return_channel_data: 
+        :param force_send_fake_data: whether or not to send fake data; default: False.
+        :param fake_data: if force_send_fake_data = True, this is that data that is to be sent, it should start with "S"; default: "".
+        :param over_write_throttle_ref_to: When altitude hold is active we want to overwrite the throttle reference from the remote. 
+               This sends the new throttle value, if set to -1 the reference throttle is kept; default: -1.
         """
         try:
             _is_connected, _packet_age, channel_data = self.get_radio_data()
