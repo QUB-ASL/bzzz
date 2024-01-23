@@ -32,10 +32,10 @@
 /*
  * Motors config
  */
-#define FRONT_LEFT_ESC_PIN 33
-#define FRONT_RIGHT_ESC_PIN 32
-#define BACK_LEFT_ESC_PIN 26
-#define BACK_RIGHT_ESC_PIN 25
+#define FRONT_LEFT_ESC_PIN 25
+#define FRONT_RIGHT_ESC_PIN 33
+#define BACK_LEFT_ESC_PIN 27
+#define BACK_RIGHT_ESC_PIN 26
 
 #define ARM_ROTOR_SPEED 900
 #define ZERO_ROTOR_SPEED 1000
@@ -46,7 +46,7 @@
 /**
  * Buzzer pin
  */
-#define BUZZER_PIN 27
+#define BUZZER_PIN 32
 
 /** Maximum pitch value corresponding to the top position of the stick (30deg = 0.52rad) */
 #define PITCH_MAX_RAD 0.5235987755982988
