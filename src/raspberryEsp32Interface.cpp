@@ -158,7 +158,7 @@ namespace bzzz
         return m_encodedSwitchesData & RADIO_SWITCH_A_BIT;
     }
     
-    bool RaspberryEsp32Interface::armed()
+    bool RaspberryEsp32Interface::canArm()
     {
         // We only want to arm the motor when the arm switch is down and the rest are up 
         // therefore we want the m_encodedSwitchesData == RADIO_SWITCH_B_BIT.
@@ -221,7 +221,7 @@ namespace bzzz
         readPiData();
         sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
         delay(20);
-        while (!armed())
+        while (!canArm())
         {
             readPiData();
             sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
