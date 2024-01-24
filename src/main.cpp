@@ -24,7 +24,6 @@ bool wasKill=0;
 bool isKill=0;
 unsigned long timestampLastKill = 0;
 bool isThrottleStickDown = 0;
-bool allowUnkill=1;
 
 /**
  * Setup the AHRS
@@ -107,17 +106,12 @@ void loop()
   if (!isKill && wasKill){
     // If you're too late, you need to pull the stick down
     unsigned long timeElapsedSinceKill = millis() - timestampLastKill;
-    if (timeElapsedSinceKill >= 3000) {
-        logSerial(LogVerbosityLevel::Debug, "ET: %lu, isThrottleStickDown: %d\n", timeElapsedSinceKill, isThrottleStickDown);
-        if (isThrottleStickDown){
-          // proceed - unkill
-        } else { 
+    if (timeElapsedSinceKill >= UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms) {
+        if (!isThrottleStickDown){
           motorDriver.disarm();
           isKill = 1;
           return;
         }
-    } else {
-      // just procceed - unkill 
     }
   } 
 

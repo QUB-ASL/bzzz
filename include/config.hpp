@@ -93,6 +93,7 @@
  * Fail-safe config
 */
 #define TX_CONNECTION_TIMEOUT_IN_uS 500000
+#define UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms 3000
 
 #ifndef BZZZ_LOGGING_LEVEL
 #define BZZZ_LOGGING_LEVEL 3

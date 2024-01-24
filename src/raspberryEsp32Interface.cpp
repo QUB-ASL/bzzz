@@ -160,6 +160,10 @@ namespace bzzz
     
     bool RaspberryEsp32Interface::armed()
     {
+        // We only want to arm the motor when the arm switch is down and the rest are up 
+        // therefore we want the m_encodedSwitchesData == RADIO_SWITCH_B_BIT.
+        // We also only want to arm when the throttle is down
+        // therefore throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE (default 5%)
         bool isOnlyArmSwitchOn = m_encodedSwitchesData == RADIO_SWITCH_B_BIT;
         bool isThrottleDown = throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE;
 
