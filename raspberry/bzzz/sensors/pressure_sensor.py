@@ -40,11 +40,11 @@ class PressureSensor(threading.Thread):
         self.reference_pressure_at_sea_level = reference_pressure_at_sea_level
 
         # Data attributes
-        self._current_pressure = None
-        self._previous_pressure = None
-        self._pressure_readings_list = [0] * median_filter_length  # Initialize with zeroes or a default value
-        self._pressure_readings_list_current_index = 0
-        self._current_altitude = None
+        self.__current_pressure = None
+        self.__previous_pressure = None
+        self.__pressure_readings_list = [0] * median_filter_length  # Initialize with zeroes or a default value
+        self.__pressure_readings_list_current_index = 0
+        self.__current_altitude = None
         self._previous_altitude = None
 
         # Logger
@@ -61,11 +61,11 @@ class PressureSensor(threading.Thread):
     def _init_pressure_sensor(self):
         
         for i in range(self._median_filter_length):
-            self._pressure_readings_list[i] = self._get_current_pressure_measurement()
+            self.__pressure_readings_list[i] = self._get_current_pressure_measurement()
 
         # If reference pressure at sea level is not provided, calculate it
         if self.reference_pressure_at_sea_level is None:
-            self.reference_pressure_at_sea_level = median_filter(self._pressure_readings_list)
+            self.reference_pressure_at_sea_level = median_filter(self.__pressure_readings_list)
 
         # Update the altitude based on the initial pressure readings
         self.update_altitude()
@@ -153,19 +153,14 @@ class PressureSensor(threading.Thread):
 
     @property
     def pressure(self):
-        return self._current_pressure
+        return self.__current_pressure
 
-    @pressure.setter
-    def pressure(self, val):
-        self._current_pressure = val
-
+    
     @property
     def altitude(self):
-        return self._current_altitude
+        return self.__current_altitude
 
-    @altitude.setter
-    def altitude(self, val):
-        self._current_altitude = val
+   
 
     def _get_current_pressure_measurement(self):
         # TODO: add code to get measurement from sensor
@@ -176,20 +171,20 @@ class PressureSensor(threading.Thread):
     def _update_pressure(self):
         
         pressure_reading = self._get_current_pressure_measurement()
-        self._previous_pressure = self._current_pressure
-        self._pressure_readings_list[self._pressure_readings_list_current_index] = pressure_reading
-        if 0 <= self._pressure_readings_list_current_index < self._median_filter_length - 1:
-            self._pressure_readings_list_current_index += 1
+        self.__previous_pressure = self.__current_pressure
+        self.__pressure_readings_list[self.__pressure_readings_list_current_index] = pressure_reading
+        if 0 <= self.__pressure_readings_list_current_index < self._median_filter_length - 1:
+            self.__pressure_readings_list_current_index += 1
         else:
-            self._pressure_readings_list_current_index = 0
-        self._current_pressure = median_filter(
-            self._pressure_readings_list, self._median_filter_length)
+            self.__pressure_readings_list_current_index = 0
+        self.__current_pressure = median_filter(
+            self.__pressure_readings_list, self._median_filter_length)
         
     def _calculate_altitude_from_pressure(self):
         
-        # TODO: add code to calculate altitude from pressure
-        self._current_altitude = 44330 * \
-            (1 - (self._current_pressure/self.reference_pressure_at_sea_level)**(1/5.255))
+        # check calculate altitude from pressure
+        self.__current_altitude = 44330 * \
+            (1 - (self.__current_pressure/self.reference_pressure_at_sea_level)**(1/5.255))
 
     def update_altitude(self):
         self._update_pressure()
