@@ -20,6 +20,10 @@ float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 float IMUData[6];
 int motorFL, motorFR, motorBL, motorBR;
+bool wasKill=0;
+bool isKill=0;
+unsigned long timestampLastKill = 0;
+bool isThrottleStickDown = 0;
 
 /**
  * Setup the AHRS
@@ -75,7 +79,8 @@ void setGainsFromRcTrimmers()
  * Loop function
  */
 void loop()
-{
+{  
+  
   float quaternionImuData[4];
   float measuredAngularVelocity[3];
   float angularVelocityCorrected[3];
@@ -87,14 +92,44 @@ void loop()
         IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5],
         motorFL, motorFR, motorBL, motorBR);
     failSafes.setLastRadioReceptionTime(micros());
+    
+    wasKill = isKill;
+    isKill = raspberryEsp32Interface.kill();
+    isThrottleStickDown = raspberryEsp32Interface.throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE;
+    logSerial(LogVerbosityLevel::Debug, ">> [%d, %d] >> %lu\n",
+            isKill, wasKill, timestampLastKill);
   }
+
+  
+  // If you're attempting to resurrect it...
+  // K --> U
+  if (!isKill && wasKill){
+    // If you're too late, you need to pull the stick down
+    unsigned long timeElapsedSinceKill = millis() - timestampLastKill;
+    if (timeElapsedSinceKill >= UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms) {
+        if (!isThrottleStickDown){
+          motorDriver.disarm();
+          isKill = 1;
+          return;
+        }
+    }
+  } 
+
+  
+
   // one function to run all fail safe checks
-  if (raspberryEsp32Interface.kill() || failSafes.isSerialTimeout())
+  if (isKill || failSafes.isSerialTimeout())
   {
+    if (!wasKill) {
+      // U --> K
+      timestampLastKill = millis();
+    }
     motorDriver.disarm();
-    logSerial(LogVerbosityLevel::Debug, "Exit loop!");
     return; // exit the loop
   }
+
+  
+  
 
   ahrs.update();
   setGainsFromRcTrimmers();
@@ -139,13 +174,17 @@ void loop()
   float throttleRef = raspberryEsp32Interface.throttleReferencePWM();
 
   // Compute control actions and send them to the motors
+
   controller.motorPwmSignals(attitudeError,
                              angularVelocityCorrected,
                              yawRateReference,
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
+  
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
+
 
   logSerial(LogVerbosityLevel::Debug, "PR: %f %f\n",
             IMUData[1], IMUData[2]);
+
 }
