@@ -148,14 +148,26 @@ namespace bzzz
     float RaspberryEsp32Interface::throttleReferencePercentage()
     {
         // Since PWM range is [1000, 2000], we subtract 1000 to calculate the percentage
-        //   percentage = (Referance_PWM - 1000)/1000
+        //   percentage = (Reference_PWM - 1000)/1000
         //=> percentage = Reference_PWM/1000 - 1
         return m_refData[RADIO_CHANNEL_THROTTLE] / 1000 - 1;
     }
 
-    bool RaspberryEsp32Interface::armed()
+    bool RaspberryEsp32Interface::switchA()
     {
-        return m_encodedSwitchesData & RADIO_SWITCH_B_BIT;
+        return m_encodedSwitchesData & RADIO_SWITCH_A_BIT;
+    }
+    
+    bool RaspberryEsp32Interface::canArm()
+    {
+        // We only want to arm the motor when the arm switch is down and the rest are up 
+        // therefore we want the m_encodedSwitchesData == RADIO_SWITCH_B_BIT.
+        // We also only want to arm when the throttle is down
+        // therefore throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE (default 5%)
+        bool isOnlyArmSwitchOn = m_encodedSwitchesData == RADIO_SWITCH_B_BIT;
+        bool isThrottleDown = throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE;
+
+        return isOnlyArmSwitchOn && isThrottleDown;;
     }
 
     bool RaspberryEsp32Interface::kill()
@@ -209,7 +221,7 @@ namespace bzzz
         readPiData();
         sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
         delay(20);
-        while (!armed())
+        while (!canArm())
         {
             readPiData();
             sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);

@@ -111,9 +111,17 @@ namespace bzzz
         float yawRateReferenceRadSec();
 
         /**
-         * @brief whether the arm switch is on
+         * @brief value of switch A
          */
-        bool armed();
+        bool switchA();
+
+        /**
+         * @brief whether the motors can be armed
+         *
+         * For the motors to arm, the arm switch needs to be at the ON position
+         * and the throttle stick must be down.
+         */
+        bool canArm();
 
         /**
          * @brief whether the kill switch is on

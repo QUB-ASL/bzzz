@@ -48,6 +48,12 @@
  */
 #define BUZZER_PIN 32
 
+/**
+ * Maximum throttle percentage for arming the motors
+ * The throttle stick must be less than this percentage to arm the motors
+ */
+#define MAX_ARMING_THROTTLE_PERCENTAGE 0.05
+
 /** Maximum pitch value corresponding to the top position of the stick (30deg = 0.52rad) */
 #define PITCH_MAX_RAD 0.5235987755982988
 
@@ -87,6 +93,7 @@
  * Fail-safe config
 */
 #define TX_CONNECTION_TIMEOUT_IN_uS 500000
+#define UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms 3000
 
 #ifndef BZZZ_LOGGING_LEVEL
 #define BZZZ_LOGGING_LEVEL 3
