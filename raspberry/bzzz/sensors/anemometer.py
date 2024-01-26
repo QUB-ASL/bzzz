@@ -3,8 +3,8 @@ import numpy as np
 from threading import Thread, Lock
 import time
 import datetime
-from data_logger import DataLogger
-from filters import MedianFilter
+from .data_logger import DataLogger
+from .filters import MedianFilter
 
 
 class Anemometer:
