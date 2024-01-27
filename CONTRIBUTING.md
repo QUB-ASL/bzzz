@@ -212,7 +212,7 @@ Example of C++ documentation:
 /**
  * @brief computes control action
  *
- * @param systemState state of the system
+ * :param systemState: state of the system
  *
  * @return control voltage
  */
