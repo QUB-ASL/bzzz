@@ -28,7 +28,7 @@ Usage:
     start and stop the thread.
 """
 
-# NOTE: below three functions are adapted from https://www.raspberrypi-spy.co.uk/2015/04/bmp180-i2c-digital-barometric-pressure-sensor/
+# NOTE: below three functions below are adapted from https://www.raspberrypi-spy.co.uk/2015/04/bmp180-i2c-digital-barometric-pressure-sensor/
 def _convertToString(data):
     """
     Convert binary data into a string representation.
@@ -61,15 +61,22 @@ class PressureSensor(threading.Thread):
     """
     A class for reading and logging pressure and altitude data from the BMP180 sensor in a separate thread.
     
-    :param data_processor: An instance of a filter class for processing pressure readings.
-    :param window_length: The number of readings to include in the moving window for filtering.
-    :param DEVICE_ADDRESS: I2C address of the BMP180 sensor (default 0x77).
-    :param reference_pressure_at_sea_level: Reference pressure at sea level used for altitude calculations (optional).
-    :param log_file: Name of the file to log pressure and altitude readings (optional).
     """
-    def __init__(self, data_processor, window_length, DEVICE_ADDRESS=0x77, reference_pressure_at_sea_level=None, log_file=None):
+
+    def __init__(self, 
+                 data_processor, 
+                 window_length, 
+                 DEVICE_ADDRESS=0x77, 
+                 reference_pressure_at_sea_level=None, 
+                 log_file=None):
         """
         Initialize the PressureSensor thread with the specified parameters.
+        
+        :param data_processor: An instance of a filter class for processing pressure readings.
+        :param window_length: The number of readings to include in the moving window for filtering.
+        :param DEVICE_ADDRESS: I2C address of the BMP180 sensor (default 0x77).
+        :param reference_pressure_at_sea_level: Reference pressure at sea level used for altitude calculations (optional).
+        :param log_file: Name of the file to log pressure and altitude readings (optional).
         """
         threading.Thread.__init__(self)
         self.daemon = True
@@ -298,7 +305,7 @@ if __name__ == "__main__":
    
     log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_PressureSensor.csv")
     processor = AverageFilter()  # You need to define this class based on your requirements
-    psensor = PressureSensor(window_length=1, data_processor=processor, reference_pressure_at_sea_level=102500, log_file=log_filename)
+    psensor = PressureSensor(window_length=100, data_processor=processor, reference_pressure_at_sea_level=102500, log_file=log_filename)
     psensor.start()
     with psensor:
         time.sleep(60)  # Collect data for 60 seconds
