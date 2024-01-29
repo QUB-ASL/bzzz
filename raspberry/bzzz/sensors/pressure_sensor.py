@@ -1,9 +1,5 @@
-# TODO: implement proper code for a particular sensor
-# TODO: add proper Doc strings
-# NOTE: for now, we are just passing dummy values
-# TODO: review this file later
-
-from filters import median_filter
+from filters import MedianFilter
+from filters import AverageFilter
 import smbus
 import time
 from ctypes import c_short
@@ -28,24 +24,22 @@ def _getUshort(data, index):
     return (data[index] << 8) + data[index + 1]
 
 class PressureSensor(threading.Thread):
-    def __init__(self, DEVICE_ADDRESS=0x77, median_filter_length=5, 
-                 reference_pressure_at_sea_level=None, log_file=None):
+    def __init__(self, data_processor, window_length, DEVICE_ADDRESS=0x77, reference_pressure_at_sea_level=None, log_file=None):
         threading.Thread.__init__(self)
         self.daemon = True
 
         # Sensor parameters
+        self.window_length = window_length
         self.DEVICE_ADDRESS = DEVICE_ADDRESS
         self.smbus = smbus.SMBus(1)
-        self._median_filter_length = median_filter_length
+        self.data_processor = data_processor  # Data processor object
         self.reference_pressure_at_sea_level = reference_pressure_at_sea_level
 
         # Data attributes
         self.__current_pressure = None
-        self.__previous_pressure = None
-        self.__pressure_readings_list = [0] * median_filter_length  # Initialize with zeroes or a default value
-        self.__pressure_readings_list_current_index = 0
+        self.__pressure_readings_list = []
         self.__current_altitude = None
-        self._previous_altitude = None
+
 
         # Logger
         self.log_file = log_file
@@ -60,15 +54,17 @@ class PressureSensor(threading.Thread):
 
     def _init_pressure_sensor(self):
         
-        for i in range(self._median_filter_length):
-            self.__pressure_readings_list[i] = self._get_current_pressure_measurement()
+        # Initialize pressure readings list with initial values
+        for _ in range(self.window_length):
+            self.__pressure_readings_list.append(self._get_current_pressure_measurement())
 
-        # If reference pressure at sea level is not provided, calculate it
+        # If reference pressure at sea level is not provided, calculate it using the data processor
         if self.reference_pressure_at_sea_level is None:
-            self.reference_pressure_at_sea_level = median_filter(self.__pressure_readings_list)
+            self.reference_pressure_at_sea_level = self.data_processor.process(self.__pressure_readings_list)
 
         # Update the altitude based on the initial pressure readings
         self.update_altitude()
+
 
     # NOTE: adapted from https://www.raspberrypi-spy.co.uk/2015/04/bmp180-i2c-digital-barometric-pressure-sensor/
     def __readBmp180Id(self):
@@ -169,16 +165,14 @@ class PressureSensor(threading.Thread):
         return pressure_reading
 
     def _update_pressure(self):
-        
+        # Get current pressure measurement and add to readings list
         pressure_reading = self._get_current_pressure_measurement()
-        self.__previous_pressure = self.__current_pressure
-        self.__pressure_readings_list[self.__pressure_readings_list_current_index] = pressure_reading
-        if 0 <= self.__pressure_readings_list_current_index < self._median_filter_length - 1:
-            self.__pressure_readings_list_current_index += 1
-        else:
-            self.__pressure_readings_list_current_index = 0
-        self.__current_pressure = median_filter(
-            self.__pressure_readings_list, self._median_filter_length)
+        self.__pressure_readings_list.append(pressure_reading)
+        # Remove the oldest reading to maintain the buffer size
+        if len(self.__pressure_readings_list) > self.window_length:
+            self.__pressure_readings_list.pop(0)
+        # Use the data processor to calculate the current pressure
+        self.__current_pressure = self.data_processor.process(self.__pressure_readings_list)
         
     def _calculate_altitude_from_pressure(self):
         
@@ -214,8 +208,10 @@ class PressureSensor(threading.Thread):
         self.stop()
 
 if __name__ == "__main__":
+   
     log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_PressureSensor.csv")
-    psensor = PressureSensor(reference_pressure_at_sea_level=102500, log_file=log_filename)
-    psensor.start()  # Start the thread
+    processor = AverageFilter()  # You need to define this class based on your requirements
+    psensor = PressureSensor(window_length=1, data_processor=processor, reference_pressure_at_sea_level=102500, log_file=log_filename)
+    psensor.start()
     with psensor:
-        time.sleep(60)
+        time.sleep(60)  # Collect data for 60 seconds
