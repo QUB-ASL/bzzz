@@ -102,10 +102,10 @@ class PressureSensor(threading.Thread):
                                      feature_names=feature_names)
         
         # Sensor initialization
-        self._init_pressure_sensor()
+        self.__init_pressure_sensor()
         self.stop_thread = threading.Event()
 
-    def _init_pressure_sensor(self):
+    def __init_pressure_sensor(self):
         """
         Initialize the pressure sensor by reading initial pressure values and setting up the reference pressure at sea level if not provided.
         """
