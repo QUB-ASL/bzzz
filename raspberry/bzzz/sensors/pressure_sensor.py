@@ -5,29 +5,75 @@ import time
 from ctypes import c_short
 import threading
 from data_logger import DataLogger
-from filters import NoFilter
 import datetime
+"""
+This module defines a PressureSensor class that inherits from threading.Thread, enabling it to read and log pressure 
+and altitude data in a separate thread. The class is designed to work with the BMP180 I2C digital barometric pressure sensor, 
+commonly used with Raspberry Pi. The sensor's readings are processed through a filter (e.g., MedianFilter, AverageFilter) to
+obtain smoothed values. The module also includes utility functions for data conversion and sensor calibration.
+
+Classes:
+    PressureSensor: Extends threading.Thread to continuously read pressure data from the BMP180 sensor, process the readings 
+    through a specified filter, calculate altitude based on pressure, and log the results if a log file is specified.
+
+Functions:
+    _convertToString(data): Convert binary data into a string representation.
+    _getShort(data, index): Extract a signed 16-bit value from a data array starting at the specified index.
+    _getUshort(data, index): Extract an unsigned 16-bit value from a data array starting at the specified index.
+
+Usage:
+    To use the PressureSensor class, create an instance by specifying the data processing filter, window length for the filter, 
+    device address of the sensor, reference pressure at sea level (optional), and log file name (optional). Call the start() method 
+    to begin reading and processing data in a separate thread. Use the context manager syntax with the sensor object to automatically 
+    start and stop the thread.
+"""
+
 # NOTE: below three functions are adapted from https://www.raspberrypi-spy.co.uk/2015/04/bmp180-i2c-digital-barometric-pressure-sensor/
 def _convertToString(data):
-    # Simple function to convert binary data into
-    # a string
+    """
+    Convert binary data into a string representation.
+    :param data: A list or tuple containing two bytes of data.
+    :return: A string representation of the converted data.
+    """
     return str((data[1] + (256 * data[0])) / 1.2)
 
 
 def _getShort(data, index):
-    # return two bytes from data as a signed 16-bit value
+    """
+    Extract a signed 16-bit value from a data array starting at the specified index.
+    :param data: A list or tuple containing byte data.
+    :param index: The starting index in the data array.
+    :return: A signed 16-bit integer value.
+    """
     return c_short((data[index] << 8) + data[index + 1]).value
 
 
 def _getUshort(data, index):
-    # return two bytes from data as an unsigned 16-bit value
+    """
+    Extract an unsigned 16-bit value from a data array starting at the specified index.
+    :param data: A list or tuple containing byte data.
+    :param index: The starting index in the data array.
+    :return: An unsigned 16-bit integer value.
+    """
     return (data[index] << 8) + data[index + 1]
 
 class PressureSensor(threading.Thread):
+    """
+    A class for reading and logging pressure and altitude data from the BMP180 sensor in a separate thread.
+    
+    :param data_processor: An instance of a filter class for processing pressure readings.
+    :param window_length: The number of readings to include in the moving window for filtering.
+    :param DEVICE_ADDRESS: I2C address of the BMP180 sensor (default 0x77).
+    :param reference_pressure_at_sea_level: Reference pressure at sea level used for altitude calculations (optional).
+    :param log_file: Name of the file to log pressure and altitude readings (optional).
+    """
     def __init__(self, data_processor, window_length, DEVICE_ADDRESS=0x77, reference_pressure_at_sea_level=None, log_file=None):
+        """
+        Initialize the PressureSensor thread with the specified parameters.
+        """
         threading.Thread.__init__(self)
         self.daemon = True
-
+        self.__lock = threading.Lock()
         # Sensor parameters
         self.window_length = window_length
         self.DEVICE_ADDRESS = DEVICE_ADDRESS
@@ -53,7 +99,9 @@ class PressureSensor(threading.Thread):
         self.stop_thread = threading.Event()
 
     def _init_pressure_sensor(self):
-        
+        """
+        Initialize the pressure sensor by reading initial pressure values and setting up the reference pressure at sea level if not provided.
+        """
         # Initialize pressure readings list with initial values
         for _ in range(self.window_length):
             self.__pressure_readings_list.append(self._get_current_pressure_measurement())
@@ -68,7 +116,10 @@ class PressureSensor(threading.Thread):
 
     # NOTE: adapted from https://www.raspberrypi-spy.co.uk/2015/04/bmp180-i2c-digital-barometric-pressure-sensor/
     def __readBmp180Id(self):
-        # Chip ID Register Address
+        """
+        Read the chip ID and version from the BMP180 sensor.
+        :return: A tuple containing the chip ID and chip version.
+        """
         REG_ID = 0xD0
         chip_id, chip_version = self.smbus.read_i2c_block_data(
             self.DEVICE_ADDRESS, REG_ID, 2)
@@ -76,6 +127,9 @@ class PressureSensor(threading.Thread):
 
     # NOTE: adapted from https://www.raspberrypi-spy.co.uk/2015/04/bmp180-i2c-digital-barometric-pressure-sensor/
     def __readBmp180(self):
+        """
+        Read and process pressure and temperature data from the BMP180 sensor based on the device's calibration data.
+        """
         # Register Addresses
         REG_CALIB = 0xAA
         REG_MEAS = 0xF4
@@ -149,43 +203,66 @@ class PressureSensor(threading.Thread):
 
     @property
     def pressure(self):
+        """
+        Return the current pressure reading.
+        :return: The current pressure in Pa.
+        """
         return self.__current_pressure
 
     
     @property
     def altitude(self):
+        """
+        Return the current altitude calculation based on the current pressure and reference pressure at sea level.
+        :return: The current altitude in meters.
+        """
         return self.__current_altitude
 
    
 
     def _get_current_pressure_measurement(self):
-        # TODO: add code to get measurement from sensor
+        """
+        Read the current pressure measurement from the sensor.
+        :return: The current pressure reading in Pa.
+        """
         self.__readBmp180()
         pressure_reading = self.__pressure
         return pressure_reading
 
     def _update_pressure(self):
-        # Get current pressure measurement and add to readings list
-        pressure_reading = self._get_current_pressure_measurement()
-        self.__pressure_readings_list.append(pressure_reading)
-        # Remove the oldest reading to maintain the buffer size
-        if len(self.__pressure_readings_list) > self.window_length:
-            self.__pressure_readings_list.pop(0)
-        # Use the data processor to calculate the current pressure
-        self.__current_pressure = self.data_processor.process(self.__pressure_readings_list)
+        """
+        Update the pressure reading list with a new measurement and process the readings through the specified filter.
+        """
+        with self.__lock:
+            # Get current pressure measurement and add to readings list
+            pressure_reading = self._get_current_pressure_measurement()
+            self.__pressure_readings_list.append(pressure_reading)
+            # Remove the oldest reading to maintain the buffer size
+            if len(self.__pressure_readings_list) > self.window_length:
+                self.__pressure_readings_list.pop(0)
+            # Use the data processor to calculate the current pressure
+            self.__current_pressure = self.data_processor.process(self.__pressure_readings_list)
         
     def _calculate_altitude_from_pressure(self):
-        
-        # check calculate altitude from pressure
-        self.__current_altitude = 44330 * \
-            (1 - (self.__current_pressure/self.reference_pressure_at_sea_level)**(1/5.255))
+        """
+        Calculate the current altitude based on the current pressure reading and the reference pressure at sea level.
+        """
+        with self.__lock:
+            # check calculate altitude from pressure
+            self.__current_altitude = 44330 * \
+                (1 - (self.__current_pressure/self.reference_pressure_at_sea_level)**(1/5.255))
 
     def update_altitude(self):
+        """
+        Update the current pressure reading and calculate the current altitude.
+        """
         self._update_pressure()
         self._calculate_altitude_from_pressure()
 
     def run(self):
-        
+        """
+        Override the threading.Thread.run method to continuously update altitude and log data if a log file is specified.
+        """
         while not self.stop_thread.is_set():
             self.update_altitude()
             
@@ -197,14 +274,24 @@ class PressureSensor(threading.Thread):
                 time.sleep(0.5)
 
     def stop(self):
+        """
+        Set the stop flag for the thread and save logged data to a CSV file if logging is enabled.
+        """
         self.stop_thread.set()
         if self.log_file is not None:
             self.logger.save_to_csv(self.log_file)
 
     def __enter__(self):
+        """
+        Support the context manager protocol for the PressureSensor class.
+        :return: The PressureSensor instance.
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Support the context manager protocol for the PressureSensor class by stopping the thread on exit.
+        """
         self.stop()
 
 if __name__ == "__main__":
