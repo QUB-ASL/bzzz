@@ -6,14 +6,25 @@ import threading
 
 
 class RC:
-    SBUS_PIN = 25  # pin where sbus wire is plugged in
+    """
+    This class is used to interface the remote control (receiver) with the Raspberry Pi.
+    """
 
-    def __init__(self):
+    def __init__(self,
+                 serial_path='/dev/ttyUSB0',
+                 baud=500000,
+                 sbus_pin = 25):
+        """
+        Create a new instance of RC
+
+        :param serial_path: serial path; defaults to /dev/ttyUSB0 on RPi
+        :param baud: baud rate of serial communication; defaults to 500000
+        :param sbus_pin: RPi GPIO pin where RC receiver sbus wire is plugged in
+        """
         # serial connection between Pi and ESP32
-        self.ser = serial.Serial('/dev/ttyUSB0', 500000, timeout=1)
+        self.ser = serial.Serial(serial_path, baud, timeout=1)
         self.ser.reset_input_buffer()
-        self.reader = bzzz.read_sbus.read_sbus_from_GPIO.SbusReader(
-            RC.SBUS_PIN)
+        self.reader = bzzz.read_sbus.read_sbus_from_GPIO.SbusReader(sbus_pin)
         self.reader.begin_listen()
 
         # wait until connection is established
@@ -32,6 +43,15 @@ class RC:
         self.__parsed_data = None
 
     def get_radio_data(self):
+        """
+        Checks if the radio is connected, determines when the last RC data was received
+        and reads the 16 channels of data received from the RC
+
+        Returns:
+        If the receiver is connected
+        When the last RC data was received
+        16 channels of data received from RC
+        """
         is_connected = self.reader.is_connected()
         packet_age = self.reader.get_latest_packet_age()  # milliseconds
 
@@ -40,7 +60,16 @@ class RC:
 
         return is_connected, packet_age, channel_data
 
-    def parse_radio_data(self, channel_data, over_write_throttle_ref_to=-1):
+    def parse_radio_data(self, 
+                         channel_data,
+                         over_write_throttle_ref_to=-1):
+        """
+        This function checks that the channel data from the remote is in the correct range and then formates it correctly to be sent to the ESP32.
+        
+        :param channel_data: The channel data from the remote that we want to check is in the correct range
+        :param over_write_throttle_ref_to: When altitude hold is active we want to overwrite the throttle reference from the remote. 
+               This sends the new throttle value, if set to -1 the reference throttle is kept; default: -1.
+        """
         # check if data is in range [1000, 2000]
         self.parser.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (
             2000 if int(x) > 2000 else int(x)), channel_data.strip().split(",")))
@@ -68,7 +97,8 @@ class RC:
         self.ser.write(f'S,{channel_data}\n'.encode())
 
     def receive_data_from_ESP(self):
-        """Read data from ESP32 via UART.
+        """
+        Read data from ESP32 via UART.
 
         :return: String if data is received, None otherwise.
         """
@@ -86,7 +116,14 @@ class RC:
                                              force_send_fake_data=False,
                                              fake_data="",
                                              over_write_throttle_ref_to=-1):
-        """Read the radio data, process it, format it into a string, and send it via UART.
+        """
+        Read the radio data, process it, format it into a string, and send it via UART.
+
+        :param return_channel_data: 
+        :param force_send_fake_data: whether or not to send fake data; default: False.
+        :param fake_data: if force_send_fake_data = True, this is that data that is to be sent, it should start with "S"; default: "".
+        :param over_write_throttle_ref_to: When altitude hold is active we want to overwrite the throttle reference from the remote. 
+               This sends the new throttle value, if set to -1 the reference throttle is kept; default: -1.
         """
         try:
             _is_connected, _packet_age, channel_data = self.get_radio_data()
