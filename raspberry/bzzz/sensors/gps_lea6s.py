@@ -29,7 +29,7 @@ class GpsLea6SReader:
     and starts a background thread to continuously read and parse GPS data.
     """
     def __init__(self,
-                 serial_path="/dev/tty.usb...",
+                 serial_path="/dev/ttyACM0",
                  baud=500000):
         # Initialise objects to store various measurements
         self.__gpgll_latitude = None
@@ -106,7 +106,8 @@ class GpsLea6SReader:
         """
         return self.__gpgsv_altitude
 
-my_sensor = GpsLea6SReader(serial_path="/dev/tty.usb...")
+my_sensor = GpsLea6SReader(serial_path="/dev/ttyACM0")
+
 while True:    
     lat = my_sensor.latitude
     lon = my_sensor.longitude
