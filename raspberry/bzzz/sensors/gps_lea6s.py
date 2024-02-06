@@ -10,7 +10,7 @@ def deg_min_sec_to_decimal(
     degrees, minutes, direction
     ):
     """
-    Convert degrees-minutes-seconds from GNGLL to degrees (deciman)
+    Convert degrees-minutes-seconds from GNGLL to degrees (decimal)
 
     :param dms: degrees-minutes-seconds (must be positive)
     :param dir: direction (can be one of 'N', 'W', 'E', 'S')
