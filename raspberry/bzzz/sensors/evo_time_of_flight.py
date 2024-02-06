@@ -4,8 +4,8 @@ import numpy as np
 from threading import Thread, Lock
 import time
 import datetime
-from data_logger import DataLogger
-from filters import NoFilter
+from .data_logger import DataLogger
+from .filters import NoFilter
 
 
 class EvoSensor:
