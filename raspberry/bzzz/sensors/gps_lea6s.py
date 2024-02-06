@@ -17,7 +17,7 @@ def deg_min_sec_to_decimal(
     """
     
     decimal_degrees = degrees + minutes / 60
-    if direction in ['S', 'W']:  # South and West lat and long need to be denoted with a "-" value
+    if direction in ['S', 'W']:  # need to be denoted with a "-" value -> are negative
         decimal_degrees *= -1
     return decimal_degrees
 
