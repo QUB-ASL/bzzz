@@ -47,7 +47,7 @@ class RC:
 
     def get_radio_data(self,
                        max_packet_age_in_ms=500,
-                       receiver_disconnect_throttle_ref=700,
+                       receiver_disconnect_throttle_ref=650,
                        receiver_disconnect_throttle_height = 0.6):
         """
         Checks if the radio is connected, determines when the last RC data was received
@@ -57,7 +57,7 @@ class RC:
                                      can fly since it last read the receiver. defualt 500ms
         :parm receiver_disconnect_throttle_ref: Throttle refrence that can be set, that if the receiver disconnects
                                                 the throttle will be set to this value which should be slightly less 
-                                                than the hovering throttle. defualt 700 ROUGH ESTIMATION
+                                                than the hovering throttle. defualt 650 ROUGH ESTIMATION
         :parm receiver_disconnect_throttle_height: How close the quadcopter has to be to the ground to kill the motors
                                                    if the receiver disconects. Above this hieght the motor will spin 
                                                    at a speed according to the 'receiver_disconnect_throttle_ref' param
@@ -72,15 +72,15 @@ class RC:
         packet_age = self.reader.get_latest_packet_age()  # milliseconds
 
         # returns list of length 16, so -1 from channel num to get index
-        if packet_age <= max_packet_age_in_ms:
-            channel_data = str(self.reader.translate_latest_packet())[1:-1]
-        else:
+        if packet_age > max_packet_age_in_ms or not is_connected:
             if self.__ToF_seansor.distance > receiver_disconnect_throttle_height:
                 channel_data = str(f"1000, 1000, {receiver_disconnect_throttle_ref}, 1000, 300, {self.reader.translate_latest_packet()[5]}, \
                                    {self.reader.translate_latest_packet()[6]}, {self.reader.translate_latest_packet()[7]}, 1700, 300, 300, 1700, 1000, 1000, 1000, 1000")
             else:
                 channel_data = str(f"1000, 1000, 300, 1000, 300, {self.reader.translate_latest_packet()[5]}, {self.reader.translate_latest_packet()[6]}, \
-                                   {self.reader.translate_latest_packet()[7]}, 1700, 300, 1700, 1700, 1000, 1000, 1000, 1000")    
+                                   {self.reader.translate_latest_packet()[7]}, 1700, 300, 1700, 1700, 1000, 1000, 1000, 1000")
+        else:
+            channel_data = str(self.reader.translate_latest_packet())[1:-1]
 
         return is_connected, packet_age, channel_data
 
@@ -151,15 +151,11 @@ class RC:
         """
         try:
             _is_connected, _packet_age, channel_data = self.get_radio_data()
-            if not _is_connected:
-                print(
-                    f"Radio not connected; Status _is_connected: {_is_connected}")
-            if _is_connected:
-                channel_data = self.parse_radio_data(
-                    channel_data, over_write_throttle_ref_to=over_write_throttle_ref_to)
-                if force_send_fake_data:
-                    channel_data = fake_data
-                self.send_data_to_ESP(channel_data)
+            channel_data = self.parse_radio_data(
+                channel_data, over_write_throttle_ref_to=over_write_throttle_ref_to)
+            if force_send_fake_data:
+                channel_data = fake_data
+            self.send_data_to_ESP(channel_data)
             if return_channel_data:
                 return channel_data
         except KeyboardInterrupt:
