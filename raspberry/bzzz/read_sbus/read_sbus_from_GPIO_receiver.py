@@ -3,7 +3,7 @@ import time
 import serial
 import bzzz.read_sbus.radioDataParser
 import threading
-
+from bzzz.sensors.evo_time_of_flight import EvoSensor
 
 class RC:
     """
@@ -21,6 +21,9 @@ class RC:
         :param baud: baud rate of serial communication; defaults to 500000
         :param sbus_pin: RPi GPIO pin where RC receiver sbus wire is plugged in
         """
+        # Time of flight sensor
+        self.__ToF_seansor = EvoSensor()
+
         # serial connection between Pi and ESP32
         self.ser = serial.Serial(serial_path, baud, timeout=1)
         self.ser.reset_input_buffer()
@@ -44,13 +47,21 @@ class RC:
 
     def get_radio_data(self,
                        max_packet_age_in_ms=500,
-                       reciever_disconnect_throttle_ref=300):
+                       receiver_disconnect_throttle_ref=700,
+                       receiver_disconnect_throttle_height = 0.6):
         """
         Checks if the radio is connected, determines when the last RC data was received
         and reads the 16 channels of data received from the RC
 
         :param max_packet_age_in_ms: max age a packet can be im ms. Therefore how long the quadcopter
                                      can fly since it last read the receiver. defualt 500ms
+        :parm receiver_disconnect_throttle_ref: Throttle refrence that can be set, that if the receiver disconnects
+                                                the throttle will be set to this value which should be slightly less 
+                                                than the hovering throttle. defualt 700 ROUGH ESTIMATION
+        :parm receiver_disconnect_throttle_height: How close the quadcopter has to be to the ground to kill the motors
+                                                   if the receiver disconects. Above this hieght the motor will spin 
+                                                   at a speed according to the 'receiver_disconnect_throttle_ref' param
+                                                   defualt 0.6m
 
         Returns:
         If the receiver is connected
@@ -64,7 +75,12 @@ class RC:
         if packet_age <= max_packet_age_in_ms:
             channel_data = str(self.reader.translate_latest_packet())[1:-1]
         else:
-            channel_data = str(f"1000, 1000, {reciever_disconnect_throttle_ref}, 1000, 300, {self.reader.translate_latest_packet()[5]}, {self.reader.translate_latest_packet()[6]}, {self.reader.translate_latest_packet()[7]}, 1700, 300, 1700, 1700, 1000, 1000, 1000, 1000")
+            if self.__ToF_seansor.distance > receiver_disconnect_throttle_height:
+                channel_data = str(f"1000, 1000, {receiver_disconnect_throttle_ref}, 1000, 300, {self.reader.translate_latest_packet()[5]}, \
+                                   {self.reader.translate_latest_packet()[6]}, {self.reader.translate_latest_packet()[7]}, 1700, 300, 300, 1700, 1000, 1000, 1000, 1000")
+            else:
+                channel_data = str(f"1000, 1000, 300, 1000, 300, {self.reader.translate_latest_packet()[5]}, {self.reader.translate_latest_packet()[6]}, \
+                                   {self.reader.translate_latest_packet()[7]}, 1700, 300, 1700, 1700, 1000, 1000, 1000, 1000")    
 
         return is_connected, packet_age, channel_data
 
