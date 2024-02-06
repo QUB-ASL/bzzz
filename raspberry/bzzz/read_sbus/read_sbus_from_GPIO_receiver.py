@@ -43,13 +43,14 @@ class RC:
         self.__parsed_data = None
 
     def get_radio_data(self,
-                       max_packet_age_in_ms=500):
+                       max_packet_age_in_ms=500,
+                       reciever_disconnect_throttle_ref=300):
         """
         Checks if the radio is connected, determines when the last RC data was received
         and reads the 16 channels of data received from the RC
 
         :param max_packet_age_in_ms: max age a packet can be im ms. Therefore how long the quadcopter
-                                     can fly since it last read the reciver. defualt 500ms
+                                     can fly since it last read the receiver. defualt 500ms
 
         Returns:
         If the receiver is connected
@@ -63,7 +64,7 @@ class RC:
         if packet_age <= max_packet_age_in_ms:
             channel_data = str(self.reader.translate_latest_packet())[1:-1]
         else:
-            channel_data = "1000, 1000, 300, 1000, 300, 300, 300, 300, 1700, 300, 1700, 1700, 1000, 1000, 1000, 1000"
+            channel_data = str(f"1000, 1000, {reciever_disconnect_throttle_ref}, 1000, 300, {self.reader.translate_latest_packet()[5]}, {self.reader.translate_latest_packet()[6]}, {self.reader.translate_latest_packet()[7]}, 1700, 300, 1700, 1700, 1000, 1000, 1000, 1000")
 
         return is_connected, packet_age, channel_data
 
