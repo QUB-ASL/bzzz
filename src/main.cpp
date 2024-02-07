@@ -126,102 +126,101 @@ void loop()
   float measuredAngularVelocity[3];
   float angularVelocityCorrected[3];
 
-  if (timerState==true)
+  if (!timerState) return;
+  
+  // if raspberryEsp32Interface data received update the last data read time.
+  if (raspberryEsp32Interface.readPiData())
   {
-    // if raspberryEsp32Interface data received update the last data read time.
-    if (raspberryEsp32Interface.readPiData())
-    {
-      raspberryEsp32Interface.sendFlightDataToPi(
-          IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5],
-          motorFL, motorFR, motorBL, motorBR);
-      failSafes.setLastRadioReceptionTime(micros());
-      
-      wasKill = isKill;
-      isKill = raspberryEsp32Interface.kill();
-      isThrottleStickDown = raspberryEsp32Interface.throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE;
-      logSerial(LogVerbosityLevel::Debug, ">> [%d, %d] >> %lu\n",
-              isKill, wasKill, timestampLastKill);
-    }
+    raspberryEsp32Interface.sendFlightDataToPi(
+        IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5],
+        motorFL, motorFR, motorBL, motorBR);
+    failSafes.setLastRadioReceptionTime(micros());
     
-    // If you're attempting to resurrect it...
-    // K --> U
-    if (!isKill && wasKill){
-      // If you're too late, you need to pull the stick down
-      unsigned long timeElapsedSinceKill = millis() - timestampLastKill;
-      if (timeElapsedSinceKill >= UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms) {
-          if (!isThrottleStickDown){
-            motorDriver.disarm();
-            isKill = 1;
-            return;
-          }
-      }
-    } 
-
-    // one function to run all fail safe checks
-    if (isKill || failSafes.isSerialTimeout())
-    {
-      if (!wasKill) {
-        // U --> K
-        timestampLastKill = millis();
-      }
-      motorDriver.disarm();
-      return; // exit the loop
-    }
-
-    ahrs.update();
-    setGainsFromRcTrimmers();
-    ahrs.quaternion(quaternionImuData);
-    ahrs.angularVelocity(measuredAngularVelocity);
-
-    // Determine correct angularVelocity
-    angularVelocityCorrected[0] = measuredAngularVelocity[0] - initialAngularVelocity[0];
-    angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
-    angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
-
-    float yawRateRC = raspberryEsp32Interface.yawRateReferenceRadSec();
-    float deadZoneYawRate = 0.017;
-    float yawRateReference = 0.;
-    if (yawRateRC >= deadZoneYawRate)
-    {
-      yawRateReference = yawRateRC - deadZoneYawRate;
-    }
-    else if (yawRateRC <= -deadZoneYawRate)
-    {
-      yawRateReference = yawRateRC + deadZoneYawRate;
-    }
-
-    // take the current Yaw angle as reference, this means that we are not correcting the Yaw.
-    yawReferenceRad = ahrs.currentYawRad();
-
-    Quaternion referenceQuaternion(
-        yawReferenceRad,
-        raspberryEsp32Interface.pitchReferenceAngleRad(),
-        raspberryEsp32Interface.rollReferenceAngleRad());
-
-    Quaternion currentQuaternion(quaternionImuData);
-    Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
-    Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
-
-    IMUData[0] = relativeQuaternion[1];
-    IMUData[1] = relativeQuaternion[2];
-    IMUData[2] = relativeQuaternion[3];
-    ahrs.getAccelerometerValues(IMUData + 3);
-
-    // Throttle from RC to throttle reference
-    float throttleRef = raspberryEsp32Interface.throttleReferencePWM();
-
-    // Compute control actions and send them to the motors
-
-    controller.motorPwmSignals(attitudeError,
-                              angularVelocityCorrected,
-                              yawRateReference,
-                              throttleRef,
-                              motorFL, motorFR, motorBL, motorBR);
-    
-    motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
-
-
-    logSerial(LogVerbosityLevel::Debug, "PR: %f %f\n",
-              IMUData[1], IMUData[2]);
+    wasKill = isKill;
+    isKill = raspberryEsp32Interface.kill();
+    isThrottleStickDown = raspberryEsp32Interface.throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE;
+    logSerial(LogVerbosityLevel::Debug, ">> [%d, %d] >> %lu\n",
+            isKill, wasKill, timestampLastKill);
   }
+  
+  // If you're attempting to resurrect it...
+  // K --> U
+  if (!isKill && wasKill){
+    // If you're too late, you need to pull the stick down
+    unsigned long timeElapsedSinceKill = millis() - timestampLastKill;
+    if (timeElapsedSinceKill >= UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms) {
+        if (!isThrottleStickDown){
+          motorDriver.disarm();
+          isKill = 1;
+          return;
+        }
+    }
+  } 
+
+  // one function to run all fail safe checks
+  if (isKill || failSafes.isSerialTimeout())
+  {
+    if (!wasKill) {
+      // U --> K
+      timestampLastKill = millis();
+    }
+    motorDriver.disarm();
+    return; // exit the loop
+  }
+
+  ahrs.update();
+  setGainsFromRcTrimmers();
+  ahrs.quaternion(quaternionImuData);
+  ahrs.angularVelocity(measuredAngularVelocity);
+
+  // Determine correct angularVelocity
+  angularVelocityCorrected[0] = measuredAngularVelocity[0] - initialAngularVelocity[0];
+  angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
+  angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
+
+  float yawRateRC = raspberryEsp32Interface.yawRateReferenceRadSec();
+  float deadZoneYawRate = 0.017;
+  float yawRateReference = 0.;
+  if (yawRateRC >= deadZoneYawRate)
+  {
+    yawRateReference = yawRateRC - deadZoneYawRate;
+  }
+  else if (yawRateRC <= -deadZoneYawRate)
+  {
+    yawRateReference = yawRateRC + deadZoneYawRate;
+  }
+
+  // take the current Yaw angle as reference, this means that we are not correcting the Yaw.
+  yawReferenceRad = ahrs.currentYawRad();
+
+  Quaternion referenceQuaternion(
+      yawReferenceRad,
+      raspberryEsp32Interface.pitchReferenceAngleRad(),
+      raspberryEsp32Interface.rollReferenceAngleRad());
+
+  Quaternion currentQuaternion(quaternionImuData);
+  Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
+  Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
+
+  IMUData[0] = relativeQuaternion[1];
+  IMUData[1] = relativeQuaternion[2];
+  IMUData[2] = relativeQuaternion[3];
+  ahrs.getAccelerometerValues(IMUData + 3);
+
+  // Throttle from RC to throttle reference
+  float throttleRef = raspberryEsp32Interface.throttleReferencePWM();
+
+  // Compute control actions and send them to the motors
+
+  controller.motorPwmSignals(attitudeError,
+                            angularVelocityCorrected,
+                            yawRateReference,
+                            throttleRef,
+                            motorFL, motorFR, motorBL, motorBR);
+  
+  motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
+
+
+  logSerial(LogVerbosityLevel::Debug, "PR: %f %f\n",
+            IMUData[1], IMUData[2]);
 }
