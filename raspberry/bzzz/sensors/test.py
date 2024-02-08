@@ -36,7 +36,7 @@ class PressureSensor:
         
         self.daemon = True
         self.__lock = Lock()
-        self.__thread = Thread(target=self._get_measurements_in_background_t, 
+        self.__thread = Thread(target=self.__get_measurements_in_background_t, 
                                args=[DEVICE_ADDRESS,reference_pressure_at_sea_level])
         # Sensor parameters
         self.window_length = window_length
@@ -59,136 +59,134 @@ class PressureSensor:
         
         # Sensor initialization
         self.__thread.start()
-        def _get_measurements_in_background_t(self, DEVICE_ADDRESS, reference_pressure_at_sea_level):
-            for _ in range(self.window_length):
-                self.__pressure_readings_list.append(self._get_current_pressure_measurement())
-            if self.reference_pressure_at_sea_level is None:
-                self.reference_pressure_at_sea_level = self.data_processor.process(self.__pressure_readings_list)
-            self.update_altitude()
-            def __readBmp180Id(self):
-                REG_ID = 0xD0
-                chip_id, chip_version = self.smbus.read_i2c_block_data(self.DEVICE_ADDRESS,
-                                                                        REG_ID, 2)
-                return chip_id, chip_version   
-            def __readBmp180(self):
-             # Register Addresses
-                REG_CALIB = 0xAA
-                REG_MEAS = 0xF4
-                REG_MSB = 0xF6
-                REG_LSB = 0xF7
-            # Control Register Address
-                CRV_TEMP = 0x2E
-                CRV_PRES = 0x34
-            # Oversample setting
-                OVERSAMPLE = 3    # 0 - 3
+    def __get_measurements_in_background_t(self, DEVICE_ADDRESS, reference_pressure_at_sea_level):
+        for _ in range(self.window_length):
+            self.__pressure_readings_list.append(self._get_current_pressure_measurement())
+        if self.reference_pressure_at_sea_level is None:
+            self.reference_pressure_at_sea_level = self.data_processor.process(self.__pressure_readings_list)
+        self.update_altitude()
+        def __readBmp180Id(self):
+            REG_ID = 0xD0
+            chip_id, chip_version = self.smbus.read_i2c_block_data(self.DEVICE_ADDRESS,
+                                                                    REG_ID, 2)
+            return chip_id, chip_version   
+    def __readBmp180(self):
+        # Register Addresses
+        REG_CALIB = 0xAA
+        REG_MEAS = 0xF4
+        REG_MSB = 0xF6
+        REG_LSB = 0xF7
+    # Control Register Address
+        CRV_TEMP = 0x2E
+        CRV_PRES = 0x34
+    # Oversample setting
+        OVERSAMPLE = 3    # 0 - 3
 
-            # Read calibration data
-            # Read calibration data from EEPROM
-                cal = self.smbus.read_i2c_block_data(self.DEVICE_ADDRESS,
-                                                      REG_CALIB, 22)
+    # Read calibration data
+    # Read calibration data from EEPROM
+        cal = self.smbus.read_i2c_block_data(self.DEVICE_ADDRESS,
+                                                REG_CALIB, 22)
 
-            # Convert byte data to word values
-                AC1 = _getShort(cal, 0)
-                AC2 = _getShort(cal, 2)
-                AC3 = _getShort(cal, 4)
-                AC4 = _getUshort(cal, 6)
-                AC5 = _getUshort(cal, 8)
-                AC6 = _getUshort(cal, 10)
-                B1 = _getShort(cal, 12)
-                B2 = _getShort(cal, 14)
-                MB = _getShort(cal, 16)
-                MC = _getShort(cal, 18)
-                MD = _getShort(cal, 20)
+    # Convert byte data to word values
+        AC1 = _getShort(cal, 0)
+        AC2 = _getShort(cal, 2)
+        AC3 = _getShort(cal, 4)
+        AC4 = _getUshort(cal, 6)
+        AC5 = _getUshort(cal, 8)
+        AC6 = _getUshort(cal, 10)
+        B1 = _getShort(cal, 12)
+        B2 = _getShort(cal, 14)
+        MB = _getShort(cal, 16)
+        MC = _getShort(cal, 18)
+        MD = _getShort(cal, 20)
 
-            # Read temperature
-                self.smbus.write_byte_data(self.DEVICE_ADDRESS, REG_MEAS, CRV_TEMP)
-                time.sleep(0.005)
-                (msb, lsb) = self.smbus.read_i2c_block_data(self.DEVICE_ADDRESS,
-                                                             REG_MSB, 2)
-                UT = (msb << 8) + lsb
+    # Read temperature
+        self.smbus.write_byte_data(self.DEVICE_ADDRESS, REG_MEAS, CRV_TEMP)
+        time.sleep(0.005)
+        (msb, lsb) = self.smbus.read_i2c_block_data(self.DEVICE_ADDRESS,
+                                                        REG_MSB, 2)
+        UT = (msb << 8) + lsb
 
-            # Read pressure
-                self.smbus.write_byte_data(self.DEVICE_ADDRESS,
-                                            REG_MEAS,
-                                            CRV_PRES + (OVERSAMPLE << 6))
-                time.sleep(0.04)
-                (msb, lsb, xsb) = self.smbus.read_i2c_block_data(self.DEVICE_ADDRESS, 
-                                                                 REG_MSB, 3)
-                UP = ((msb << 16) + (lsb << 8) + xsb) >> (8 - OVERSAMPLE)
+    # Read pressure
+        self.smbus.write_byte_data(self.DEVICE_ADDRESS,
+                                    REG_MEAS,
+                                    CRV_PRES + (OVERSAMPLE << 6))
+        time.sleep(0.04)
+        (msb, lsb, xsb) = self.smbus.read_i2c_block_data(self.DEVICE_ADDRESS, 
+                                                            REG_MSB, 3)
+        UP = ((msb << 16) + (lsb << 8) + xsb) >> (8 - OVERSAMPLE)
 
-            # Refine temperature
-                X1 = ((UT - AC6) * AC5) >> 15
-                X2 = (MC << 11) / (X1 + MD)
-                B5 = X1 + X2
-                self.__temperature = int(B5 + 8) >> 4
+    # Refine temperature
+        X1 = ((UT - AC6) * AC5) >> 15
+        X2 = (MC << 11) / (X1 + MD)
+        B5 = X1 + X2
+        self.__temperature = int(B5 + 8) >> 4
 
-            # Refine pressure
-                B6 = B5 - 4000
-                B62 = int(B6 * B6) >> 12
-                X1 = (B2 * B62) >> 11
-                X2 = int(AC2 * B6) >> 11
-                X3 = X1 + X2
-                B3 = (((AC1 * 4 + X3) << OVERSAMPLE) + 2) >> 2
+    # Refine pressure
+        B6 = B5 - 4000
+        B62 = int(B6 * B6) >> 12
+        X1 = (B2 * B62) >> 11
+        X2 = int(AC2 * B6) >> 11
+        X3 = X1 + X2
+        B3 = (((AC1 * 4 + X3) << OVERSAMPLE) + 2) >> 2
 
-                X1 = int(AC3 * B6) >> 13
-                X2 = (B1 * B62) >> 16
-                X3 = ((X1 + X2) + 2) >> 2
-                B4 = (AC4 * (X3 + 32768)) >> 15
-                B7 = (UP - B3) * (50000 >> OVERSAMPLE)
+        X1 = int(AC3 * B6) >> 13
+        X2 = (B1 * B62) >> 16
+        X3 = ((X1 + X2) + 2) >> 2
+        B4 = (AC4 * (X3 + 32768)) >> 15
+        B7 = (UP - B3) * (50000 >> OVERSAMPLE)
 
-                P = (B7 * 2) / B4
+        P = (B7 * 2) / B4
 
-                X1 = (int(P) >> 8) * (int(P) >> 8)
-                X1 = (X1 * 3038) >> 16
-                X2 = int(-7357 * P) >> 16
-                self.__pressure = int(P + ((X1 + X2 + 3791) >> 4))
-            @property   
-            def pressure(self):
-                return self.__current_pressure
-            @property
-            def altitude(self):
-                return self.__current_altitude
-            def _get_current_pressure_measurement(self):
-                self.__readBmp180()
-                pressure_reading = self.__pressure
-                return pressure_reading
-            def _update_pressure(self):
-                with self.__lock:
-                    # Get current pressure measurement and add to readings list
-                    pressure_reading = self._get_current_pressure_measurement()
-                    self.__pressure_readings_list.append(pressure_reading)
-                    # Remove the oldest reading to maintain the buffer size
-                    if len(self.__pressure_readings_list) > self.window_length:
-                        self.__pressure_readings_list.pop(0)
-                    # Use the data processor to calculate the current pressure
-                    self.__current_pressure = self.data_processor.process(self.__pressure_readings_list)
-            def _calculate_altitude_from_pressure(self):
-                with self.__lock:
-                # check calculate altitude from pressure
-                    self.__current_altitude = 44330 * \
-                        (1 - (self.__current_pressure/self.reference_pressure_at_sea_level)**(1/5.255))
-            
-            def update_altitude(self):
-                self._update_pressure()
-                self._calculate_altitude_from_pressure()
-            def run(self):
-                while not self.stop_thread.is_set():
-                    self.update_altitude()
-            
-                    if self.log_file is not None:
-                
-                        current_timestamp = datetime.datetime.now()
-                        data_to_log = (self.pressure, self.altitude)
-                        self.logger.record(current_timestamp, data_to_log)
-                        time.sleep(0.5)
-            def stop(self):
-                self.stop_thread.set()
-                if self.log_file is not None:
-                    self.logger.save_to_csv(self.log_file)
-            def __enter__(self):
-                return self
-            def __exit__(self, exc_type, exc_val, exc_tb):
-                self.stop()
+        X1 = (int(P) >> 8) * (int(P) >> 8)
+        X1 = (X1 * 3038) >> 16
+        X2 = int(-7357 * P) >> 16
+        self.__pressure = int(P + ((X1 + X2 + 3791) >> 4))
+    @property   
+    def pressure(self):
+        return self.__current_pressure
+    @property
+    def altitude(self):
+        return self.__current_altitude
+    def _get_current_pressure_measurement(self):
+        self.__readBmp180()
+        pressure_reading = self.__pressure
+        return pressure_reading
+    def _update_pressure(self):
+        with self.__lock:
+            # Get current pressure measurement and add to readings list
+            pressure_reading = self._get_current_pressure_measurement()
+            self.__pressure_readings_list.append(pressure_reading)
+            # Remove the oldest reading to maintain the buffer size
+            if len(self.__pressure_readings_list) > self.window_length:
+                self.__pressure_readings_list.pop(0)
+            # Use the data processor to calculate the current pressure
+            self.__current_pressure = self.data_processor.process(self.__pressure_readings_list)
+    def _calculate_altitude_from_pressure(self):
+        with self.__lock:
+        # check calculate altitude from pressure
+            self.__current_altitude = 44330 * \
+                (1 - (self.__current_pressure/self.reference_pressure_at_sea_level)**(1/5.255))
+    
+    def update_altitude(self):
+        self._update_pressure()
+        self._calculate_altitude_from_pressure()
+    def run(self):
+        
+        self.update_altitude()
+
+        if self.log_file is not None:
+    
+            current_timestamp = datetime.datetime.now()
+            data_to_log = (self.pressure, self.altitude)
+            self.logger.record(current_timestamp, data_to_log)
+            time.sleep(0.5)
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.__keep_going = False
+        if self.log_file is not None:
+            self.logger.save_to_csv(self.log_file)
 
 if __name__ == "__main__":
    
