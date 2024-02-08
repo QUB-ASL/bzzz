@@ -174,9 +174,11 @@ To do this:
 * Click on the blue and white inwards-facing arrows in the bottom left corner of VS Code.
 * Click Connect to Host...
 * Click + Add New SSH Host...
-* Type in the Username of the Pi followed by the IP Address of the Quadcopter[^1], e.g. `bzzz1@123.456.789`.
+* If connected to _QUB_WiFi type in `ssh [username]@[hostname].qub.ac.uk`[^1]
+* Alternatively you can use the username of the Pi followed by the IP Address of the Quadcopter[^2], e.g. `ssh bzzz1@123.456.789`.
 * If asked, select the SSH configuration file you want to update.
 * Click connect on the pop-up notification (right side of screen)
+* When asked to select the platform of the remote host select `Linux`
 * Enter the password for the Raspberry Pi
 
 You are now ready to remotely edit the software onboard the quadcopter.
@@ -188,4 +190,5 @@ QUB students should follow the [Discord Bot guidelines](../raspberry/DiscordBot)
 
 ## You are now ready to fly, go to [How to fly](../README.md#how-to-fly) 
 
-[^1]: Remember you can use the [DiscordBot](../raspberry/DiscordBot) to find the Quadcopters IP Address
+[^1]: Remember you can use the [DiscordBot](../raspberry/DiscordBot) to find the Quadcopters username and hostname
+[^2]: Remember you can use the [DiscordBot](../raspberry/DiscordBot) to find the Quadcopters IP Address
