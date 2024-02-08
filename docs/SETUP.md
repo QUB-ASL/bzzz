@@ -190,5 +190,5 @@ QUB students should follow the [Discord Bot guidelines](../raspberry/DiscordBot)
 
 ## You are now ready to fly, go to [How to fly](../README.md#how-to-fly) 
 
-[^1]: Remember you can use the [DiscordBot](../raspberry/DiscordBot) to find the Quadcopters username and hostname
-[^2]: Remember you can use the [DiscordBot](../raspberry/DiscordBot) to find the Quadcopters IP Address
+[^1]: Remember you can use the [DiscordBot](../raspberry/DiscordBot) to find the Quadcopter's username and hostname
+[^2]: Remember you can use the [DiscordBot](../raspberry/DiscordBot) to find the Quadcopter's IP Address
