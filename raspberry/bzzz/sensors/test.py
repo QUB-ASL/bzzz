@@ -59,17 +59,29 @@ class PressureSensor:
         
         # Sensor initialization
         self.__thread.start()
+
     def __get_measurements_in_background_t(self, DEVICE_ADDRESS, reference_pressure_at_sea_level):
-        for _ in range(self.window_length):
-            self.__pressure_readings_list.append(self._get_current_pressure_measurement())
-        if self.reference_pressure_at_sea_level is None:
-            self.reference_pressure_at_sea_level = self.data_processor.process(self.__pressure_readings_list)
-        self.update_altitude()
-        def __readBmp180Id(self):
-            REG_ID = 0xD0
-            chip_id, chip_version = self.smbus.read_i2c_block_data(self.DEVICE_ADDRESS,
-                                                                    REG_ID, 2)
-            return chip_id, chip_version   
+        while True:
+            for _ in range(self.window_length):
+                self.__pressure_readings_list.append(self._get_current_pressure_measurement())
+            if self.reference_pressure_at_sea_level is None:
+                self.reference_pressure_at_sea_level = self.data_processor.process(self.__pressure_readings_list)
+            with self.__lock():
+                self.update_altitude()
+            # Write data into the log file
+                if self.log_file is not None:
+            
+                    current_timestamp = datetime.datetime.now()
+                    data_to_log = (self.pressure, self.altitude)
+                    self.logger.record(current_timestamp, data_to_log)
+                    
+
+    def __readBmp180Id(self):
+        REG_ID = 0xD0
+        chip_id, chip_version = self.smbus.read_i2c_block_data(self.DEVICE_ADDRESS,
+                                                                REG_ID, 2)
+        return chip_id, chip_version  
+         
     def __readBmp180(self):
         # Register Addresses
         REG_CALIB = 0xAA
@@ -171,16 +183,15 @@ class PressureSensor:
     def update_altitude(self):
         self._update_pressure()
         self._calculate_altitude_from_pressure()
-    def run(self):
-        
-        self.update_altitude()
-
         if self.log_file is not None:
     
             current_timestamp = datetime.datetime.now()
             data_to_log = (self.pressure, self.altitude)
             self.logger.record(current_timestamp, data_to_log)
             time.sleep(0.5)
+   
+
+        
     def __enter__(self):
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
