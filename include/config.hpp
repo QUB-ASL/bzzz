@@ -3,6 +3,13 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+/**
+ * Timer config
+ */
+#define TIMER_ID 0
+#define TIMER_PRESCALER 80
+#define TIMER_INTERVAL_uS 4000
+
 // Various defines such as PIN numbers and global constants
 
 /**
