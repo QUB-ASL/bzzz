@@ -108,6 +108,15 @@ class EvoSensor:
         time.sleep(0.05)
         if self.__log_file is not None:
             self.__logger.save_to_csv(self.__log_file)
+    
+    def __updateToF__(self):
+    # Update the height data cache and limit its size
+        with self.__lock:
+         self.altitude_cache.append(dec_out)
+        # Keep the cache size under 1000 data points
+        if len(self.altitude_cache) > 1000:
+            self.altitude_cache.pop(0)
+
 
     @property
     def distance(self):
@@ -116,6 +125,11 @@ class EvoSensor:
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 0:], cursor=self.__cursor)
+
+    def get_altitude_cache(self):
+        with self.__lock:
+            return list(self.altitude_cache)  # Return a copy of the cached data to avoid thread-safety issues
+
 
 
 if __name__ == "__main__":

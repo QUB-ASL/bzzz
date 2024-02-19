@@ -12,7 +12,7 @@ from math import pi, atan2, sqrt  # math functions for calculations
 from bzzz.controllers.altitude_LQR import LQR  # altitude hold controller
 from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
 from bzzz.scheduler import Scheduler
-from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
+from bzzz.sensors.evo_time_of_flight import EvoSensor
 from bzzz.read_sbus import RC  # for radio data receiving, encoding and sending to ESP
 
 
@@ -38,11 +38,13 @@ if __name__ == '__main__':
               initial_beta_t=-9.81)
     # update_measurement_at_fixed_rate: if True then use time difference between current time and last measurement time to take a measurement
     #            if false then take a measurement instantly
-    tof = TimeOfFlightSensor(update_measurement_at_fixed_rate=False,
-                             median_filter_length=1,
-                             cache_altitude=True,
-                             use_outlier_detection=True,
-                             abs_outlier_diff_thres=500)
+    tof = EvoSensor(self,
+                 serial_path='/dev/ttyAMA2',
+                 baud=115200,
+                 window_length=3,
+                 data_processor=NoFilter(),
+                 log_file=None,
+                 max_samples=100000)
     rc = RC()
     scheduler = Scheduler(use_threading=False)
 
@@ -293,7 +295,7 @@ if __name__ == '__main__':
 
         # Reading the tof altitude invokes the automatic update from the sensor,
         # no need to read the sensor explicitly
-        temp = tof.altitude
+        temp = tof.distance
 
         if temp == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
@@ -383,7 +385,7 @@ if __name__ == '__main__':
             data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta]
                                           for t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta
                                           in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache,
-                                                 tof.altitude_cache(),
+                                                 tof.get_altitude_cache(),
                                                  accelerometer_cache_[:, 0],
                                                  accelerometer_cache_[:, 1],
                                                  accelerometer_cache_[:, 2],
@@ -411,6 +413,6 @@ if __name__ == '__main__':
 
             # TODO change this to print the dataframe (all rows and columns)
             if enable_printing_cache_to_screen[0]:
-                print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelerometer_cache_} \nalti_ref_mts{altitude_reference_cache_mts}")
+                print(f"time: {time_cache} \naltitude: {tof.get_altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelerometer_cache_} \nalti_ref_mts{altitude_reference_cache_mts}")
 
         allow_data_logging[0] = not switch_a_status[0]
