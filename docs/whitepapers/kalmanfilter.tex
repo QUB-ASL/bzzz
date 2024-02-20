@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage[margin=1.2in]{geometry} 
+
+\begin{document}
+
+\section*{Kalman Filter for Quadcopter Position Hold}
+
+\section{Introduction}
+In this section, we delve into the application of Kalman filters for sensor fusion in quadcopter navigation, integrating data from GNSS modules, barometers, and time-of-flight sensors. The Kalman filter, a powerful algorithm for linear dynamic systems, it excels in estimating the state of a process by minimizing the mean squared error. It operates in two phases: prediction and update. During the prediction phase, it projects the current state and uncertainty forward in time. Then, in the update phase, it adjusts the projected estimate by incorporating new measurements, thereby refining the accuracy. By leveraging the Kalman filter, our aim is to enhance positioning accuracy and reliability, utilizing the unique advantages of each sensor to achieve a cohesive and robust solution for improved quadcopter control and stability for postition hold.
+
+\section{Prediction phase:}
+The prediction phase of the Kalman filter forecasts the system's future state by extrapolating current estimates using system dynamics. It predicts the quadcopter's next position and velocity, incorporating uncertainties and process noise to account for potential deviations. This step ensures continuous trajectory estimation, crucial for real-time navigation adjustments.
+\\
+
+\noindent
+The state prediction phase is fundamental to forecasting the system's future state based on its current status and inherent dynamics. This phase is comprised of two main components:
+
+\subsection{State Prediction}
+The future state, denoted as \( \widetilde{x}_{t+1} \), is predicted by applying the State Transition Matrix, \( A_t \), to the current estimated state, \( \widetilde{x}_t \), assuming the expected value of the process noise, \( w_t \), is zero. The prediction is thus given by:
+\[
+\widetilde{x}_{t+1} = A_t \widetilde{x}_t
+\]
+This equation reflects the natural progression of the system from one state to the next, devoid of external inputs.
+
+\subsection{Estimated Variance Prediction}
+The variance of the estimator for the next state, \( P_{t+1} \), is also predicted to represent the uncertainty in the state estimate. This prediction incorporates the Process Noise Covariance Matrix, \( Q_t \), and is expressed as:
+\[
+P_{t+1} = A_t P_t A_t^T + G_t Q_t G_t^T
+\]
+Here, \( G_t \) adjusts the process noise to the state space dimensions, and \( A_t \) forwards the current error covariance in time.
+\\
+
+\noindent
+These predictive steps ensure the Kalman Filter has a baseline forecast of the system's state, which is then refined with incoming measurements during the update phase, maintaining the filter's accuracy and reliability.
+
+\section{Update phase:}
+
+\end{document}
