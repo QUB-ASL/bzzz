@@ -15,7 +15,6 @@ def deg_min_sec_to_decimal(
     :param dms: degrees-minutes-seconds (must be positive)
     :param dir: direction (can be one of 'N', 'W', 'E', 'S')
     """
-    
     decimal_degrees = degrees + minutes / 60
     if direction in ['S', 'W']:  # need to be denoted with a "-" value -> are negative
         decimal_degrees *= -1
@@ -29,7 +28,7 @@ class GpsLea6SReader:
     and starts a background thread to continuously read and parse GPS data.
     """
     def __init__(self,
-                 serial_path="/dev/ttyACM0",
+                 serial_path="/dev/ttyACM0" ,
                  baud=500000):
         # Initialise objects to store various measurements
         self.__gpgll_latitude = None
@@ -106,7 +105,7 @@ class GpsLea6SReader:
         """
         return self.__gpgsv_altitude
 
-my_sensor = GpsLea6SReader(serial_path="/dev/ttyACM0")
+my_sensor = GpsLea6SReader(serial_path= "/dev/ttyACM0") 
 
 while True:    
     lat = my_sensor.latitude
@@ -115,3 +114,4 @@ while True:
     print(f"{lat}, {lon}, {alt}")
     #values are printed every one second
     time.sleep(1)
+    
