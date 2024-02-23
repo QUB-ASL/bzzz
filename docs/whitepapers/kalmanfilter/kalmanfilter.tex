@@ -17,6 +17,14 @@ of the propellers. Then, the system dynamics is as simple as
 \begin{equation}
     \ddot{z} = a - g.
 \end{equation}
+The acceleration, $a$, is an affine function of the thrust reference signal
+(which comes from the RC); it is
+\begin{eqnarray}
+    a = \alpha \tau + \beta,
+\end{eqnarray}
+where $\alpha$ and $\beta$ are coefficients to be estimated; we can obtain
+\textit{a priori} estimates offline and update them online using measurements
+while flying (using the Kalman filter).
 
 
 @Peter,
