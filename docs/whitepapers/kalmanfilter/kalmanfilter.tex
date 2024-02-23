@@ -36,4 +36,21 @@ These predictive steps ensure the Kalman Filter has a baseline forecast of the s
 
 \section{Update phase:}
 
+The update phase incorporates the latest measurements to refine the state estimates. The key equations involved in this phase are as follows:
+
+
+\subsection{Kalman Gain Calculation:}
+Calculate the Kalman Gain \( K_t \), which dictates the extent to which the predicted state is corrected based on the measurement:
+\[ K_t = P_{t} C^T (C_t P_t C^T + R)^{-1} \]
+where \( R_t \) is the measurement noise covariance matrix.
+
+\subsection{State Update:}
+Update the state estimate with the new measurement by applying the Kalman Gain to the innovation:
+\[ \widetilde{x}_{t+1} = \widetilde{x}_{t} + K_t ( y_t + - C\widetilde{x}_t)\]
+
+\subsection{Covariance Update:}Update the estimate's error covariance to reflect the decrease in uncertainty:
+\[ P_{t+1} = (I - K_t C) P_{t} \]
+where \( I \) is the identity matrix.
+
+
 \end{document}
