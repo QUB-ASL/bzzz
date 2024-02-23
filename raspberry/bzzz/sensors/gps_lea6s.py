@@ -16,11 +16,11 @@ def deg_min_sec_to_decimal(
     :param dir: direction (can be one of 'N', 'W', 'E', 'S')
     """
     decimal_degrees = degrees + minutes / 60
-    if direction in ['S', 'W']:  # need to be denoted with a "-" value -> are negative
+    if direction in ['S', 'W']:  # need to be denoted with a negative value
         decimal_degrees *= -1
     return decimal_degrees
 
-class GpsLea6SReader:
+class GpsReader:
     
     """
     Initializes the GPS data handler with default serial path and baud rate, 
@@ -105,7 +105,7 @@ class GpsLea6SReader:
         """
         return self.__gpgsv_altitude
 
-my_sensor = GpsLea6SReader(serial_path= "/dev/ttyACM0") 
+my_sensor = GpsReader(serial_path= "/dev/ttyACM0") 
 
 while True:    
     lat = my_sensor.latitude
