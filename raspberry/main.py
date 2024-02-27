@@ -14,6 +14,7 @@ from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
 from bzzz.scheduler import Scheduler
 from bzzz.sensors.evo_time_of_flight import EvoSensor
 from bzzz.read_sbus import RC  # for radio data receiving, encoding and sending to ESP
+from bzzz.sensors.filters import MedianFilter
 
 
 # NOTE: The scheduler supports both multi-threading and time-based function calling
@@ -38,13 +39,12 @@ if __name__ == '__main__':
               initial_beta_t=-9.81)
     # update_measurement_at_fixed_rate: if True then use time difference between current time and last measurement time to take a measurement
     #            if false then take a measurement instantly
-    tof = EvoSensor(self,
-                 serial_path='/dev/ttyAMA2',
-                 baud=115200,
-                 window_length=3,
-                 data_processor=NoFilter(),
-                 log_file=None,
-                 max_samples=100000)
+    tof = EvoSensor(serial_path='/dev/ttyAMA2',
+                    baud=115200,
+                    window_length=3,
+                    data_processor=MedianFilter(),
+                    log_file=None,
+                    max_samples=100000)
     rc = RC()
     scheduler = Scheduler(use_threading=False)
 
