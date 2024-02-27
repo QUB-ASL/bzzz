@@ -1,6 +1,8 @@
 \documentclass{article}
 \usepackage{amsmath}
-\usepackage[margin=1.2in]{geometry} 
+\usepackage[margin=1.2in]{geometry}
+\usepackage{graphicx} 
+\usepackage{float}
 
 \title{Kalman Filter for Quadcopter Position Hold}
 \author{Peter Davidson and Pantelis Sopasakis}
@@ -123,7 +125,7 @@ a_{T,t}^z \\
 \noindent
 for the barometer sensor's output, denoted by \( y_{barom} \), is described by the equation,
 \begin{equation}
-y_{barom} = z + d^{bar} + V_{barom}
+y_{barom} = z + d^{bar} + e_{barom}
 \end{equation}
 
 where, 
@@ -136,7 +138,7 @@ the second reading of the bias should be equal to the first allowing for some ad
 \noindent
 for the GPS sensor's output, denoted by \( y_{gps} \), is described by the equation,
 \begin{equation}
-y_{gps} = z + V_{gps}
+y_{gps} = z + e_{gps}
 \end{equation}
 
 \begin{equation}
@@ -144,17 +146,17 @@ y_{gps} =
 \begin{bmatrix}
     1 & 0
 \end{bmatrix}
-x + V_{gps}
+x + e_{gps}
 \end{equation}
 
 \noindent
 The Time-of-Flight (ToF) sensor's output, denoted by \( y_{ToF} \), is described by the equation,
 \begin{equation}
-y_{ToF} = z + d^{tof} + V_{ToF}
+y_{ToF} = z + d^{tof} + e_{ToF}
 \end{equation}
 
 \noindent
-Throught all sensors \( y \) represents the output from the sensor. The variable \( z \) signifies the quadcopter's altitude, which is the measurement for all sensors. The term \( V \) encapsulates the measurement noise or errors associated with the sensors. This noise term, \( V \), encompasses various factors such as sensor inaccuracies, the impact of environmental conditions on sensor performance, and any systematic bias that might be inherent in the sensor's readings.
+Throught all sensors \( y \) represents the output from the sensor. The variable \( z \) signifies the quadcopter's altitude, which is the measurement for all sensors. The term \( e \) encapsulates the measurement noise or errors associated with the sensors. This noise term, \( e \), encompasses various factors such as sensor inaccuracies, the impact of environmental conditions on sensor performance, and any systematic bias that might be inherent in the sensor's readings.
 
 \noindent
 Equation \eqref{eq:4} describes the continuous-time altitude dynamics of the quadcopter. The dis-
@@ -188,7 +190,7 @@ The state vector \( x_t \) is defined as,
     x_t = 
     \begin{bmatrix}
         z_t &
-        V_{t} & 
+        e_{t} & 
         \alpha_t & 
         \beta_t &
         d^{bar}_t 
@@ -203,7 +205,7 @@ The state vector \( x_t \) is defined as,
 \subsection{Measurement Model}
 The measurement model is defined as,
 \begin{equation}
-y_t = C_t x_t + V_t
+y_t = C_t x_t + e_t
 \end{equation}
 \begin{equation}
     y_t  = 
@@ -212,7 +214,7 @@ y_t = C_t x_t + V_t
         1 & 0 & 0 & 0 & 0 \\
         1 & 0 & 0 & 0 & 1 \\
     \end{bmatrix}
-    + x_t + V_t
+        x_t + e_t
 \end{equation}
 
 \section{Estimator Design}
@@ -245,6 +247,35 @@ where the matrix $A_t$ is defined as,
     0 & 0 & 0 & 1
     \end{bmatrix}
 \end{equation}
-\noindent
-...
+
+altitude:
+\begin{equation}
+    Z_{t+1} = Z_t + {T_s}{V_t} + {w^z}_t
+\end{equation}
+
+velocity:
+\begin{equation}
+    V_{t+1} = V_t + T_s({\alpha_t}{\tau_t} + \beta_t) + {w^v}_t
+\end{equation}
+where, 
+\begin{equation}
+    a_t =
+    {\alpha_t}{\tau_t} + \beta_t
+\end{equation}
+
+\section{Relationship between thrust and lift}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Figure_1.png}
+    \label{fig:fig1}
+    \caption{}
+\end{figure}
+This graph represents the relationship between throttle signal 
+From our radio, and how this effects the lifing force on the quad.
+(please note that this graph is not to scale)
+This relationship is catagorised by the equation, 
+\[
+\alpha_t\tau_t + \beta_t
+\]
+
 \end{document}
