@@ -10,7 +10,8 @@ def deg_min_sec_to_decimal(
     """
     Convert degrees-minutes-seconds from GNGLL to decimal
 
-    :param dms: degrees-minutes-seconds (must be positive)
+    :param degrees: degrees
+    :param minutes: minutes
     :param dir: direction (can be one of 'N', 'W', 'E', 'S')
     :return: decimal representation of GPS coordinates
     """
