@@ -21,16 +21,20 @@ def deg_min_sec_to_decimal(
     return decimal_degrees
 
 
-class GpsReader:
-    """
-    Initialises the GPS data handler with default serial path and baud rate, 
-    sets up storage for latitude, longitude, and altitude, 
-    and starts a background thread to continuously read and parse GPS data.
-    """
+class Gps:
 
     def __init__(self,
                  serial_path="/dev/ttyACM0",
                  baud=500000):
+        """
+        Initialises the GPS data handler with default serial path and baud rate, 
+        sets up storage for latitude, longitude, and altitude, 
+        and starts a background thread to continuously read and parse GPS data.
+
+        :param serial_path: path to serial where GPS is connected 
+                            (default: "/dev/ttyACM0")
+        :param baud: BAUD rate of serial (default: 500000)
+        """
         # Initialise objects to store various measurements
         self.__gpgll_latitude = None
         self.__gpgll_longitude = None
