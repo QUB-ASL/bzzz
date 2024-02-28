@@ -1,7 +1,3 @@
-# NOTE: It is encouraged to write all the functions that are need to be scheduled in this document,
-# that way all the shared variables can be accessed by the functions without needing to explicitly pass them
-# and it will make handling shared resources easy.
-
 import numpy as np  # for matrix based calculations
 import pandas as pd  # pandas for storing cached data into csv files
 
@@ -14,6 +10,14 @@ from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
 from bzzz.scheduler import Scheduler
 from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
 from bzzz.read_sbus import RC  # for radio data receiving, encoding and sending to ESP
+
+from bzzz.sensors.evo_time_of_flight import EvoSensor
+from bzzz.sensors.pressure_sensor import PressureSensor
+from bzzz.sensors.data_logger import DataLogger
+from bzzz.sensors.filters import NoFilter
+from bzzz.sensors.filters import AverageFilter
+import datetime
+
 
 
 # NOTE: The scheduler supports both multi-threading and time-based function calling
@@ -369,48 +373,27 @@ if __name__ == '__main__':
                        function_call_count=0)
 
     # THE MAIN LOOP
-    while True:
-        scheduler.run()  # run the scheduled functions
+    filename = datetime.datetime.now().strftime("EVOSENSOR-LOGS-%d-%m-%y--%H-%M.csv")
+    processor =  NoFilter()
+    with EvoSensor(window_length=3,
+                    data_processor=processor,
+                    log_file=filename) as sensor:
+        
+        while True:
+            scheduler.run()  # run the scheduled functions
 
-        # Cache saving
-        if is_kill[0] and switch_a_status[0] and allow_data_logging[0]:
-            print("[LOGGER] saving data")
-            accelerometer_cache_ = np.array(accelerometer_cache)
-            motor_PWM_cache_ = np.array(motor_PWM_cache)
-            KF_data_cache_ = np.array(KF_data_cache)
+            if is_kill[0]:
+                print("TOF saving data")
+                break
+    log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_PressureSensor.csv")
+    processor = AverageFilter()  # You need to define this class based on your requirements
+    with PressureSensor(window_length=100,
+                            data_processor=processor,
+                            reference_pressure_at_sea_level=102500, 
+                            log_file=log_filename) as sensor:
+        while True:
+            scheduler.run()  # run the scheduled functions
 
-            date_time_now = datetime.now()
-            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta]
-                                          for t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta
-                                          in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache,
-                                                 tof.altitude_cache(),
-                                                 accelerometer_cache_[:, 0],
-                                                 accelerometer_cache_[:, 1],
-                                                 accelerometer_cache_[:, 2],
-                                                 altitude_reference_cache_mts,
-                                                 radio_data_cache,
-                                                 motor_PWM_cache_[:, 0],
-                                                 motor_PWM_cache_[:, 1],
-                                                 motor_PWM_cache_[:, 2],
-                                                 motor_PWM_cache_[:, 3],
-                                                 KF_data_cache_[:, 0],
-                                                 KF_data_cache_[:, 1],
-                                                 KF_data_cache_[:, 2],
-                                                 KF_data_cache_[:, 3])],
-                                         columns=['timestamp', 'throttle_ref', 'yaw', 'pitch', 'roll',
-                                                  'tof_measurement', 'accX', 'accY', 'accZ',
-                                                  'altitude_ref', 'RC_data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
-                                                  'KF_altitude_est', 'KF_velocity_z_est', 'KF_alpha_est', 'KF_beta_est'])
-            data_cache_df.to_csv(
-                f"/home/bzzz/Desktop/logs/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_at_{date_time_now.hour}h{date_time_now.minute}m{date_time_now.second}s.csv",
-                index=False,
-                header=True)
-            print("[LOGGER] saving complete")
-            clear_caches()
-            allow_data_logging[0] = False
-
-            # TODO change this to print the dataframe (all rows and columns)
-            if enable_printing_cache_to_screen[0]:
-                print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelerometer_cache_} \nalti_ref_mts{altitude_reference_cache_mts}")
-
-        allow_data_logging[0] = not switch_a_status[0]
+            if is_kill[0]:
+                print("PRESSURE SENSOR saving data")
+                break
