@@ -121,7 +121,7 @@ y^{\rm ToF} = z + d^{\rm ToF} + e_{\rm ToF}
 Throught all sensors \( y \) represents the output from the sensor. The variable \( z \) signifies the quadcopter's altitude, which is the measurement for all sensors. The term \( e \) encapsulates the measurement noise or errors associated with the sensors. This noise term, \( e \), encompasses various factors such as sensor inaccuracies, the impact of environmental conditions on sensor performance, and any systematic bias that might be inherent in the sensor's readings.
 
 Equation \eqref{eq:4} describes the continuous-time altitude dynamics of the quadcopter. 
-The discretization of the altitude dynamics of the system (2) with a sampling frequency of Ts using the zero-order hold technique is,
+The discretization of the altitude dynamics of the system \eqref{eq:4} with a sampling frequency of Ts using the zero-order hold technique is,
 
 \begin{equation}
     \begin{bmatrix}
