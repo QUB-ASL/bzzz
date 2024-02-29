@@ -46,11 +46,13 @@ class GpsLogger:
         """
         Saves all logged data to a CSV file
         """
+        print(f"Saving data to {self.filename}...")
         with open(self.filename, "w", newline='') as file:
             writer = csv.writer(file)
             writer.writerow(["Timestamp", "Latitude", "Longitude", "Altitude"])  # Header row for CSV
             writer.writerows(self.samples)
-
+        print(f"Data saved to {self.filename}.")
+        
 class Gps:
     """
     Initializes the GPS data handler with the default serial path and baud rate,
@@ -82,49 +84,54 @@ class Gps:
         :param serial_path: Serial port path
         :param baud: Baud rate for the serial connection
         """
-        stop_time = datetime.now() + timedelta(minutes=2)  # Determine when to stop collecting data
-        with serial.Serial(serial_path, baud, timeout=1) as ser:
-            while datetime.now() < stop_time and self.__keep_going:
-                if ser.in_waiting > 0:
-                    line = ser.readline().decode('utf-8', 'ignore').strip()  # use ignore when the code come across undecodable bytes
-                    tokens = line.split(",")
-                    msg_key = tokens[0]
+        try:
+            stop_time = datetime.now() + timedelta(minutes=2)  # Determine when to stop collecting data
+            with serial.Serial(serial_path, baud, timeout=1) as ser:
+                while datetime.now() < stop_time and self.__keep_going:
+                    if ser.in_waiting > 0:
+                        line = ser.readline().decode('utf-8', 'ignore').strip()  # use ignore when the code come across undecodable bytes
+                        tokens = line.split(",")
+                        msg_key = tokens[0]
 
-                    if msg_key == "$GNGLL" and tokens[1] and tokens[3]:
-                        lat_deg = int(float(tokens[1]) / 100)
-                        lat_min = float(tokens[1]) % 100
-                        latitude = deg_min_sec_to_decimal(lat_deg, lat_min, tokens[2])
+                        if msg_key == "$GNGLL" and tokens[1] and tokens[3]:
+                            lat_deg = int(float(tokens[1]) / 100)
+                            lat_min = float(tokens[1]) % 100
+                            latitude = deg_min_sec_to_decimal(lat_deg, lat_min, tokens[2])
 
-                        lon_deg = int(float(tokens[3]) / 100)
-                        lon_min = float(tokens[3]) % 100
-                        longitude = deg_min_sec_to_decimal(lon_deg, lon_min, tokens[4])
+                            lon_deg = int(float(tokens[3]) / 100)
+                            lon_min = float(tokens[3]) % 100
+                            longitude = deg_min_sec_to_decimal(lon_deg, lon_min, tokens[4])
+
+                            with self.__lock:
+                                self.__gpgll_latitude = latitude
+                                self.__gpgll_longitude = longitude
+
+                        elif msg_key == "$GPGSV" and len(tokens) > 5:
+                            altitude = float(tokens[5])
+                            with self.__lock:
+                                self.__gpgsv_altitude = altitude
 
                         with self.__lock:
-                            self.__gpgll_latitude = latitude
-                            self.__gpgll_longitude = longitude
-
-                    elif msg_key == "$GPGSV" and len(tokens) > 5:
-                        altitude = float(tokens[5])
-                        with self.__lock:
-                            self.__gpgsv_altitude = altitude
-
-                    with self.__lock:
-                        if self.__gpgll_latitude is not None and self.__gpgll_longitude is not None and self.__gpgsv_altitude is not None:
-                            self.logger.log(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.__gpgll_latitude, self.__gpgll_longitude, self.__gpgsv_altitude)
-
+                            if self.__gpgll_latitude is not None and self.__gpgll_longitude is not None and self.__gpgsv_altitude is not None:
+                                self.logger.log(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.__gpgll_latitude, self.__gpgll_longitude, self.__gpgsv_altitude)
+        except Exception as e:
+            print(f"An error occurred: {e}")  # Log any exceptions
+            
     def __enter__(self):
         """
         Enables the GPS object to be used with the 'with' statement for context management
         """
         return self
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         """
         Ensures the background thread is stopped and the GPS data is saved when exiting the context
         """
+        print("Exiting and saving CSV...")  # Debug print
         self.__keep_going = False
         self.__thread.join()  # Ensure background thread has finished
         self.logger.save_to_csv()  # Save collected data to CSV
+        print("CSV saved and exiting completed.")
 
     @property
     def latitude(self):
@@ -150,9 +157,10 @@ class Gps:
         with self.__lock:
             return self.__gpgsv_altitude
 
-
-with Gps(log_file="gps_data.csv") as gps:
-    time.sleep(120)  # Collect data for 2 minutes
+if __name__ == "__main__":
+    print("Starting GPS data collection...")
+    with Gps() as gps:
+        time.sleep(120)  # Collect data for 2 minutes
 
 
 #                  serial_path="/dev/ttyACM0"
