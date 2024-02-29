@@ -133,7 +133,7 @@ if __name__ == "__main__":
 # class Gps:
 
 #     def __init__(self,
-#                  serial_path="/dev/tty.usbmodem14201",
+#                  serial_path="/dev/ttyACM0",
 #                  baud=500000):
 #         """
 #         Initialises the GPS data handler with default serial path and baud rate, 
