@@ -286,8 +286,8 @@ if __name__ == '__main__':
         """Read ToF sensor, and run the Kalman filter and LQR control algorithms
         """
 
-        # NOTE: DO NOT DIVIDE temp BY 1000 here to get altitude measurements in m.
-        # There are checks if temp == -1 in the code for outlier detection.
+        # NOTE: DO NOT DIVIDE tof_dis BY 1000 here to get altitude measurements in m.
+        # There are checks if tof_dis == -1 in the code for outlier detection.
         # you can run LQR even when the drone is close to ground but you cannot run KF.
         # So, to compensate use the previous estimates of alpha and beta
         # and the current ToF sensor readings. In this case if the ToF returns outliers
@@ -295,14 +295,14 @@ if __name__ == '__main__':
 
         # Reading the tof altitude invokes the automatic update from the sensor,
         # no need to read the sensor explicitly
-        temp = tof.distance
+        tof_dis = tof.distance
 
-        if temp == -1:
+        if tof_dis == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
             num_consecutive_altitude_outliers_count_thus_far[0] += 1
         else:
             num_consecutive_altitude_outliers_count_thus_far[0] = 0
-            last_valid_altitude_measurement_mts[0] = temp/1000
+            last_valid_altitude_measurement_mts[0] = tof_dis/1000
 
         if num_consecutive_altitude_outliers_count_thus_far[0] == max_consecutive_altitude_outliers_count[0]:
             print(f"Something wrong with the ToF, maximum number of consecutive altitude outliers recorded: {num_consecutive_altitude_outliers_count_thus_far[0]}."
@@ -311,15 +311,15 @@ if __name__ == '__main__':
         is_drone_flying_close_to_ground[0] = last_valid_altitude_measurement_mts[0] < min_altitude_to_activate_AltiHold_mts[0]
 
         if is_drone_flying_close_to_ground[0]:
-            z_hat[0] = current_altitude_snap_shot_mts[0] if temp == - \
-                1 else temp/1000
+            z_hat[0] = current_altitude_snap_shot_mts[0] if tof_dis == - \
+                1 else tof_dis/1000
             print_debug(
                 f"Cannot activate altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
             if is_KF_ran_atleast_once[0]:
                 kf.reset()
         else:
             x_est = kf.update(Tref_t[0], euler[1], euler[2],
-                              np.nan if temp == -1 else temp/1000)
+                              np.nan if tof_dis == -1 else tof_dis/1000)
             is_KF_ran_atleast_once[0] = True
             z_hat[0] = x_est[0][0]
             v_hat[0] = x_est[1][0]
@@ -333,7 +333,7 @@ if __name__ == '__main__':
 
             if use_altitude_hold[0]:
                 if not is_current_altitude_snap_shot_taken[0]:
-                    current_altitude_snap_shot_mts[0] = temp/1000
+                    current_altitude_snap_shot_mts[0] = tof_dis/1000
                     var_e_RC_mid_percentage[0] = rc.trimmer_VRE_percentage()
                     is_current_altitude_snap_shot_taken[0] = True
             else:
