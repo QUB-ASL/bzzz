@@ -23,7 +23,7 @@ class Gnss:
     """
     GNSS Module
 
-    This class is used to interface the anemometer
+    This class is used to interface the GNSS Module
     """
     def __init__(self, 
                  serial_path="/dev/ttyACM0", 
