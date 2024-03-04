@@ -13,6 +13,7 @@ from bzzz.read_sbus import RC  # for radio data receiving, encoding and sending 
 
 from bzzz.sensors.evo_time_of_flight import EvoSensor
 from bzzz.sensors.pressure_sensor import PressureSensor
+from bzzz.sensors.anemometer import Anemometer
 from bzzz.sensors.data_logger import DataLogger
 from bzzz.sensors.filters import NoFilter
 from bzzz.sensors.filters import AverageFilter
@@ -373,21 +374,24 @@ if __name__ == '__main__':
                        function_call_count=0)
 
     # THE MAIN LOOP
-    filename = datetime.datetime.now().strftime("EVOSENSOR-LOGS-%d-%m-%y--%H-%M.csv")
-    log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_PressureSensor.csv")
+    EVO_filename = datetime.datetime.now().strftime("EVOSENSOR-LOGS-%d-%m-%y--%H-%M.csv")
+    BAR_filename = datetime.datetime.now().strftime("PressureSensor-%d-%m-%y--%H-%M.csv")
+    ANE_filename = datetime.datetime.now().strftime("Anemometer-%d-%m-%y--%H-%M.csv")
     processor = AverageFilter()  # You need to define this class based on your requirements
     with EvoSensor(window_length=3,
                     data_processor=processor,
-                    log_file=filename), PressureSensor(window_length=100,
+                    log_file=EVO_filename), PressureSensor(window_length=100,
                             data_processor=processor,
                             reference_pressure_at_sea_level=102500, 
-                            log_file=log_filename) as sensor:
+                            log_file=BAR_filename), Anemometer(window_length=5,
+                        data_processor=processor,
+                        log_file=ANE_filename) as sensor:
         
         while True:
             scheduler.run()  # run the scheduled functions
 
-            if is_kill[0]:
-                print("TOF saving data")
+            if is_kill[0] and switch_a_status[0]:
+                print("All sensors are saving data")
                 break
     
     
