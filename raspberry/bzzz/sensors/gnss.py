@@ -26,7 +26,7 @@ class Gnss:
     This class is used to interface the anemometer
     """
     def __init__(self, 
-                 serial_path="/dev/tty.usbmodem14201", 
+                 serial_path="/dev/ttyACM0", 
                  baud=57600, 
                  window_length=3,
                  data_processor=MedianFilter(),
@@ -105,22 +105,28 @@ class Gnss:
                 elif msg_key == "$GPGSV" and len(tokens) > 5:
                     altitude = float(tokens[5])
 
-                # Check if any of the values are NaN before saving or processing
-                if not np.isnan(latitude) and not np.isnan(longitude) and not np.isnan(altitude):
-                    gnss_data_to_save = np.array([latitude, longitude, 
+                # Check if any of the values are NaN before saving or
+                # processing
+                if (not np.isnan(latitude) and not np.isnan(longitude) 
+                        and not np.isnan(altitude)):
+                    gnss_to_save = np.array([latitude, longitude, 
                                               altitude])    
                 
                     with self.__lock:
-                        self.__values_cache[self.__cursor, :] = gnss_data_to_save
+                        self.__values_cache[self.__cursor, :] = gnss_to_save
                         if (self.__log_file is not None 
                                 and self.__cursor < self.__max_samples):
                             data_to_log = self.__data_processor.process(
-                                self.__values_cache[:, :], cursor=self.__cursor)
-                            # Process the data only if it doesn't contain NaN values
+                                self.__values_cache[:, :], 
+                                cursor=self.__cursor)
+                            # Process the data only if it doesn't contain NaN
+                            # values
                             if not np.isnan(data_to_log).any():
                                     current_timestamp = datetime.datetime.now()
-                                    self.__logger.record(current_timestamp, data_to_log)
-                        self.__cursor = (self.__cursor + 1) % self.__window_length
+                                    self.__logger.record(current_timestamp, 
+                                                         data_to_log)
+                        self.__cursor = ((self.__cursor + 1) 
+                        % self.__window_length)
 
         ser.close()
         return
@@ -148,7 +154,8 @@ class Gnss:
           - Altitude
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)
+            return self.__data_processor.process(self.__values_cache[:, :], 
+                                                 cursor=self.__cursor)
 
     @property
     def Latitude(self):
@@ -156,7 +163,8 @@ class Gnss:
         Returns Latitude position in decimal
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 0], cursor=self.__cursor)
+            return self.__data_processor.process(self.__values_cache[:, 0], 
+                                                 cursor=self.__cursor)
 
     @property
     def Longitude(self):
@@ -164,7 +172,8 @@ class Gnss:
         Returns Longitude position in decimal
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 1], cursor=self.__cursor)
+            return self.__data_processor.process(self.__values_cache[:, 1], 
+                                                 cursor=self.__cursor)
 
     @property
     def Altitude(self):
@@ -172,7 +181,8 @@ class Gnss:
         Returns the Altitude position
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
+            return self.__data_processor.process(self.__values_cache[:, 2], 
+                                                 cursor=self.__cursor)
         
 if __name__ == '__main__':
 
