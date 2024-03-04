@@ -7,7 +7,8 @@ from bzzz.sensors.evo_time_of_flight import EvoSensor
 
 class RC:
     """
-    This class is used to interface the remote control (receiver) with the Raspberry Pi.
+    This class is used to interface the remote control (receiver) with the 
+    Raspberry Pi.
     """
 
     def __init__(self,
@@ -22,7 +23,7 @@ class RC:
         :param sbus_pin: RPi GPIO pin where RC receiver sbus wire is plugged in
         """
         # Time of flight sensor
-        self.__ToF_seansor = EvoSensor()
+        self.__ToF_sensor = EvoSensor()
 
         # serial connection between Pi and ESP32
         self.ser = serial.Serial(serial_path, baud, timeout=1)
@@ -38,8 +39,8 @@ class RC:
             time.sleep(.2)
             still_waiting = True
 
-        # Note that there will be nonsense data for the first 10ms or so of connection
-        # until the first packet comes in.
+        # Note that there will be nonsense data for the first 10ms or so of
+        # connection until the first packet comes in.
         time.sleep(.1)
         self.parser = bzzz.read_sbus.radioDataParser.RadioDataParser()
 
@@ -50,18 +51,27 @@ class RC:
                        receiver_disconnect_throttle_ref=650,
                        receiver_disconnect_throttle_height = 0.6):
         """
-        Checks if the radio is connected, determines when the last RC data was received
-        and reads the 16 channels of data received from the RC
+        Checks if the radio is connected, determines when the last RC data was
+        received and reads the 16 channels of data received from the RC
 
-        :param max_packet_age_in_ms: max age a packet can be im ms. Therefore how long the quadcopter
-                                     can fly since it last read the receiver. defualt 500ms
-        :parm receiver_disconnect_throttle_ref: Throttle refrence that can be set, that if the receiver disconnects
-                                                the throttle will be set to this value which should be slightly less 
-                                                than the hovering throttle. defualt 650 ROUGH ESTIMATION
-        :parm receiver_disconnect_throttle_height: How close the quadcopter has to be to the ground to kill the motors
-                                                   if the receiver disconects. Above this hieght the motor will spin 
-                                                   at a speed according to the 'receiver_disconnect_throttle_ref' param
-                                                   defualt 0.6m
+        :param max_packet_age_in_ms: max age a packet can be im ms. Therefore
+                                     how long the quadcopter can fly since it
+                                     last read the receiver. default 500ms
+        :parm receiver_disconnect_throttle_ref: Throttle reference that can be
+                                                set, that if the receiver
+                                                disconnects the throttle will
+                                                be set to this value which
+                                                should be slightly less than
+                                                the hovering throttle. default
+                                                650 ROUGH ESTIMATION
+        :parm receiver_disconnect_throttle_height: How close the quadcopter has
+                                                   to be to the ground to kill
+                                                   the motors if the receiver
+                                                   disconnects. Above this
+                                                   height the motor will spin
+                                                   at a speed according to the
+                                                   'receiver_disconnect_throttle_ref'
+                                                   param default 0.6m
 
         Returns:
         If the receiver is connected
@@ -73,12 +83,23 @@ class RC:
 
         # returns list of length 16, so -1 from channel num to get index
         if packet_age > max_packet_age_in_ms or not is_connected:
-            if self.__ToF_seansor.distance > receiver_disconnect_throttle_height:
-                channel_data = str(f"1000, 1000, {receiver_disconnect_throttle_ref}, 1000, 300, {self.reader.translate_latest_packet()[5]}, \
-                                   {self.reader.translate_latest_packet()[6]}, {self.reader.translate_latest_packet()[7]}, 1700, 300, 300, 1700, 1000, 1000, 1000, 1000")
+            if (self.__ToF_sensor.distance 
+                    > receiver_disconnect_throttle_height):
+                channel_data = str(f"1000, 1000,
+                                   {receiver_disconnect_throttle_ref}, 
+                                   1000, 300, 
+                                   {self.reader.translate_latest_packet()[5]}, 
+                                   {self.reader.translate_latest_packet()[6]}, 
+                                   {self.reader.translate_latest_packet()[7]}, 
+                                   1700, 300, 300, 1700, 1000, 1000, 1000, 
+                                   1000")
             else:
-                channel_data = str(f"1000, 1000, 300, 1000, 300, {self.reader.translate_latest_packet()[5]}, {self.reader.translate_latest_packet()[6]}, \
-                                   {self.reader.translate_latest_packet()[7]}, 1700, 300, 1700, 1700, 1000, 1000, 1000, 1000")
+                channel_data = str(f"1000, 1000, 300, 1000, 300, 
+                                   {self.reader.translate_latest_packet()[5]}, 
+                                   {self.reader.translate_latest_packet()[6]},
+                                   {self.reader.translate_latest_packet()[7]}, 
+                                   1700, 300, 1700, 1700, 1000, 1000, 1000, 
+                                   1000")
         else:
             channel_data = str(self.reader.translate_latest_packet())[1:-1]
 
@@ -88,36 +109,49 @@ class RC:
                          channel_data,
                          over_write_throttle_ref_to=-1):
         """
-        This function checks that the channel data from the remote is in the correct range and then formates it correctly to be sent to the ESP32.
+        This function checks that the channel data from the remote is in the 
+        correct range and then formates it correctly to be sent to the ESP32.
         
-        :param channel_data: The channel data from the remote that we want to check is in the correct range
-        :param over_write_throttle_ref_to: When altitude hold is active we want to overwrite the throttle reference from the remote. 
-               This sends the new throttle value, if set to -1 the reference throttle is kept; default: -1.
+        :param channel_data: The channel data from the remote that we want to
+                             check is in the correct range
+        :param over_write_throttle_ref_to: When altitude hold is active we 
+                                           want to overwrite the throttle 
+                                           reference from the remote. This 
+                                           sends the new throttle value, 
+                                           if set to -1 the reference throttle 
+                                           is kept default: -1.
         """
         # check if data is in range [1000, 2000]
-        self.parser.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (
-            2000 if int(x) > 2000 else int(x)), channel_data.strip().split(",")))
+        self.parser.m_channelData = list(map(lambda x: 0 if int(x) < 0 
+                                             else (2000 if int(x) > 2000 
+                                             else int(x)), 
+                                             channel_data.strip().split(",")))
 
         if over_write_throttle_ref_to != -1:
             # TODO: check if channel 2 is throttle data
             self.parser.m_channelData[2] = over_write_throttle_ref_to
         # process and encapsulate the data
         # the output data packet format will be as follows
-        # Y_radPs, P_rad, R_rad, T_PWM_MIN2MAX, % trimA, % trimB, % trimC, % trimE, encodedSwitchesData
-        # here the final data value encodedSwitchesData is an integer carrying information
-        # of the position of switches A, B, C, and D in the last 5-bits (the rightmost 5-bits),
+        # Y_radPs, P_rad, R_rad, T_PWM_MIN2MAX, % trimA, % trimB, % trimC, 
+        # % trimE, encodedSwitchesData
+        # here the final data value encodedSwitchesData is an integer carrying
+        # information of the position of switches A, B, C, and D in the last
+        # 5-bits (the rightmost 5-bits),
         # in which each bit corresponds to data as follows
         # bit-4 (MSB): 1-bit info of Switch B: 1 if armed else 0
         # bit-3: 1-bit info of Switch A: 1 if kill_on else 0
-        # bits 2 and 1: 2-bit info of switch C: 00 for position DOWN, 01 for position MID, 10 for position UP
+        # bits 2 and 1: 2-bit info of switch C: 00 for position DOWN, 
+        # 01 for position MID, 10 for position UP
         # bit-0: 1-bit info of switch D: 1 if D_on else 0
-        self.__parsed_data, channel_data = self.parser.format_radio_data_for_sending()
+        self.__parsed_data, channel_data = (
+            self.parser.format_radio_data_for_sending())
         return channel_data
 
     def send_data_to_ESP(self, channel_data):
-        # Send with S in the beginning to indicate the start of the data, and also useful to check if data
-        # is received properly on the ESP's end
-        # Send data from Pi to ESP32, send a new line char so ESP32 knows when to stop reading
+        # Send with S in the beginning to indicate the start of the data, and
+        # also useful to check if data is received properly on the ESP's end
+        # Send data from Pi to ESP32, send a new line char so ESP32 knows when
+        # to stop reading
         self.ser.write(f'S,{channel_data}\n'.encode())
 
     def receive_data_from_ESP(self):
@@ -141,18 +175,27 @@ class RC:
                                              fake_data="",
                                              over_write_throttle_ref_to=-1):
         """
-        Read the radio data, process it, format it into a string, and send it via UART.
+        Read the radio data, process it, format it into a string, and send it 
+        via UART.
 
         :param return_channel_data: 
-        :param force_send_fake_data: whether or not to send fake data; default: False.
-        :param fake_data: if force_send_fake_data = True, this is that data that is to be sent, it should start with "S"; default: "".
-        :param over_write_throttle_ref_to: When altitude hold is active we want to overwrite the throttle reference from the remote. 
-               This sends the new throttle value, if set to -1 the reference throttle is kept; default: -1.
+        :param force_send_fake_data: whether or not to send fake data; 
+                                     default: False.
+        :param fake_data: if force_send_fake_data = True, this is that data 
+                          that is to be sent, it should start with "S"; 
+                          default: "".
+        :param over_write_throttle_ref_to: When altitude hold is active we want
+                                           to overwrite the throttle reference
+                                           from the remote. This sends the new 
+                                           throttle value, if set to -1 the 
+                                           reference throttle is kept; 
+                                           default: -1.
         """
         try:
             _is_connected, _packet_age, channel_data = self.get_radio_data()
-            channel_data = self.parse_radio_data(
-                channel_data, over_write_throttle_ref_to=over_write_throttle_ref_to)
+            channel_data = self.parse_radio_data(channel_data,
+                                                  over_write_throttle_ref_to
+                                                  =over_write_throttle_ref_to)
             if force_send_fake_data:
                 channel_data = fake_data
             self.send_data_to_ESP(channel_data)

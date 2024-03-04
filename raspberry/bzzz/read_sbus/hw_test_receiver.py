@@ -19,7 +19,8 @@ while True:
                 is_connected = reader.is_connected()
                 packet_age = reader.get_latest_packet_age()  # milliseconds
 
-                # returns list of length 16, so -1 from channel num to get index
+                # returns list of length 16, 
+                # so take away 1 from channel num to get index
                 channel_data = reader.translate_latest_packet()
 
                 print(channel_data) #Prints 16 channels of data from receiver

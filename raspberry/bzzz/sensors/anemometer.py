@@ -27,17 +27,19 @@ class Anemometer:
         :param serial_path: serial path; defaults to /dev/ttyS0 on RPi
         :param baud: baud rate of serial communication; defaults to 115200
         :param window_length: length of window of measurements; default: 3
-        :param data_processor: data processor on buffer of measurements; default: MedianFilter()
+        :param data_processor: data processor on buffer of measurements;
+            default: MedianFilter()
         :param log_file: file name to log data; default: None 
-        :param max_samples: maximum number of samples to record; default: 100000
+        :param max_samples: maximum number of samples to record; default:
+            100000
 
-        If `log_file` is None, the data is not logged; otherwise, on exit, 
-        the data are stored in a CSV file
+        If `log_file` is None, the data is not logged; otherwise, on exit, the
+        data are stored in a CSV file
 
         Note: We assume that we receive 7 measurements from the anemometer
         """
-        # A lock is used to guarantee that we won't be reading the data
-        # while the thread in the background is writing it
+        # A lock is used to guarantee that we won't be reading the data while
+        # the thread in the background is writing it
         self.__lock = Lock()
         self.__thread = Thread(target=self.__get_measurements_in_background_t,
                                args=[serial_path, baud])
@@ -59,8 +61,8 @@ class Anemometer:
 
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
-        This is a thread that runs in the background to connect to the 
-        serial and collect measurements, which are stored in a buffer
+        This is a thread that runs in the background to connect to the serial
+        and collect measurements, which are stored in a buffer
 
         :param serial_path: serial path
         :param baud: baud rate of serial communication
@@ -76,9 +78,10 @@ class Anemometer:
                     dtype=np.float64)
                 with self.__lock:
                     self.__values_cache[self.__cursor, :] = split_data_float
-                    # If the caller wants to log (log_file specified) there is still space
-                    # in the log file, record data
-                    if self.__log_file is not None and self.__cursor < self.__max_samples:
+                    # If the caller wants to log (log_file specified) there is
+                    # still space in the log file, record data
+                    if (self.__log_file is not None 
+                        and self.__cursor < self.__max_samples):
                         data_to_log = self.__data_processor.process(
                             self.__values_cache[:, :], cursor=self.__cursor)
                         current_timestamp = datetime.datetime.now()
@@ -102,9 +105,9 @@ class Anemometer:
         """
         Returns all sensor data 
 
-        This method returns all sensor data after the application of the data 
-        preprocessor specified in the construtor. The data is returned as a numpy 
-        array with the following data (in this order):
+        This method returns all sensor data after the application of the data
+        preprocessor specified in the constructor. The data is returned as a
+        numpy array with the following data (in this order):
           - magnitude of wind speed in m/s
           - magnitude of 2D wind speed in m/s
           - horizontal direction in degrees
@@ -114,7 +117,8 @@ class Anemometer:
           - wind speed along w-axis in m/s
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)
+            return self.__data_processor.process(
+                self.__values_cache[:, :], cursor=self.__cursor)
 
     @property
     def wind_speed_3d(self):
@@ -122,7 +126,8 @@ class Anemometer:
         Returns the 3D wind speed magnitude in m/s (processed)
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 0], cursor=self.__cursor)
+            return self.__data_processor.process(
+                self.__values_cache[:, 0], cursor=self.__cursor)
 
     @property
     def wind_speed_2d(self):
@@ -130,7 +135,8 @@ class Anemometer:
         Returns the 2D wind speed magnitude in m/s (processed)
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 1], cursor=self.__cursor)
+            return self.__data_processor.process(
+                self.__values_cache[:, 1], cursor=self.__cursor)
 
     @property
     def horizontal_wind_direction(self):
@@ -138,7 +144,8 @@ class Anemometer:
         Returns the horizontal wind direction in degrees (processed)
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
+            return self.__data_processor.process(
+                self.__values_cache[:, 2], cursor=self.__cursor)
 
     @property
     def vertical_wind_direction(self):
@@ -146,7 +153,8 @@ class Anemometer:
         Returns the vertical wind direction in degrees (processed)
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 3], cursor=self.__cursor)
+            return self.__data_processor.process(
+                self.__values_cache[:, 3], cursor=self.__cursor)
 
     @property
     def wind_velocities(self):
@@ -154,7 +162,8 @@ class Anemometer:
         Returns the horizontal wind velocity vector in m/s (processed)
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, -3:], cursor=self.__cursor)
+            return self.__data_processor.process(
+                self.__values_cache[:, -3:], cursor=self.__cursor)
 
 
 if __name__ == '__main__':
@@ -165,4 +174,5 @@ if __name__ == '__main__':
         with Anemometer(window_length=5,
                         data_processor=processor,
                         log_file=filename) as sensor:
-            time.sleep(600) # set time for how long you want to record data for in seconds
+            # set time for how long you want to record data for in seconds
+            time.sleep(600)
