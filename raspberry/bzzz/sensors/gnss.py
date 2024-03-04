@@ -68,7 +68,8 @@ class Gnss:
             feature_names = ("Date_Time", "Latitude", "Longitude", "Altitude")
             self.__logger = DataLogger(num_features=3,
                                        max_samples=max_samples,
-                                       feature_names=feature_names)
+                                       feature_names=feature_names)    
+        self.__thread.start()
 
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
