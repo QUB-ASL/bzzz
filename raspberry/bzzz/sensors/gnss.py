@@ -147,8 +147,7 @@ class Gnss:
 
         This method returns all sensor data after the application of the data
         preprocessor specified in the constructor. The data is returned as a
-        numpy 
-        array with the following data (in this order):
+        numpy array with the following data (in this order):
           - Latitude in decimal 
           - Longitude in decimal 
           - Altitude
