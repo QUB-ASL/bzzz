@@ -4,10 +4,13 @@ import math
 
 class KalmanFilter:
     """Kalman Filter for altitude hold parameters estimation. 
-    The states are x = [Altitude in m, Velocity along z-axis in m/s, alpha, beta].
-    Where, alpha and beta are parameters that relate throttle reference percentage with vertical accleration as follows,
+    The states are 
+    x = [Altitude in m, Velocity along z-axis in m/s, alpha, beta].
+    Where, alpha and beta are parameters that relate throttle reference 
+    percentage with vertical acceleration as follows,
     ===> a_z = alpha * Throttle_reference_percentage_along_z + beta
-    and Throttle_reference_percentage_along_z = Throttle_reference_percentage * cos (current_drone_pitch_rad) * cos (current_drone_roll_rad)
+    and Throttle_reference_percentage_along_z = Throttle_reference_percentage 
+    * cos (current_drone_pitch_rad) * cos (current_drone_roll_rad)
     """
     def __init__(self,
                  sampling_frequency=10,
@@ -20,10 +23,14 @@ class KalmanFilter:
         """Constructor
 
         :param sampling_frequency: KF sampling frequency, defaults to 10
-        :param initial_Tt: Initial throttle reference to the system, defaults to 0.
-        :param x_tilde_0: Intial conditions; initial state guess for the KF, defaults to np.zeros((4, 1))
-        :param P_0: Iniitial conditions: initial state guess variance, defaults to np.eye(4)*100
-        :param cache_values: Enables caching KF values if True, defaults to False
+        :param initial_Tt: Initial throttle reference to the system, defaults 
+                           to 0.
+        :param x_tilde_0: Initial conditions; initial state estimation for the 
+                          KF, defaults to np.zeros((4, 1))
+        :param P_0: Initial conditions: initial state estimation variance, 
+                                        defaults to np.eye(4)*100
+        :param cache_values: Enables caching KF values if True, 
+                             defaults to False
         """
         self.__fs = sampling_frequency
         self.__Ts = 1/self.__fs
@@ -141,7 +148,8 @@ class KalmanFilter:
 
     def reset(self):
         """reset the kalman filter velocity estimate.
-        NOTE: only call this if the drone is close to ground and/ or the system dynamics are altered.
+        NOTE: only call this if the drone is close to ground and/or the 
+        system dynamics are altered.
         """
         self.__x_MU[1, 0] = 0.
 
@@ -154,7 +162,8 @@ class KalmanFilter:
         :param y_t: Current altitude measurement in meters.
         :return: State estimate.
         """
-        # Check if altitude measurement is nan or outlier (which is indicated by -1/1000).
+        # Check if altitude measurement is nan or outlier 
+        # (which is indicated by -1/1000).
         self.__is_yt_not_nan = not (np.isnan(y_t) or y_t < 0)
         # Update the throttle reference.
         self.__update_Tt(Tt, pitch_rad, roll_rad)
@@ -165,5 +174,6 @@ class KalmanFilter:
             # Do the measurement update.
             self.__measurement_update(y_t, pitch_rad, roll_rad)
         self.__time_update()  # Do the time update.
-        # return measurement update estimate if a valid measurement is received else reuturn time update estimate.
+        # return measurement update estimate if a valid 
+        # measurement is received else reuturn time update estimate.
         return self.__x_MU if self.__is_yt_not_nan else self.__x_TU
