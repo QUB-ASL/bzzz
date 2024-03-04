@@ -374,18 +374,20 @@ if __name__ == '__main__':
                        function_call_count=0)
 
     # THE MAIN LOOP
-    EVO_filename = datetime.datetime.now().strftime("EVOSENSOR-LOGS-%d-%m-%y--%H-%M.csv")
+    EVO_filename = datetime.datetime.now().strftime("Evo-ToF-%d-%m-%y--%H-%M.csv")
     BAR_filename = datetime.datetime.now().strftime("PressureSensor-%d-%m-%y--%H-%M.csv")
     ANE_filename = datetime.datetime.now().strftime("Anemometer-%d-%m-%y--%H-%M.csv")
     processor = AverageFilter()  # You need to define this class based on your requirements
-    with EvoSensor(window_length=3,
-                    data_processor=processor,
-                    log_file=EVO_filename), PressureSensor(window_length=100,
-                            data_processor=processor,
-                            reference_pressure_at_sea_level=102500, 
-                            log_file=BAR_filename), Anemometer(window_length=5,
-                        data_processor=processor,
-                        log_file=ANE_filename) as sensor:
+    with (EvoSensor(window_length=3,  
+                    data_processor=processor,  
+                    log_file=EVO_filename) as ToFSensor, 
+          PressureSensor(window_length=100,  
+                         data_processor=processor,  
+                         reference_pressure_at_sea_level=102500, 
+                         log_file=BAR_filename) as PSensor, 
+          Anemometer(window_length=5,  
+                     data_processor=processor,  
+                     log_file=ANE_filename) as ASensor):
         
         while True:
             scheduler.run()  # run the scheduled functions
