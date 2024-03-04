@@ -26,7 +26,7 @@ class Gnss:
     This class is used to interface the anemometer
     """
     def __init__(self, 
-                 serial_path="/dev/ttyACM0", 
+                 serial_path="/dev/tty.usbmodem14201", 
                  baud=57600, 
                  window_length=3,
                  data_processor=MedianFilter(),
@@ -52,8 +52,6 @@ class Gnss:
 
         Note: We assume that we receive 3 measurements from the anemometer
         """
-        # A lock is used to guarantee that we won't be reading the data
-        # while the thread in the background is writing it
         self.__lock = Lock()
         self.__thread = Thread(target=self.__get_measurements_in_background_t,
                                args=[serial_path, baud])
@@ -82,7 +80,13 @@ class Gnss:
         """
         ser = serial.Serial(serial_path, baud, timeout=1)
         ser.reset_input_buffer()
-        while True:
+
+        # Initialize default values for latitude, longitude, and altitude
+        latitude = np.nan
+        longitude = np.nan
+        altitude = np.nan
+
+        while self.__keep_going:
             if ser.in_waiting > 0:
                 line = ser.readline().decode('utf-8', 'ignore').strip()
                 tokens = line.split(",")
@@ -98,34 +102,35 @@ class Gnss:
                     lon_min = float(tokens[3]) % 100
                     longitude = deg_min_sec_to_decimal(lon_deg, lon_min, 
                                                        tokens[4])
-                    
                 elif msg_key == "$GPGSV" and len(tokens) > 5:
-                        altitude = float(tokens[5])
+                    altitude = float(tokens[5])
 
-                gnss_data_to_save = np.array([latitude, longitude, 
-                                              altitude])          
+                # Check if any of the values are NaN before saving or processing
+                if not np.isnan(latitude) and not np.isnan(longitude) and not np.isnan(altitude):
+                    gnss_data_to_save = np.array([latitude, longitude, 
+                                              altitude])    
+                
+                    with self.__lock:
+                        self.__values_cache[self.__cursor, :] = gnss_data_to_save
+                        if (self.__log_file is not None 
+                                and self.__cursor < self.__max_samples):
+                            data_to_log = self.__data_processor.process(
+                                self.__values_cache[:, :], cursor=self.__cursor)
+                            # Process the data only if it doesn't contain NaN values
+                            if not np.isnan(data_to_log).any():
+                                    current_timestamp = datetime.datetime.now()
+                                    self.__logger.record(current_timestamp, data_to_log)
+                        self.__cursor = (self.__cursor + 1) % self.__window_length
 
-                with self.__lock:
-                    self.__values_cache[self.__cursor, :] = gnss_data_to_save
-                    # If the caller wants to log (log_file specified) there is
-                    # still space in the log file, record data
-                    if (self.__log_file is not None 
-                            and self.__cursor < self.__max_samples):
-                        data_to_log = self.__data_processor.process(
-                            self.__values_cache[:, :], cursor=self.__cursor)
-                        current_timestamp = datetime.datetime.now()
-                        self.__logger.record(current_timestamp, data_to_log)
-                    self.__cursor = (self.__cursor + 1) % self.__window_length
-                if not self.__keep_going:
-                    ser.close()
-                    return
+        ser.close()
+        return
 
     def __enter__(self):
         return self
 
     def __exit__(self, *args):
         self.__keep_going = False
-        time.sleep(0.05)
+        self.__thread.join()  # Wait for the thread to finish
         if self.__log_file is not None:
             self.__logger.save_to_csv(self.__log_file)
 
