@@ -1,8 +1,10 @@
 import serial
-import time
-from datetime import datetime, timedelta
+import numpy as np
 from threading import Thread, Lock
-from data_logger import DataLogger  # Ensure this is correctly imported or defined in the same file
+import time
+import datetime
+from .data_logger import DataLogger
+from .filters import MedianFilter
 
 def deg_min_sec_to_decimal(degrees, minutes, direction):
     """
@@ -17,82 +19,162 @@ def deg_min_sec_to_decimal(degrees, minutes, direction):
         decimal_degrees *= -1
     return decimal_degrees
 
-class Gps:
+class Gnss:
     """
-    Initializes the GPS data handler with the default serial path and baud rate,
-    sets up storage for latitude, longitude, and altitude,
-    and starts a background thread to continuously read and parse GPS data.
-    :param serial_path: Path to the serial port where the GPS is connected (default: "/dev/ttyACM0")
-    :param baud: Baud rate for the serial connection (default: 500000)
-    :param log_file: Name of the file to log GPS data (default: "gps_data.csv")
-    """
-    def __init__(self, serial_path="/dev/ttyACM0", baud=500000, log_file="gps_data.csv"):
-        self.__lock = Lock()
-        self.__gpgll_latitude = None
-        self.__gpgll_longitude = None
-        self.__gpgsv_altitude = None
-        # Initialize DataLogger with 3 features: Timestamp, Latitude, Longitude, Altitude
-        self.logger = DataLogger(num_features=4, feature_names=["Timestamp", "Latitude", "Longitude", "Altitude"])
-        self.__thread = Thread(target=self.__get_measurements_in_background, args=[serial_path, baud])
-        self.__keep_going = True
-        self.__thread.start()
-        self.log_file = log_file
+    GNSS Module
 
-    def __get_measurements_in_background(self, serial_path, baud):
+    This class is used to interface the anemometer
+    """
+    def __init__(self, 
+                 serial_path="/dev/ttyACM0", 
+                 baud=57600, 
+                 window_length=3,
+                 data_processor=MedianFilter(),
+                 log_file=None,
+                 max_samples=100000):
         """
-        Continuously reads GPS data from the serial port, parsing GNGLL messages
-        for latitude and longitude, and GPGSV messages for altitude,
-        updating the object's GPS attributes accordingly. This method will write
-        the GPS data to a CSV file for 2 minutes.
+        Initialises the GPS data handler with the default serial path and baud
+        rate, sets up storage for latitude, longitude, and altitude, and starts
+        a background thread to continuously read and parse GPS data.
+
+        :param serial_path: Path to the serial port where the GPS is connected;
+                            default: "/dev/ttyACM0"
+        :param baud: baud rate of serial communication; defaults to 57600
+        :param window_length: length of window of measurements; default: 3
+        :param data_processor: data processor on buffer of measurements; 
+                               default: MedianFilter()
+        :param log_file: file name to log data; default: None 
+        :param max_samples: maximum number of samples to record; 
+                            default: 100000
+
+        If `log_file` is None, the data is not logged; otherwise, on exit, 
+        the data are stored in a CSV file
+
+        Note: We assume that we receive 3 measurements from the anemometer
+        """
+        # A lock is used to guarantee that we won't be reading the data
+        # while the thread in the background is writing it
+        self.__lock = Lock()
+        self.__thread = Thread(target=self.__get_measurements_in_background_t,
+                               args=[serial_path, baud])
+        self.__keep_going = True
+        self.__window_length = window_length
+        self.__values_cache = np.tile(np.nan, (self.__window_length, 3))
+        self.__cursor = 0
+        self.__data_processor = data_processor
+        self.__log_file = log_file
+        self.__max_samples = max_samples
+        if log_file is not None:
+            feature_names = ("Date_Time", "Latitude", "Longitude", "Altitude")
+            self.__logger = DataLogger(num_features=3,
+                                       max_samples=max_samples,
+                                       feature_names=feature_names)
+
+    def __get_measurements_in_background_t(self, serial_path, baud):
+        """
+        Continuously reads GPS data from the serial port, parsing GNGLL
+        messages for latitude and longitude, and GPGSV messages for altitude,
+        updating the object's GPS attributes accordingly. 
+
         :param serial_path: Serial port path
         :param baud: Baud rate for the serial connection
         """
-        stop_time = datetime.now() + timedelta(minutes=2)  # Determine when to stop collecting data
-        with serial.Serial(serial_path, baud, timeout=1) as ser:
-            while datetime.now() < stop_time and self.__keep_going:
-                if ser.in_waiting > 0:
-                    line = ser.readline().decode('utf-8', 'ignore').strip()
-                    tokens = line.split(",")
-                    msg_key = tokens[0]
+        ser = serial.Serial(serial_path, baud, timeout=1)
+        ser.reset_input_buffer()
+        while True:
+            if ser.in_waiting > 0:
+                line = ser.readline().decode('utf-8', 'ignore').strip()
+                tokens = line.split(",")
+                msg_key = tokens[0]
 
-                    if msg_key == "$GNGLL" and tokens[1] and tokens[3]:
-                        lat_deg = int(float(tokens[1]) / 100)
-                        lat_min = float(tokens[1]) % 100
-                        latitude = deg_min_sec_to_decimal(lat_deg, lat_min, tokens[2])
+                if msg_key == "$GNGLL" and tokens[1] and tokens[3]:
+                    lat_deg = int(float(tokens[1]) / 100)
+                    lat_min = float(tokens[1]) % 100
+                    latitude = deg_min_sec_to_decimal(lat_deg, lat_min, 
+                                                      tokens[2])
 
-                        lon_deg = int(float(tokens[3]) / 100)
-                        lon_min = float(tokens[3]) % 100
-                        longitude = deg_min_sec_to_decimal(lon_deg, lon_min, tokens[4])
-
-                        with self.__lock:
-                            self.__gpgll_latitude = latitude
-                            self.__gpgll_longitude = longitude
-
-                    elif msg_key == "$GPGSV" and len(tokens) > 5:
+                    lon_deg = int(float(tokens[3]) / 100)
+                    lon_min = float(tokens[3]) % 100
+                    longitude = deg_min_sec_to_decimal(lon_deg, lon_min, 
+                                                       tokens[4])
+                    
+                elif msg_key == "$GPGSV" and len(tokens) > 5:
                         altitude = float(tokens[5])
-                        with self.__lock:
-                            self.__gpgsv_altitude = altitude
 
-                    with self.__lock:
-                        if self.__gpgll_latitude is not None and self.__gpgll_longitude is not None and self.__gpgsv_altitude is not None:
-                            # Log the current GPS data along with the timestamp
-                            self.logger.record(datetime.now(), [self.__gpgll_latitude, self.__gpgll_longitude, self.__gpgsv_altitude])
+                gnss_data_to_save = np.array([latitude, longitude, 
+                                              altitude])          
+
+                with self.__lock:
+                    self.__values_cache[self.__cursor, :] = gnss_data_to_save
+                    # If the caller wants to log (log_file specified) there is
+                    # still space in the log file, record data
+                    if (self.__log_file is not None 
+                            and self.__cursor < self.__max_samples):
+                        data_to_log = self.__data_processor.process(
+                            self.__values_cache[:, :], cursor=self.__cursor)
+                        current_timestamp = datetime.datetime.now()
+                        self.__logger.record(current_timestamp, data_to_log)
+                    self.__cursor = (self.__cursor + 1) % self.__window_length
+                if not self.__keep_going:
+                    ser.close()
+                    return
 
     def __enter__(self):
-        """
-        Enables the GPS object to be used with the 'with' statement for context management.
-        """
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """
-        Ensures the background thread is stopped and the GPS data is saved when exiting the context.
-        """
+    def __exit__(self, *args):
         self.__keep_going = False
-        self.__thread.join()  # Ensure background thread has finished
-        self.logger.save_to_csv(self.log_file)  # Save collected data to CSV
+        time.sleep(0.05)
+        if self.__log_file is not None:
+            self.__logger.save_to_csv(self.__log_file)
 
+    @property
+    def all_gnss_data(self):
+        """
+        Returns all GNSS data 
 
-if __name__ == "__main__":
-    with Gps() as gps:
-        time.sleep(120)  # Collect data for 2 minutes
+        This method returns all sensor data after the application of the data
+        preprocessor specified in the constructor. The data is returned as a
+        numpy 
+        array with the following data (in this order):
+          - Latitude in decimal 
+          - Longitude in decimal 
+          - Altitude
+        """
+        with self.__lock:
+            return self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)
+
+    @property
+    def Latitude(self):
+        """
+        Returns Latitude position in decimal
+        """
+        with self.__lock:
+            return self.__data_processor.process(self.__values_cache[:, 0], cursor=self.__cursor)
+
+    @property
+    def Longitude(self):
+        """
+        Returns Longitude position in decimal
+        """
+        with self.__lock:
+            return self.__data_processor.process(self.__values_cache[:, 1], cursor=self.__cursor)
+
+    @property
+    def Altitude(self):
+        """
+        Returns the Altitude position
+        """
+        with self.__lock:
+            return self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
+        
+if __name__ == '__main__':
+
+    while True:
+        filename = datetime.datetime.now().strftime("Gnss_%d-%m-%y--%H-%M.csv")
+        processor = MedianFilter()
+        with Gnss(window_length=5,
+                  data_processor=processor,
+                  log_file=filename) as gnss_sensor:
+            time.sleep(600) # set time for how long you want to record data 
+                            # for in seconds
