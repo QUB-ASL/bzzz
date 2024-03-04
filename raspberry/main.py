@@ -374,10 +374,14 @@ if __name__ == '__main__':
 
     # THE MAIN LOOP
     filename = datetime.datetime.now().strftime("EVOSENSOR-LOGS-%d-%m-%y--%H-%M.csv")
-    processor =  NoFilter()
+    log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_PressureSensor.csv")
+    processor = AverageFilter()  # You need to define this class based on your requirements
     with EvoSensor(window_length=3,
                     data_processor=processor,
-                    log_file=filename) as sensor:
+                    log_file=filename), PressureSensor(window_length=100,
+                            data_processor=processor,
+                            reference_pressure_at_sea_level=102500, 
+                            log_file=log_filename) as sensor:
         
         while True:
             scheduler.run()  # run the scheduled functions
@@ -385,15 +389,5 @@ if __name__ == '__main__':
             if is_kill[0]:
                 print("TOF saving data")
                 break
-    log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_PressureSensor.csv")
-    processor = AverageFilter()  # You need to define this class based on your requirements
-    with PressureSensor(window_length=100,
-                            data_processor=processor,
-                            reference_pressure_at_sea_level=102500, 
-                            log_file=log_filename) as sensor:
-        while True:
-            scheduler.run()  # run the scheduled functions
-
-            if is_kill[0]:
-                print("PRESSURE SENSOR saving data")
-                break
+    
+    
