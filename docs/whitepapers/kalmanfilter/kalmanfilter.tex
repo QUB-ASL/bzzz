@@ -207,16 +207,6 @@ with the system's dynamic model being describable as follows,
 \begin{equation}
     x_{t+1} = A_t x_t + w_t^z,
 \end{equation}
-where the matrix $A_t$ is defined as,
-\begin{equation}
-    A_t = 
-    \begin{bmatrix}
-    1 & T_s & T_s \tau_t & T_s \\
-    0 & 1 & T_s \tau_t & T_s \\
-    0 & 0 & 1 & 0 \\
-    0 & 0 & 0 & 1
-    \end{bmatrix}
-\end{equation}
 
 % altitude:
 % \begin{equation}
@@ -232,6 +222,59 @@ where the matrix $A_t$ is defined as,
 %     a_t =
 %     {\alpha_t}{\tau_t} + \beta_t
 % \end{equation}
+
+
+% State Transition Matrix (A)
+The state transition matrix \( A \) describes how the state at time \( t \) evolves to the state at time \( t+1 \). For the given system, \( A \) is defined as:
+
+Given the state vector \( x_t = \begin{bmatrix} z_t&  v_t^z&  \alpha_t&  \beta_t \end{bmatrix} \), the state transition matrix \( A_t \) from the system's dynamic model is defined as:
+\begin{equation}
+A_t = 
+\begin{bmatrix}
+1 & T_s & T_s \tau_t & T_s \\
+0 & 1 & T_s \tau_t & T_s \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+where \( T_s \) is the sampling time, and \( \tau_t \) represents the throttle signal at time \( t \).
+
+% Process Noise Covariance Matrix (Q)
+The process noise covariance matrix \( Q \) represents the covariance of the process noise, accounting for the uncertainty in the model dynamics:
+\begin{equation}
+Q = 
+\begin{bmatrix}
+\sigma_z^2 & 0 & 0 & 0 \\
+0 & \sigma_v^2 & 0 & 0 \\
+0 & 0 & T_s \sigma_\alpha^2 & 0 \\
+0 & 0 & 0 & T_s \sigma_\beta^2
+\end{bmatrix}
+\end{equation}
+Here, \( \sigma_z^2 \), \( \sigma_v^2 \), \( \sigma_\alpha^2 \), and \( \sigma_\beta^2 \) represent the variances of the altitude, velocity, and the coefficients \( \alpha \) and \( \beta \), which relate the throttle signal to the lift.
+
+% Measurement Matrix (C)
+The measurement matrix \( C \) links the state vector to the measurement vector:
+\begin{equation}
+C_t = 
+\begin{bmatrix}
+1 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 1 \\
+1 & 0 & 0 & 0 & 1 & 0 \\
+\end{bmatrix}
+\end{equation}
+This matrix considers the direct measurement of altitude by all sensors and accounts for biases in the ToF and barometer sensors.
+
+% Measurement Noise Covariance Matrix (R)
+The measurement noise covariance matrix \( R \) accounts for the uncertainty in sensor measurements:
+\begin{equation}
+R = 
+\begin{bmatrix}
+\sigma_{barom}^2 & 0 & 0 \\
+0 & \sigma_{gps}^2 & 0 \\
+0 & 0 & \sigma_{ToF}^2
+\end{bmatrix}
+\end{equation}
+where \( \sigma_{barom}^2 \), \( \sigma_{gps}^2 \), and \( \sigma_{ToF}^2 \) are the variances of the measurement noises for the barometer, GPS, and Time-of-Flight sensors, respectively.
 
 \section{Relationship between throttle signal and lift}
 \begin{figure}[H]
