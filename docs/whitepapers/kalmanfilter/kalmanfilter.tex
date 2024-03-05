@@ -251,5 +251,53 @@ This relationship is catagorised by the equation,
 \[
 \alpha_t\tau_t + \beta_t
 \]
+\section{Kalman Filter equations}
+We are using 3 sensors for the altitude control namely the barometer, GPS, and the time of flight sensor. The barometer is known to have the least precision and has a significant bias. The Kalman filter equations for a sensor with bias is given as,
+\begin{align}
+    z_{t+1}=&\begin{bmatrix}
+        A_{Bar}&\\
+        &I
+    \end{bmatrix}
+        z_t^{Bar}
+    +
+        \Tilde{w}_t \\
+    y_t=&\begin{bmatrix}
+        C_{Bar}&I
+    \end{bmatrix}
+        x_t+v_t
+\end{align}
+$z_t^{Bar}=(x_t^{Bar},b_t)$, where $b_t$ defines the bias of the sensor and $x_t^{Bar}$ is the state. It is important to note that the above equation only suffices for the barometer which has a large bias. 
 
+The other sensors which are the GPS and the time of flight do not have a great bias. So we can assume that they have the form of,
+\begin{align}
+    x_{t+1}=&Ax_t+w_t\\
+    y_t=&Cx_t+v_t
+\end{align}
+
+So we can define our Kalman filter such that,
+\begin{align}
+    z_{t+1}=&\begin{bmatrix}
+        B&&\\
+        &ToF&\\
+        &&GPS
+    \end{bmatrix}z_t+\Tilde{w}_t \\
+    y_t=&\begin{bmatrix}
+        C_B&C_{ToF}&C_{GPS}
+    \end{bmatrix}
+        x_t+v_t
+\end{align}
+where,
+\begin{align}
+    B=&\begin{bmatrix}
+        A_{Bar}&\\
+        &I
+    \end{bmatrix}\\
+    ToF=&A_{ToF}\\
+    GPS=&A_{GPS}
+\end{align}
+we also have $z_t=\begin{bmatrix}
+   z_t^{Bar}&z_t^{ToF}&z_t^{GPS} 
+\end{bmatrix}^\intercal,$  and $x_t=\begin{bmatrix}
+    x_t^{Bar}&x_t^{ToF}&x_t^{GPS}
+\end{bmatrix}^\intercal.$
 \end{document}
