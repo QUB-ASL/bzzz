@@ -223,8 +223,7 @@ with the system's dynamic model being describable as follows,
 %     {\alpha_t}{\tau_t} + \beta_t
 % \end{equation}
 
-
-% State Transition Matrix (A)
+\subsetion{State transition matrix \( A_t \)}
 The state transition matrix \( A \) describes how the state at time \( t \) evolves to the state at time \( t+1 \). For the given system, \( A \) is defined as:
 
 Given the state vector \( x_t = \begin{bmatrix} z_t&  v_t^z&  \alpha_t&  \beta_t \end{bmatrix} \), the state transition matrix \( A_t \) from the system's dynamic model is defined as:
@@ -239,7 +238,7 @@ A_t =
 \end{equation}
 where \( T_s \) is the sampling time, and \( \tau_t \) represents the throttle signal at time \( t \).
 
-% Process Noise Covariance Matrix (Q)
+\subsection{Process Noise Covariance Matrix \( Q \)}
 The process noise covariance matrix \( Q \) represents the covariance of the process noise, accounting for the uncertainty in the model dynamics:
 \begin{equation}
 Q = 
@@ -252,7 +251,7 @@ Q =
 \end{equation}
 Here, \( \sigma_z^2 \), \( \sigma_v^2 \), \( \sigma_\alpha^2 \), and \( \sigma_\beta^2 \) represent the variances of the altitude, velocity, and the coefficients \( \alpha \) and \( \beta \), which relate the throttle signal to the lift.
 
-% Measurement Matrix (C)
+\subsection{Measurement Matrix \( C \)}
 The measurement matrix \( C \) links the state vector to the measurement vector:
 \begin{equation}
 C_t = 
@@ -264,7 +263,7 @@ C_t =
 \end{equation}
 This matrix considers the direct measurement of altitude by all sensors and accounts for biases in the ToF and barometer sensors.
 
-% Measurement Noise Covariance Matrix (R)
+\subsection{Measurement Noise Covariance Matrix \( R \)}
 The measurement noise covariance matrix \( R \) accounts for the uncertainty in sensor measurements:
 \begin{equation}
 R = 
