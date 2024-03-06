@@ -14,6 +14,7 @@ from bzzz.read_sbus import RC  # for radio data receiving, encoding and sending 
 from bzzz.sensors.evo_time_of_flight import EvoSensor
 from bzzz.sensors.pressure_sensor import PressureSensor
 from bzzz.sensors.anemometer import Anemometer
+from bzzz.sensors.gnss import Gnss
 from bzzz.sensors.data_logger import DataLogger
 from bzzz.sensors.filters import NoFilter
 from bzzz.sensors.filters import AverageFilter
@@ -377,6 +378,7 @@ if __name__ == '__main__':
     EVO_filename = datetime.datetime.now().strftime("Evo-ToF-%d-%m-%y--%H-%M.csv")
     BAR_filename = datetime.datetime.now().strftime("PressureSensor-%d-%m-%y--%H-%M.csv")
     ANE_filename = datetime.datetime.now().strftime("Anemometer-%d-%m-%y--%H-%M.csv")
+    GNSS_filename = datetime.datetime.now().strftime("GNSS-%d-%m-%y--%H-%M.csv")
     processor = AverageFilter()  # You need to define this class based on your requirements
     with (EvoSensor(window_length=3,  
                     data_processor=processor,  
@@ -387,7 +389,10 @@ if __name__ == '__main__':
                          log_file=BAR_filename) as PSensor, 
           Anemometer(window_length=5,  
                      data_processor=processor,  
-                     log_file=ANE_filename) as ASensor):
+                     log_file=ANE_filename) as ASensor,
+          Gnss(window_length=3,  
+                     data_processor=processor,  
+                     log_file=GNSS_filename) as GnssSensor):
         
         while True:
             scheduler.run()  # run the scheduled functions
