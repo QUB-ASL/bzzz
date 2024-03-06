@@ -3,8 +3,8 @@ import numpy as np
 from threading import Thread, Lock
 import time
 import datetime
-from .data_logger import DataLogger
-from .filters import MedianFilter
+from data_logger import DataLogger
+from filters import MedianFilter
 
 def deg_min_sec_to_decimal(degrees, minutes, direction):
     """
@@ -26,7 +26,7 @@ class Gnss:
     This class is used to interface the GNSS Module
     """
     def __init__(self, 
-                 serial_path="/dev/ttyACM0", 
+                 serial_path="/dev/tty.usbmodem14201", 
                  baud=57600, 
                  window_length=3,
                  data_processor=MedianFilter(),
@@ -62,6 +62,10 @@ class Gnss:
         self.__data_processor = data_processor
         self.__log_file = log_file
         self.__max_samples = max_samples
+        self.__calibration_time = 60  # 60 seconds for calibration
+        self.__start_time = time.time()
+        self.__calibrated = False  # Initialization of the __calibrated attribute
+        self.__altitude_calibration = np.nan
         if log_file is not None:
             feature_names = ("Date_Time", "Latitude", "Longitude", "Altitude")
             self.__logger = DataLogger(num_features=3,
@@ -85,6 +89,8 @@ class Gnss:
         latitude = np.nan
         longitude = np.nan
         altitude = np.nan
+        
+        altitude_values_for_calibration = []
 
         while self.__keep_going:
             if ser.in_waiting > 0:
@@ -104,6 +110,17 @@ class Gnss:
                                                        tokens[4])
                 elif msg_key == "$GPGSV" and len(tokens) > 5:
                     altitude = float(tokens[5])
+                
+                # GPS Altitude Calibration
+                if not self.__calibrated:
+                    if time.time() - self.__start_time < self.__calibration_time:
+                        if not np.isnan(altitude):
+                            altitude_values_for_calibration.append(altitude)
+                    else:
+                        if altitude_values_for_calibration:
+                            self.__altitude_calibration = np.mean(altitude_values_for_calibration)
+                            print(f"Calibration complete. Average altitude: {self.__altitude_calibration:.2f} meters")
+                        self.__calibrated = True
 
                 # Check if any of the values are NaN before saving or
                 # processing
@@ -130,6 +147,13 @@ class Gnss:
 
         ser.close()
         return
+    
+    def GNSS_altitude_calibration(self):
+        """
+        Returns the calibrated GNSS altitude based on the average 
+        altitude measured in the first minute of readings.
+        """
+        return self.__altitude_calibration
 
     def __enter__(self):
         return self
