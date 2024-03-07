@@ -16,6 +16,7 @@ def _getShort(data, index):
     """
     return c_short((data[index] << 8) + data[index + 1]).value
 
+
 def _getUshort(data, index):
     """
     Extract an unsigned 16-bit value from a data array starting at the specified index.
@@ -48,41 +49,54 @@ class PressureSensor:
         self.__current_pressure = None
         self.__pressure_readings_list = []
         self.__current_altitude = None
-        
-        # Calibration
-        self.__calibration_time = 60  # Calibration time in seconds
-        self.__start_time = time.time()
-        self.__calibrated = False
-        self.altitude_calibration = None
-        
+
         # Logger
         self.log_file = log_file
         if log_file is not None:
             feature_names = ("Date_Time", "Pressure", "Altitude")
             self.logger = DataLogger(num_features=2, 
                                      feature_names=feature_names)
+            
+        # initilisation 
+        self.__calibrated = False  # Initialization of the __calibrated attribute
+        self.__altitude_initialization = None
+        self.pressure_sensor_altitude_initialization()
+
         
         # Sensor initialization
         self.__thread.start()
 
     def __get_measurements_in_background_t(self, DEVICE_ADDRESS, reference_pressure_at_sea_level):
-        altitude_values_for_calibration = []
         while True:
-            current_time = time.time()
-            self.__pressure_readings_list.append(self._get_current_pressure_measurement())
-            if not self.__calibrated:
-                if current_time - self.__start_time < self.__calibration_time:
-                    altitude_values_for_calibration.append(self.__current_altitude)
-                else:
-                    self.altitude_calibration = sum(altitude_values_for_calibration) / len(altitude_values_for_calibration)
-                    self.__calibrated = True
-                    print(f"Calibration complete. Average altitude: {self.altitude_calibration:.2f} meters")
+            for _ in range(self.window_length):
+                self.__pressure_readings_list.append(self._get_current_pressure_measurement())
+            if self.reference_pressure_at_sea_level is None:
+                self.reference_pressure_at_sea_level = self.data_processor.process(self.__pressure_readings_list)
+        
             self.update_altitude()
+        # Write data into the log file
             if self.log_file is not None:
+        
                 current_timestamp = datetime.datetime.now()
-                data_to_log = (self.__current_pressure, self.__current_altitude)
+                data_to_log = (self.pressure, self.altitude)
                 self.logger.record(current_timestamp, data_to_log)
-            time.sleep(0.5)
+                
+                    
+    def pressure_sensor_altitude_initialization(self):
+        """
+        Initializes the pressure sensor by taking an average of the altitude measurements at startup.
+        """
+        altitude_values_for_initialization = []
+        for _ in range(60):  # Assuming we take measurements for 60 seconds
+            self._update_pressure()
+            if self.__current_altitude is not None:
+                altitude_values_for_initialization.append(self.__current_altitude)
+            time.sleep(1)  # Delay between measurements
+
+        if altitude_values_for_initialization:
+            self.__altitude_initialization = sum(altitude_values_for_initialization) / len(altitude_values_for_initialization)
+            self.__calibrated = True
+            print(f"Initialization complete. Average altitude: {self.__altitude_initialization:.2f} meters")
 
 
     def __readBmp180Id(self):
@@ -190,6 +204,8 @@ class PressureSensor:
                 (1 - (self.__current_pressure/self.reference_pressure_at_sea_level)**(1/5.255))
     
     def update_altitude(self):
+        if not self.__calibrated:
+            return
         self._update_pressure()
         self._calculate_altitude_from_pressure()
         if self.log_file is not None:
@@ -206,3 +222,14 @@ class PressureSensor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.__keep_going = False
         if self.log_file is not None:
+            self.logger.save_to_csv(self.log_file)
+
+if __name__ == "__main__":
+   
+    log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_PressureSensor.csv")
+    processor = AverageFilter()  # You need to define this class based on your requirements
+    with PressureSensor(window_length=100,
+                            data_processor=processor,
+                            reference_pressure_at_sea_level=102500, 
+                            log_file=log_filename) as sensor:
+        time.sleep(600)  # Collect data for 10 minutes
