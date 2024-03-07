@@ -5,7 +5,7 @@ from threading import Thread, Lock
 import time
 import datetime
 from .data_logger import DataLogger
-from .filters import NoFilter
+from .filters import MedianFilter
 
 
 class EvoSensor:
@@ -14,7 +14,7 @@ class EvoSensor:
                  serial_path='/dev/ttyAMA2',
                  baud=115200,
                  window_length=3,
-                 data_processor=NoFilter(),
+                 data_processor=MedianFilter(),
                  log_file=None,
                  max_samples=100000):
         """
@@ -116,12 +116,16 @@ class EvoSensor:
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 0:], cursor=self.__cursor)
+        
+    def get_altitude_cache(self):
+        with self.__lock:
+            return self.__values_cache 
 
 
 if __name__ == "__main__":
 
     filename = datetime.datetime.now().strftime("%d-%m-%y--%H-%M.csv")
-    processor = NoFilter()
+    processor = MedianFilter()
     with EvoSensor(window_length=3,
                    data_processor=processor,
                    log_file=filename) as sensor:
