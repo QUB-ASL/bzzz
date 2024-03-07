@@ -62,17 +62,15 @@ class Gnss:
         self.__data_processor = data_processor
         self.__log_file = log_file
         self.__max_samples = max_samples
-        self.__calibration_time = 60  # 60 seconds for calibration
-        self.__start_time = time.time()
         self.__calibrated = False  # Initialization of the __calibrated attribute
-        self.__altitude_calibration = np.nan
+        self.__altitude_Initilisation = np.nan
         if log_file is not None:
             feature_names = ("Date_Time", "Latitude", "Longitude", "Altitude")
             self.__logger = DataLogger(num_features=3,
                                        max_samples=max_samples,
                                        feature_names=feature_names)    
         self.__thread.start()
-
+    
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
         Continuously reads GPS data from the serial port, parsing GNGLL
@@ -89,8 +87,6 @@ class Gnss:
         latitude = np.nan
         longitude = np.nan
         altitude = np.nan
-        
-        altitude_values_for_calibration = []
 
         while self.__keep_going:
             if ser.in_waiting > 0:
@@ -103,24 +99,14 @@ class Gnss:
                     lat_min = float(tokens[1]) % 100
                     latitude = deg_min_sec_to_decimal(lat_deg, lat_min, 
                                                       tokens[2])
+                    print(latitude)
 
                     lon_deg = int(float(tokens[3]) / 100)
                     lon_min = float(tokens[3]) % 100
                     longitude = deg_min_sec_to_decimal(lon_deg, lon_min, 
                                                        tokens[4])
-                elif msg_key == "$GPGSV" and len(tokens) > 5:
-                    altitude = float(tokens[5])
-                
-                # GPS Altitude Calibration
-                if not self.__calibrated:
-                    if time.time() - self.__start_time < self.__calibration_time:
-                        if not np.isnan(altitude):
-                            altitude_values_for_calibration.append(altitude)
-                    else:
-                        if altitude_values_for_calibration:
-                            self.__altitude_calibration = np.mean(altitude_values_for_calibration)
-                            print(f"Calibration complete. Average altitude: {self.__altitude_calibration:.2f} meters")
-                        self.__calibrated = True
+                elif msg_key == "$GNGGA" and len(tokens) > 5:
+                    altitude = float(tokens[9])
 
                 # Check if any of the values are NaN before saving or
                 # processing
@@ -147,13 +133,25 @@ class Gnss:
 
         ser.close()
         return
-    
-    def GNSS_altitude_calibration(self):
+
+    def GNSS_altitude_Initilisation(self):
+        altitude_values_for_Initilisation = []
         """
         Returns the calibrated GNSS altitude based on the average 
         altitude measured in the first minute of readings.
         """
-        return self.__altitude_calibration
+        if not self.__calibrated:
+
+            for i in range(20):
+                time.sleep(1)
+                current_altitude = self.Altitude
+                if not np.isnan(current_altitude ):
+                    altitude_values_for_Initilisation.append(current_altitude)
+            if altitude_values_for_Initilisation:
+                self.__altitude_Initilisation = np.mean(altitude_values_for_Initilisation)
+                print(f"Initilisation complete. Average altitude: {self.__altitude_Initilisation:.2f} meters")
+                self.__calibrated = True
+        return self.__altitude_Initilisation
 
     def __enter__(self):
         return self
@@ -215,5 +213,6 @@ if __name__ == '__main__':
         with Gnss(window_length=5,
                   data_processor=processor,
                   log_file=filename) as gnss_sensor:
+            gnss_sensor.GNSS_altitude_Initilisation()
             time.sleep(600) # set time for how long you want to record data 
-                            # for in seconds
+                            # for in seconds                
