@@ -50,10 +50,10 @@ class PressureSensor:
         self.__current_altitude = None
         
         # Calibration
-        self.__calibration_time = 60  # Calibration time in seconds
+        self.__Initilisation_time = 60  # Initilisation time in seconds
         self.__start_time = time.time()
         self.__calibrated = False
-        self.altitude_calibration = None
+        self.altitude_Initilisation = None
         
         # Logger
         self.log_file = log_file
@@ -66,20 +66,20 @@ class PressureSensor:
         self.__thread.start()
 
     def __get_measurements_in_background_t(self, DEVICE_ADDRESS, reference_pressure_at_sea_level):
-        altitude_values_for_calibration = []
+        altitude_values_for_Initilisation = []
         while True:
             current_time = time.time()
             self.__pressure_readings_list.append(self._get_current_pressure_measurement())
             if not self.__calibrated:
-                if current_time - self.__start_time < self.__calibration_time:
+                if current_time - self.__start_time < self.__Initilisation_time:
                     if self.__current_altitude is not None:
-                        altitude_values_for_calibration.append(self.__current_altitude)
+                        altitude_values_for_Initilisation.append(self.__current_altitude)
                 else:
                     # Ensure there are values in the list before calculating the average
-                    if altitude_values_for_calibration:
-                        self.altitude_calibration = sum(altitude_values_for_calibration) / len(altitude_values_for_calibration)
+                    if altitude_values_for_Initilisation:
+                        self.altitude_Initilisation = sum(altitude_values_for_Initilisation) / len(altitude_values_for_Initilisation)
                         self.__calibrated = True
-                        print(f"Calibration complete. Average altitude: {self.altitude_calibration:.2f} meters")
+                        print(f"Initilisation complete. Average altitude: {self.altitude_Initilisation:.2f} meters")
             self.update_altitude()
             if self.log_file is not None:
                 current_timestamp = datetime.datetime.now()
