@@ -149,6 +149,6 @@ ax[1, 1].plot(x_meas_cache[5, :], label='Estimated bias ToF')
 ax[1, 1].legend()
 
 
-ax[1, 2].plot(-beta_est/x_true_cache[2, :], label='tau eq')
+ax[1, 2].plot(-x_true_cache[3,: ]/x_true_cache[2, :], label='tau eq')
 ax[1, 2].legend()
 plt.show()
