@@ -16,7 +16,7 @@ The following subsections are used:
       v1.0.0
      --------------------- -->
 
-## [v1.0.0] - XX February 2024
+## [v1.0.0] - 11 March 2024
 
 ### Added
 
@@ -29,7 +29,8 @@ The following subsections are used:
 - Read data from Terabee TOF sensor
 - Read anemometer data in background; Read and save anemometer data on Pi
 - Update logo
-- Discord bots and documentation ; run the DiscordBot client and raspberry Pi main script on start-up
+- Discord bots and documentation ; run the DiscordBot client and Raspberry Pi main script on start-up
+- Parser of NMEA messages from GNSS module
 
 ### Fixed
 
