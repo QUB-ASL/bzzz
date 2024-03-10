@@ -3,6 +3,7 @@ The above folders include editable Autodesk Fusion 360 files (.f3d) and STL file
 
 ## Anemometer case
 This case is to protect the Trisonica Mini ultrasonic wind anemometer that will be attached to the quadcopter.
+It also has a stand for attaching the GNSS Antenna. 
 
 <img width="300" src="Anemometer_parts/Anemometer_case.png">
 
@@ -44,7 +45,12 @@ If the 'Rotating' motor stand is used the 'Offset' propeller guard as seen below
 
 <img width="500" src="Propeller_guards/offset_propeller_guard.png">
 
-## GPS and Antenna Parts 
+## Frame base support 
+This is used to help support the power disturbution board on the base of the quadcopter frame.
+
+<img width="500" src="Frame_parts/Quadcopter_base_support.png">
+
+## GNSS and Antenna Parts 
 
 ## Base station adapter
 
