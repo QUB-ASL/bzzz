@@ -105,5 +105,6 @@ The following subsections are used:
 - `logSerial`, `setupBuzzer`, `buzz` and `waitForPiSerial` go to `util`
 - Update hardware tests
 
+[v1.0.0]: https://github.com/QUB-ASL/bzzz/releases/tag/v1.0.0
 [v0.1.0]: https://github.com/QUB-ASL/bzzz/releases/tag/v0.1.1
 [v0.2.0]: https://github.com/QUB-ASL/bzzz/releases/tag/v0.2.0
