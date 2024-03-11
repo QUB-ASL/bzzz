@@ -3,17 +3,31 @@ import time
 import serial
 import bzzz.read_sbus.radioDataParser
 import threading
-
+from bzzz.sensors.evo_time_of_flight import EvoSensor
 
 class RC:
-    SBUS_PIN = 25  # pin where sbus wire is plugged in
+    """
+    This class is used to interface the remote control (receiver) with the Raspberry Pi.
+    """
 
-    def __init__(self):
+    def __init__(self,
+                 serial_path='/dev/ttyUSB0',
+                 baud=500000,
+                 sbus_pin = 25):
+        """
+        Create a new instance of RC
+
+        :param serial_path: serial path; defaults to /dev/ttyUSB0 on RPi
+        :param baud: baud rate of serial communication; defaults to 500000
+        :param sbus_pin: RPi GPIO pin where RC receiver sbus wire is plugged in
+        """
+        # Time of flight sensor
+        self.__ToF_seansor = EvoSensor()
+
         # serial connection between Pi and ESP32
-        self.ser = serial.Serial('/dev/ttyUSB0', 500000, timeout=1)
+        self.ser = serial.Serial(serial_path, baud, timeout=1)
         self.ser.reset_input_buffer()
-        self.reader = bzzz.read_sbus.read_sbus_from_GPIO.SbusReader(
-            RC.SBUS_PIN)
+        self.reader = bzzz.read_sbus.read_sbus_from_GPIO.SbusReader(sbus_pin)
         self.reader.begin_listen()
 
         # wait until connection is established
@@ -31,16 +45,55 @@ class RC:
 
         self.__parsed_data = None
 
-    def get_radio_data(self):
+    def get_radio_data(self,
+                       max_packet_age_in_ms=500,
+                       receiver_disconnect_throttle_ref=650,
+                       receiver_disconnect_throttle_height = 0.6):
+        """
+        Checks if the radio is connected, determines when the last RC data was received
+        and reads the 16 channels of data received from the RC
+
+        :param max_packet_age_in_ms: max age a packet can be im ms. Therefore how long the quadcopter
+                                     can fly since it last read the receiver. defualt 500ms
+        :parm receiver_disconnect_throttle_ref: Throttle refrence that can be set, that if the receiver disconnects
+                                                the throttle will be set to this value which should be slightly less 
+                                                than the hovering throttle. defualt 650 ROUGH ESTIMATION
+        :parm receiver_disconnect_throttle_height: How close the quadcopter has to be to the ground to kill the motors
+                                                   if the receiver disconects. Above this hieght the motor will spin 
+                                                   at a speed according to the 'receiver_disconnect_throttle_ref' param
+                                                   defualt 0.6m
+
+        Returns:
+        If the receiver is connected
+        When the last RC data was received
+        16 channels of data received from RC
+        """
         is_connected = self.reader.is_connected()
         packet_age = self.reader.get_latest_packet_age()  # milliseconds
 
         # returns list of length 16, so -1 from channel num to get index
-        channel_data = str(self.reader.translate_latest_packet())[1:-1]
+        if packet_age > max_packet_age_in_ms or not is_connected:
+            if self.__ToF_seansor.distance > receiver_disconnect_throttle_height:
+                channel_data = str(f"1000, 1000, {receiver_disconnect_throttle_ref}, 1000, 300, {self.reader.translate_latest_packet()[5]}, \
+                                   {self.reader.translate_latest_packet()[6]}, {self.reader.translate_latest_packet()[7]}, 1700, 300, 300, 1700, 1000, 1000, 1000, 1000")
+            else:
+                channel_data = str(f"1000, 1000, 300, 1000, 300, {self.reader.translate_latest_packet()[5]}, {self.reader.translate_latest_packet()[6]}, \
+                                   {self.reader.translate_latest_packet()[7]}, 1700, 300, 1700, 1700, 1000, 1000, 1000, 1000")
+        else:
+            channel_data = str(self.reader.translate_latest_packet())[1:-1]
 
         return is_connected, packet_age, channel_data
 
-    def parse_radio_data(self, channel_data, over_write_throttle_ref_to=-1):
+    def parse_radio_data(self, 
+                         channel_data,
+                         over_write_throttle_ref_to=-1):
+        """
+        This function checks that the channel data from the remote is in the correct range and then formates it correctly to be sent to the ESP32.
+        
+        :param channel_data: The channel data from the remote that we want to check is in the correct range
+        :param over_write_throttle_ref_to: When altitude hold is active we want to overwrite the throttle reference from the remote. 
+               This sends the new throttle value, if set to -1 the reference throttle is kept; default: -1.
+        """
         # check if data is in range [1000, 2000]
         self.parser.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (
             2000 if int(x) > 2000 else int(x)), channel_data.strip().split(",")))
@@ -68,7 +121,8 @@ class RC:
         self.ser.write(f'S,{channel_data}\n'.encode())
 
     def receive_data_from_ESP(self):
-        """Read data from ESP32 via UART.
+        """
+        Read data from ESP32 via UART.
 
         :return: String if data is received, None otherwise.
         """
@@ -86,19 +140,22 @@ class RC:
                                              force_send_fake_data=False,
                                              fake_data="",
                                              over_write_throttle_ref_to=-1):
-        """Read the radio data, process it, format it into a string, and send it via UART.
+        """
+        Read the radio data, process it, format it into a string, and send it via UART.
+
+        :param return_channel_data: 
+        :param force_send_fake_data: whether or not to send fake data; default: False.
+        :param fake_data: if force_send_fake_data = True, this is that data that is to be sent, it should start with "S"; default: "".
+        :param over_write_throttle_ref_to: When altitude hold is active we want to overwrite the throttle reference from the remote. 
+               This sends the new throttle value, if set to -1 the reference throttle is kept; default: -1.
         """
         try:
             _is_connected, _packet_age, channel_data = self.get_radio_data()
-            if not _is_connected:
-                print(
-                    f"Radio not connected; Status _is_connected: {_is_connected}")
-            if _is_connected:
-                channel_data = self.parse_radio_data(
-                    channel_data, over_write_throttle_ref_to=over_write_throttle_ref_to)
-                if force_send_fake_data:
-                    channel_data = fake_data
-                self.send_data_to_ESP(channel_data)
+            channel_data = self.parse_radio_data(
+                channel_data, over_write_throttle_ref_to=over_write_throttle_ref_to)
+            if force_send_fake_data:
+                channel_data = fake_data
+            self.send_data_to_ESP(channel_data)
             if return_channel_data:
                 return channel_data
         except KeyboardInterrupt:
@@ -145,3 +202,9 @@ class RC:
 
     def switch_D(self):
         return self.__parsed_data[8] & 0x01
+    
+
+if __name__ == '__main__':
+    rc = RC()
+    while True:
+        rc.get_radio_data()

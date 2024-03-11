@@ -3,6 +3,13 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+/**
+ * Timer config
+ */
+#define TIMER_ID 0
+#define TIMER_PRESCALER 80
+#define TIMER_INTERVAL_uS 4000
+
 // Various defines such as PIN numbers and global constants
 
 /**
@@ -32,10 +39,10 @@
 /*
  * Motors config
  */
-#define FRONT_LEFT_ESC_PIN 33
-#define FRONT_RIGHT_ESC_PIN 32
-#define BACK_LEFT_ESC_PIN 26
-#define BACK_RIGHT_ESC_PIN 25
+#define FRONT_LEFT_ESC_PIN 25
+#define FRONT_RIGHT_ESC_PIN 33
+#define BACK_LEFT_ESC_PIN 27
+#define BACK_RIGHT_ESC_PIN 26
 
 #define ARM_ROTOR_SPEED 900
 #define ZERO_ROTOR_SPEED 1000
@@ -46,7 +53,13 @@
 /**
  * Buzzer pin
  */
-#define BUZZER_PIN 27
+#define BUZZER_PIN 32
+
+/**
+ * Maximum throttle percentage for arming the motors
+ * The throttle stick must be less than this percentage to arm the motors
+ */
+#define MAX_ARMING_THROTTLE_PERCENTAGE 0.05
 
 /** Maximum pitch value corresponding to the top position of the stick (30deg = 0.52rad) */
 #define PITCH_MAX_RAD 0.5235987755982988
@@ -69,14 +82,14 @@
 #define RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN 100.
 
 /** Trimmer C on RC - maximum omega xy gain */
-#define RADIO_TRIMMER_MAX_OMEGA_XY_GAIN 0.5
+#define RADIO_TRIMMER_MAX_OMEGA_XY_GAIN 0.3
 /** Tested attitude angular velocity roll-pitch axis control gain*/
-#define OMEGA_XY_GAIN 0.266
+#define OMEGA_XY_GAIN 0.305
 
 /** Trimmer E on RC - maximum omega z gain */
-#define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 10
+#define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 4
 /** Tested attitude angular velocity yaw axis control gain*/
-#define OMEGA_Z_GAIN 0.145
+#define OMEGA_Z_GAIN 0.111
 
 /**
  * Control action to PWM scaling factor
@@ -87,6 +100,7 @@
  * Fail-safe config
 */
 #define TX_CONNECTION_TIMEOUT_IN_uS 500000
+#define UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms 3000
 
 #ifndef BZZZ_LOGGING_LEVEL
 #define BZZZ_LOGGING_LEVEL 3
