@@ -303,7 +303,7 @@ if __name__ == '__main__':
         # no need to read the sensor explicitly
         distance__from_tof_sensor = tof.distance
 
-        if distance__from_tof_sensor == -1:
+        if distance__from_tof_sensor == float('inf') or float('nan') or -float('inf'):
             print("ToF outlier or -ve distance detected, discarded the measurement.")
             num_consecutive_altitude_outliers_count_thus_far[0] += 1
         else:
