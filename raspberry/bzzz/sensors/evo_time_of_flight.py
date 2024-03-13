@@ -77,11 +77,11 @@ class EvoSensor:
 
                 # Checking error codes
                 if rng == 65535:  # Sensor measuring above its maximum limit
-                    dec_out = float('inf')
+                    dec_out = -1
                 elif rng == 1:  # Sensor not able to measure
-                    dec_out = float('nan')
+                    dec_out = -1
                 elif rng == 0:  # Sensor detecting object below minimum range
-                    dec_out = -float('inf')
+                    dec_out = -1
                 else:
                     # Convert to meters
                     dec_out = rng / 1000.0
