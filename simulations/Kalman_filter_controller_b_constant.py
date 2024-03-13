@@ -20,15 +20,15 @@ tau_eq = -beta_est / alpha_est
 tau_t = tau_eq  # throttle signal, will vary for real application  
 
 # Process noise covariance matrix Q
-sigma_z, sigma_v, sigma_alpha = 0.0005, 0.0005, 0.0001
-sigma_d_bar, sigma_d_ToF = 1e-5, 1e-4  # variances for biases, will vary for real application
-Q = np.diag([sigma_z**2, sigma_v**2, T_s*sigma_alpha**2, 0, sigma_d_bar**2, sigma_d_ToF**2])
+sigma_z, sigma_v, sigma_alpha = 0.05, 0.03, 0.01
+sigma_d_bar, sigma_d_ToF = 0.1, 0.1  # variances for biases, will vary for real application
+Q = np.diag([sigma_z**2, sigma_v**2, T_s*sigma_alpha**2, sigma_d_bar**2, sigma_d_ToF**2])
 
 # Measurement matrix C
 C = np.array([
-    [1, 0, 0, 0, 1, 0],  # Barometer measurement with bias
-    [1, 0, 0, 0, 0, 1],  # ToF measurement without bias
-    [1, 0, 0, 0, 0, 0]   # GPS measurement with bias
+    [1, 0, 0, 1, 0],  # Barometer measurement with bias
+    [1, 0, 0, 0, 1],  # ToF measurement without bias
+    [1, 0, 0, 0, 0]   # GPS measurement with bias
 ])
 
 # Measurement noise covariance matrix R
@@ -36,42 +36,57 @@ sigma_barom, sigma_gps, sigmaToF = 0.25 * T_s, 0.075 * T_s, 0.01 * T_s
 R = np.diag([sigma_barom**2, sigma_gps**2, sigmaToF**2])
 
 # Initial conditions
-Sigma_pred = 1000 * np.eye(6)
-x_pred = np.array([1, 0, alpha_est, 0, 0, 0]).reshape(-1, 1)  # Initial predicted state with biases
-x_true = np.array([1, 0, alpha_est, 0, 0, 0]).reshape(-1, 1)  # Initial true state with biases
+Sigma_pred = 1000 * np.eye(5)
+x_pred = np.array([1, 0, alpha_est, 0, 0]).reshape(-1, 1)  # Initial predicted state with biases
+x_true = np.array([1, 0, alpha_est, 0, 0]).reshape(-1, 1)  # Initial true state with biases
 
 
 
 # Simulation parameters
 t_sim = 70
-x_true_cache = np.zeros((6, t_sim))
-x_meas_cache = np.zeros((6, t_sim))
+x_true_cache = np.zeros((5, t_sim))
+x_meas_cache = np.zeros((5, t_sim))
 
 def dynamics(x, tau=tau_eq):
     """ Simulate the system dynamics """
     # State transition matrix A
     A = np.array([
-            [1, T_s, 0, 0, 0, 0], 
-            [0, 1, T_s*tau, T_s, 0, 0],
-            [0, 0, 1, 0, 0, 0], 
-            [0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 0, 1]
+            [1, T_s, 0, 0, 0], 
+            [0, 1, T_s*tau, 0, 0],
+            [0, 0, 1, 0, 0], 
+            [0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 1]
             ])
-    w = np.random.multivariate_normal(np.zeros(6), Q).reshape(-1, 1)
-    x_next = A @ x + w  # Dynamics include the effect of tau_t, alpha, and beta
+    
+    d = np.array([
+        [0],
+        [T_s*beta_est],
+        [0],
+        [0],
+        [0]
+    ])
+    
+    w = np.random.multivariate_normal(np.zeros(5), Q).reshape(-1, 1)
+    x_next = A @ x + d + w  # Dynamics include the effect of tau_t, alpha, and beta
     return x_next
 
 def prediction_step(tau=tau_eq):
     A = np.array([
-            [1, T_s, 0, 0, 0, 0], 
-            [0, 1, T_s*tau, T_s, 0, 0],
-            [0, 0, 1, 0, 0, 0], 
-            [0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 0, 1]
-            ])    
-    x_pred = A @ x_meas
+            [1, T_s, 0, 0, 0], 
+            [0, 1, T_s*tau, 0, 0],
+            [0, 0, 1, 0, 0], 
+            [0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 1]
+            ])
+    d = np.array([
+        [0],
+        [T_s*beta_est],
+        [0],
+        [0],
+        [0]
+    ])
+    
+    x_pred = A @ x_meas + d 
     Sigma_pred = A @ Sigma_meas @ A.T + Q
     return x_pred, Sigma_pred
 
@@ -137,12 +152,12 @@ ax[0, 2].plot(x_true_cache[0, :], label='True altitude')
 ax[0, 2].plot(x_meas_cache[0, :], label='Estimated altitdue')
 ax[0, 2].legend()
 
-ax[1, 0].plot(x_true_cache[4, :], label='True bias Barom')
-ax[1, 0].plot(x_meas_cache[4, :], label='Estimated bias Barom')
+ax[1, 0].plot(x_true_cache[3, :], label='True bias Barom')
+ax[1, 0].plot(x_meas_cache[3, :], label='Estimated bias Barom')
 ax[1, 0].legend()
 
-ax[1, 1].plot(x_true_cache[5, :], label='True bias ToF')
-ax[1, 1].plot(x_meas_cache[5, :], label='Estimated bias ToF')
+ax[1, 1].plot(x_true_cache[4, :], label='True bias ToF')
+ax[1, 1].plot(x_meas_cache[4, :], label='Estimated bias ToF')
 ax[1, 1].legend()
 
 
