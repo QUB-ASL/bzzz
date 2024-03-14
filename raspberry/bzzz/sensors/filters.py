@@ -29,6 +29,7 @@ class AverageFilter(DataProcessor):
         return np.nanmean(data, axis=0)
 
 
+
 class MedianFilter(DataProcessor):
     """
     Median filter
@@ -40,7 +41,10 @@ class MedianFilter(DataProcessor):
         super().__init__()
 
     def process(self, data, cursor=0):
-        return np.nanmedian(data, axis=0)
+        data = np.sort(data)
+        n = data.shape[0]
+        idx = n//2
+        return (data[idx] + data[-idx - 1])/2
 
 
 class NoFilter(DataProcessor):
@@ -53,7 +57,7 @@ class NoFilter(DataProcessor):
         return data[cursor]
 
 
-def median_filter(data_list: list, window_length=5):
+def median_filter(data_list, window_length=5):
     """Applies median filter of given window length.
 
     :param data_list: Data list on which the filter is to be applied.
