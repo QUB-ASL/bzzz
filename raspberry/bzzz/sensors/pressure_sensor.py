@@ -1,10 +1,11 @@
-from .filters import MedianFilter
-from .filters import AverageFilter
+import math
+from filters import MedianFilter
+from filters import AverageFilter
 import smbus
 import time
 from ctypes import c_short
 from threading import Thread, Lock
-from .data_logger import DataLogger
+from data_logger import DataLogger
 import datetime
 
 def _getShort(data, index):
@@ -189,8 +190,13 @@ class PressureSensor:
     def _calculate_altitude_from_pressure(self):
         with self.__lock:
         # check calculate altitude from pressure
-            self.__current_altitude = 44330 * \
-                (1 - (self.__current_pressure/self.reference_pressure_at_sea_level)**(1/5.255))
+            # self.__current_altitude = 44330 * \
+            #     (1 - (self.__current_pressure/self.reference_pressure_at_sea_level)**(1/5.255))
+            temp = 20 #temp in kelvin 
+            k = 1.380649e-23 #Boltzmann's Number
+            m = 4.8e-26 #mass of one molicule of air 
+            g = 9.81 #gravity
+            self.__current_altitude = (((temp+273.15)*k)/((m)*g)) * math.log(self.reference_pressure_at_sea_level/self.__current_pressure)
     
     def update_altitude(self):
         self._update_pressure()
@@ -215,8 +221,8 @@ if __name__ == "__main__":
 
     log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_PressureSensor.csv")
     processor = AverageFilter()  # You need to define this class based on your requirements
-    with PressureSensor(window_length=100,
+    with PressureSensor(window_length=5,
                             data_processor=processor,
-                            reference_pressure_at_sea_level=102500, 
+                            reference_pressure_at_sea_level=101325, 
                             log_file=log_filename) as sensor:
         time.sleep(600)  # Collect data for 10 minutes
