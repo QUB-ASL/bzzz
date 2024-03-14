@@ -1,10 +1,10 @@
-from filters import MedianFilter
-from filters import AverageFilter
+from .filters import MedianFilter
+from .filters import AverageFilter
 import smbus
 import time
 from ctypes import c_short
 from threading import Thread, Lock
-from data_logger import DataLogger
+from .data_logger import DataLogger
 import datetime
 
 def _getShort(data, index):
