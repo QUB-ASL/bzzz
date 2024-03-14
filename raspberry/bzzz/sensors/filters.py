@@ -41,10 +41,7 @@ class MedianFilter(DataProcessor):
         super().__init__()
 
     def process(self, data, cursor=0):
-        data = np.sort(data)
-        n = data.shape[0]
-        idx = n//2
-        return (data[idx] + data[-idx - 1])/2
+        return  np.nanmedian(data, axis=0)
 
 
 class NoFilter(DataProcessor):
