@@ -24,7 +24,7 @@ tau_eq = -beta_est / alpha_est
 tau_t = tau_eq  # throttle signal, will vary for real application  
 
 # Process noise covariance matrix Q
-sigma_z, sigma_v, sigma_alpha, sigma_beta = 0.0005, 0.00005, 0.0001, 0.00001
+sigma_z, sigma_v, sigma_alpha, sigma_beta = 0.0005, 0.00005, 0.0001, 0.0001
 sigma_d_bar, sigma_d_ToF = 0.25/3, 0.02  # variances for biases, will vary for real application
 Q = np.diag([sigma_z**2, sigma_v**2, T_s*sigma_alpha**2, T_s*sigma_beta**2, sigma_d_bar**2, sigma_d_ToF**2])
 
@@ -36,7 +36,7 @@ C = np.array([
 ])
 
 # Measurement noise covariance matrix R
-sigma_barom, sigma_gps, sigmaToF = 0.50 * T_s, 0.075 * T_s, 0.05 * T_s
+sigma_barom, sigma_gps, sigmaToF = 0.50 * T_s, 0.50 * T_s, 0.10 * T_s
 R = np.diag([sigma_barom**2, sigma_gps**2, sigmaToF**2])
 
 # Initial conditions
@@ -124,6 +124,9 @@ for t in range(t_sim):
 
     # Simulate sensor measurements
     y = output(x_true)
+    if t > 100:
+        altitude_ref = 1.5
+
     
     # Kalman Filter: Measurement update
     x_meas, Sigma_meas = measurement_update(y)
