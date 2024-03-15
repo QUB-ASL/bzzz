@@ -107,8 +107,8 @@ if __name__ == '__main__':
     beta_hat = [-9.81]
     gain_kp_from_rc = [0.]
     gain_kd_from_rc = [0.]
-    KP_GAIN_MAX = 0.1  # 100
-    KD_GAIN_MAX = 0.2  # 100
+    KP_GAIN_MAX = 5  # 100
+    KD_GAIN_MAX = 2  # 100
 
     DEBUG_MODE = False
 

@@ -36,9 +36,19 @@ class KalmanFilter:
         self.__C = np.array([[1, 0, 0, 0]])
 
         # Process noise
-        self.__Q = np.diagflat([1e-4, 1, 5, 1e-3])
+        expected_decrease_alpha_per_minute = 2
+        sigma_decrease_alpha_per_minute = expected_decrease_alpha_per_minute / 2
+        sigma_decrease_alpha_per_sec = sigma_decrease_alpha_per_minute / 60
+        sigma_alpha = sigma_decrease_alpha_per_sec * self.__Tt
+
+        expected_decrease_beta_per_minute = 0.5
+        sigma_decrease_beta_per_minute = expected_decrease_beta_per_minute / 2
+        sigma_decrease_beta_per_sec = sigma_decrease_beta_per_minute / 60
+        sigma_beta = sigma_decrease_beta_per_sec * self.__Tt
+
+        self.__Q = np.diagflat([0.001, 0.01, sigma_alpha**2, sigma_beta**2])
         # Measurement noise
-        self.__R = 0.1
+        self.__R = 0.01**2
 
         # initial conditions
         self.__x_hat_0_minus1 = x_tilde_0

@@ -103,8 +103,10 @@ class Gnss:
                     longitude = deg_min_sec_to_decimal(lon_deg, lon_min, 
                                                        tokens[4])
                 elif msg_key == "$GPGSV" and len(tokens) > 5:
-                    altitude = float(tokens[5])
-
+                    try:
+                        altitude = float(tokens[5])
+                    except:
+                        altitude = -1
                 # Check if any of the values are NaN before saving or
                 # processing
                 if (not np.isnan(latitude) and not np.isnan(longitude) 
@@ -185,11 +187,11 @@ class Gnss:
         
 if __name__ == '__main__':
 
-    while True:
+    # while True:
         filename = datetime.datetime.now().strftime("Gnss_%d-%m-%y--%H-%M.csv")
         processor = MedianFilter()
         with Gnss(window_length=5,
                   data_processor=processor,
                   log_file=filename) as gnss_sensor:
-            time.sleep(600) # set time for how long you want to record data 
+            time.sleep(10) # set time for how long you want to record data 
                             # for in seconds
