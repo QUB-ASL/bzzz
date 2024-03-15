@@ -281,43 +281,42 @@ if __name__ == '__main__':
         radio_data_cache.clear()
         KF_data_cache.clear()
 
-    def read_ToF_run_kf_and_LQR():
+    def read_ToF_run_kf_and_LQR(distance__from_tof_sensor):
         """Read ToF sensor, and run the Kalman filter and LQR control algorithms
         """
+        # EVO_filename = datetime.datetime.now().strftime("Evo-ToF-%d-%m-%y--%H-%M.csv")
+        # with EvoSensor(window_length=3,  
+        #                data_processor=MedianFilter(),  
+        #                log_file=EVO_filename) as tof:
+            # NOTE: Altitude measurements in m.
+            # you can run LQR even when the drone is close to ground but you cannot run KF.
+            # So, to compensate use the previous estimates of alpha and beta
+            # and the current ToF sensor readings. In this case if the ToF returns outliers
+            # send current altitude as desired altitude to LQR so it has no control.
 
-        # NOTE: Altitude measurements in m.
-        # you can run LQR even when the drone is close to ground but you cannot run KF.
-        # So, to compensate use the previous estimates of alpha and beta
-        # and the current ToF sensor readings. In this case if the ToF returns outliers
-        # send current altitude as desired altitude to LQR so it has no control.
+            # Reading the tof altitude invokes the automatic update from the sensor,
+            # no need to read the sensor explicitly
+            # distance__from_tof_sensor = tof.distance
+        #print(distance__from_tof_sensor)
 
-        # Reading the tof altitude invokes the automatic update from the sensor,
-        # no need to read the sensor explicitly
-        distance__from_tof_sensor = tof.distance
-
-        if distance__from_tof_sensor == -1:
-            print("ToF outlier or -ve distance detected, discarded the measurement.")
+        if np.isnan(distance__from_tof_sensor):
+            #print("ToF outlier or -ve distance detected, discarded the measurement.")
             num_consecutive_altitude_outliers_count_thus_far[0] += 1
         else:
             num_consecutive_altitude_outliers_count_thus_far[0] = 0
             last_valid_altitude_measurement_mts[0] = distance__from_tof_sensor 
 
-        if num_consecutive_altitude_outliers_count_thus_far[0] == max_consecutive_altitude_outliers_count[0]:
-            print(f"Something wrong with the ToF, maximum number of consecutive altitude outliers recorded: {num_consecutive_altitude_outliers_count_thus_far[0]}."
-                  "".format("\n   **It is recommended to use manual mode in this situation**." if use_altitude_hold[0] else ""))
 
         is_drone_flying_close_to_ground[0] = last_valid_altitude_measurement_mts[0] < min_altitude_to_activate_AltiHold_mts[0]
 
         if is_drone_flying_close_to_ground[0]:
-            z_hat[0] = current_altitude_snap_shot_mts[0] if distance__from_tof_sensor  == - \
-                1 else distance__from_tof_sensor 
-            print_debug(
-                f"Cannot activate altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
+            z_hat[0] = current_altitude_snap_shot_mts[0] if np.isnan(distance__from_tof_sensor) else distance__from_tof_sensor 
+            #print_debug(
+            #    f"Cannot activate altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
             if is_KF_ran_atleast_once[0]:
                 kf.reset()
         else:
-            x_est = kf.update(Tref_t[0], euler[1], euler[2],
-                              np.nan if distance__from_tof_sensor  == -1 else distance__from_tof_sensor )
+            x_est = kf.update(Tref_t[0], euler[1], euler[2], distance__from_tof_sensor )
             is_KF_ran_atleast_once[0] = True
             z_hat[0] = x_est[0][0]
             v_hat[0] = x_est[1][0]
@@ -341,10 +340,10 @@ if __name__ == '__main__':
             lqr.set_alpha_beta(alpha_hat[0], beta_hat[0])
             lqr.set_gains(-gain_kp_from_rc[0], -gain_kd_from_rc[0])
             throttle_ref_from_LQR[0] = lqr.control_action(np.array([[z_hat[0]], [v_hat[0]]]),
-                                                          reference_altitude_mts=altitude_ref_mts[0],
-                                                          recalculate_dynamics=True,
-                                                          pitch_rad=euler[1],
-                                                          roll_rad=euler[2])
+                                                        reference_altitude_mts=altitude_ref_mts[0],
+                                                        recalculate_dynamics=True,
+                                                        pitch_rad=euler[1],
+                                                        roll_rad=euler[2])
             throttle_ref_from_LQR[0] = max(
                 1000, min(throttle_ref_from_LQR[0]*900, 600) + 1000)
             Tref_t[0] = (throttle_ref_from_LQR[0] - 1000)/900
@@ -354,6 +353,37 @@ if __name__ == '__main__':
     if enable_caching[0]:
         time_before_thread_starts[0] = time_ns()
 
+    
+    # x_tu = ...
+    # sigma_tu = ...
+    
+    # def control_loop():
+    #     EVO_filename = datetime.datetime.now().strftime("Evo-ToF-%d-%m-%y--%H-%M.csv")
+    #     with EvoSensor(window_length=3,  
+    #                    data_processor=NoFilter(),  
+    #                    log_file=EVO_filename) as tof:
+    #         distance = tof.distance
+    #         if not np.isnan(distance):
+    #             x_mu, sigma_mu = kf_measurement_update(x_tu, sigma_tu, distance)
+    #         x_tu, sigma_tu = kf_time_update(x_mu, sigma_mu, tau)
+
+        
+
+    # def kf_measurement_update(x_tu, sigma_tu, distance):
+
+    #     A = np.array([
+    #         [1, T_s, 0, 0], 
+    #         [0, 1, T_s*tau, T_s],
+    #         [0, 0, 1, 0], 
+    #         [0, 0, 0, 1]
+    #         ])   
+
+
+
+
+    # def kf_time_update(x_mu, sigma_mu, tau):
+
+
     # schedule the necessary functions
     scheduler.schedule("process_radio_data",
                        process_radio_data,
@@ -362,37 +392,35 @@ if __name__ == '__main__':
     scheduler.schedule("process_ESP_data",
                        process_ESP_data,
                        function_call_frequency=50,
-                       function_call_count=0)
-    scheduler.schedule("read_ToF_run_kf_and_LQR",
-                       read_ToF_run_kf_and_LQR,
-                       function_call_frequency=sampling_frequency,
-                       function_call_count=0)
+                       function_call_count=0)    
+    # scheduler.schedule("read_ToF_run_kf_and_LQR",
+    #                    read_ToF_run_kf_and_LQR,
+    #                    function_call_frequency=sampling_frequency,
+    #                    function_call_count=0)
 
     # THE MAIN LOOP
+    
+    # BAR_filename = datetime.datetime.now().strftime("PressureSensor-%d-%m-%y--%H-%M.csv")
+    # ANE_filename = datetime.datetime.now().strftime("Anemometer-%d-%m-%y--%H-%M.csv")
+    # GNSS_filename = datetime.datetime.now().strftime("GNSS-%d-%m-%y--%H-%M.csv")
+    # processor = AverageFilter()  # You need to define this class based on your requirements
+    # with (Anemometer(window_length=5,  
+    #                  data_processor=processor,  
+    #                  log_file=ANE_filename) as anemometer):
+    
     EVO_filename = datetime.datetime.now().strftime("Evo-ToF-%d-%m-%y--%H-%M.csv")
-    BAR_filename = datetime.datetime.now().strftime("PressureSensor-%d-%m-%y--%H-%M.csv")
-    ANE_filename = datetime.datetime.now().strftime("Anemometer-%d-%m-%y--%H-%M.csv")
-    GNSS_filename = datetime.datetime.now().strftime("GNSS-%d-%m-%y--%H-%M.csv")
-    processor = AverageFilter()  # You need to define this class based on your requirements
-    with (EvoSensor(window_length=3,  
-                    data_processor=processor,  
-                    log_file=EVO_filename) as tof, 
-          PressureSensor(window_length=100,  
-                         data_processor=processor,  
-                         reference_pressure_at_sea_level=102500, 
-                         log_file=BAR_filename) as PSensor, 
-          Anemometer(window_length=5,  
-                     data_processor=processor,  
-                     log_file=ANE_filename) as ASensor,
-          Gnss(window_length=3,  
-                     data_processor=processor,  
-                     log_file=GNSS_filename) as GnssSensor):
+    with EvoSensor(window_length=3,  
+                    data_processor=MedianFilter(),  
+                    log_file=EVO_filename) as tof:
         
         while True:
+            
+            read_ToF_run_kf_and_LQR(tof.distance)
+            
             scheduler.run()  # run the scheduled functions
 
             if is_kill[0] and switch_a_status[0]:
                 print("All sensors are saving data")
                 break
-    
+        
     

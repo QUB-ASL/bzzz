@@ -122,6 +122,7 @@ class EvoSensor:
         """
         Returns the distance from the sensor in meters
         """
+        time.sleep(0.0001) # to avoid oversampling
         with self.__lock:
             return self.__data_processor.process(
                 self.__values_cache[:, 0:], cursor=self.__cursor)
@@ -130,11 +131,11 @@ class EvoSensor:
 if __name__ == "__main__":
 
     filename = datetime.datetime.now().strftime("EVO-%d-%m-%y--%H-%M.csv")
-    processor = MedianFilter()
+    processor = NoFilter()
     with EvoSensor(window_length=3,
                    data_processor=processor,
                    log_file=filename) as sensor:
-        for i in range(20000):
+        for i in range(20000):            
             print(sensor.distance)
         # set time for how long you want to record data for in seconds
-        time.sleep(0.1)
+        
