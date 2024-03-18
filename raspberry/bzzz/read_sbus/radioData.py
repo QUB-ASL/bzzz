@@ -184,7 +184,6 @@ class RadioData:
     
     def set_throttle(self, throttle):
         self.m_channelData[RADIO_CHANNEL_THROTTLE] = throttle
-        print(f"AFTER: {self.m_channelData}")
     
     def set_switch_D(self, switch_value=True):
         # True = Kill = Down

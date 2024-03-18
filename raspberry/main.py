@@ -37,7 +37,24 @@ if __name__ == '__main__':
     enable_printing_cache_to_screen = [False and enable_caching[0]]
 
     # objects declaration
-    altitude_kf = AltitudeHoldKalmanFilter()
+    sampling_time = 0.1
+    expected_decrease_alpha_per_minute = 2
+    sigma_decrease_alpha_per_minute = expected_decrease_alpha_per_minute / 2
+    sigma_decrease_alpha_per_sec = sigma_decrease_alpha_per_minute / 60
+    sigma_alpha = sigma_decrease_alpha_per_sec * sampling_time
+
+    expected_decrease_beta_per_minute = 0.5
+    sigma_decrease_beta_per_minute = expected_decrease_beta_per_minute / 2
+    sigma_decrease_beta_per_sec = sigma_decrease_beta_per_minute / 60
+    sigma_beta = sigma_decrease_beta_per_sec * sampling_time
+
+    Q = np.diagflat([0.001, 0.01, sigma_alpha**2, sigma_beta**2])
+
+    altitude_kf = AltitudeHoldKalmanFilter(
+        initial_state=np.array([1, 0, 20, -10]),
+        initial_sigma=np.eye(4)*100,
+        state_cov=Q,
+        meas_cov=0.01**2)
 
     # kf = KalmanFilter(sampling_frequency=sampling_frequency,
     #                   initial_Tt=0,
@@ -393,6 +410,9 @@ if __name__ == '__main__':
         y = tof.distance
         if y < MIN_ALTITUDE_HOLD_ALTITUDE:
             return 
+        tau = radio_data.throttle_reference_percentage()
+        altitude_kf.update(tau, 0, 0, y)
+        print(altitude_kf.x_measured())
         
 
     def control_loop(tof, esp_bridge):

@@ -15,7 +15,6 @@ class EspBridge:
         # Send data from Pi to ESP32, send a new line char so ESP32 knows when to stop reading
         _, data_to_go = radio_data.format_radio_data_for_sending()
         data_to_ser = f'S,{data_to_go}\n'.encode()
-        # print(data_to_ser)
         self.ser.write(data_to_ser)
     
     def __enter__(self):
