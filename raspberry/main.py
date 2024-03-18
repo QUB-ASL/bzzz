@@ -7,7 +7,7 @@ from datetime import datetime  # to get date-time stamps for naming the csv file
 from math import pi, atan2, sqrt  # math functions for calculations
 
 from bzzz.controllers.altitude_LQR import LQR  # altitude hold controller
-from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
+from bzzz.estimators.altitude_hold_kalman_filter import *
 from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
 from bzzz.read_sbus import RC  # for radio data receiving, encoding and sending to ESP
 from bzzz.read_sbus.radioData import *
@@ -37,11 +37,13 @@ if __name__ == '__main__':
     enable_printing_cache_to_screen = [False and enable_caching[0]]
 
     # objects declaration
-    kf = KalmanFilter(sampling_frequency=sampling_frequency,
-                      initial_Tt=0,
-                      x_tilde_0=np.array([[0], [0], [10], [-9.81]]),
-                      P_0=np.diagflat([1, 1, 1, 0.01]),
-                      cache_values=True)
+    altitude_kf = AltitudeHoldKalmanFilter()
+
+    # kf = KalmanFilter(sampling_frequency=sampling_frequency,
+    #                   initial_Tt=0,
+    #                   x_tilde_0=np.array([[0], [0], [10], [-9.81]]),
+    #                   P_0=np.diagflat([1, 1, 1, 0.01]),
+    #                   cache_values=True)
     lqr = LQR(sampling_frequency=sampling_frequency,
               initial_alpha_t=10,
               initial_beta_t=-9.81)
@@ -360,18 +362,7 @@ if __name__ == '__main__':
     class EmergencyMeasures(Enum):
         NO_PROBLEM = 0
         BELOW_HOVERING = 1
-        ASSASSINATION = 2
-
-    def kill_motors_sequence():
-        dummy_values = [1000]*16
-        dummy_values[10] = 1700  # Kill switch: ON (Kill)
-        return str(dummy_values)[1:-1]
-
-    def hovering_motors_sequence(hovering_throttle_ref=680):
-        dummy_values = [1000]*16
-        dummy_values[2] = hovering_throttle_ref  # Hovering throttle
-        dummy_values[10] = 360  # Kill switch: OFF (NOT Kill)
-        return str(dummy_values)[1:-1]
+        ASSASSINATION = 2   
 
     def emergency_measure(connection_lost, 
                            radio_data, 
@@ -388,14 +379,38 @@ if __name__ == '__main__':
         return EmergencyMeasures.NO_PROBLEM
 
 
+    def take_emergency_measure(measure, radio_data):
+        match measure:
+            case EmergencyMeasures.ASSASSINATION:
+                radio_data.set_throttle(300)
+            case EmergencyMeasures.BELOW_HOVERING:
+                radio_data.set_throttle(700)
+                radio_data.set_switch_D(True)
+
+
+    MIN_ALTITUDE_HOLD_ALTITUDE = 0.6
+    def altitude_hold(radio_data, tof):
+        y = tof.distance
+        if y < MIN_ALTITUDE_HOLD_ALTITUDE:
+            return 
+        
+
     def control_loop(tof, esp_bridge):
         keep_running = True
         connection_lost_flag, radio_data = rc.get_radio_data()
         radio_data = RadioData(radio_data)
-        # measure = emergency_measure(connection_lost_flag, radio_data, tof)
-        data_to_go = radio_data.format_radio_data_for_sending()
-        # esp_bridge.send_to_esp(data_to_go)
-        print(data_to_go)
+        measure = emergency_measure(connection_lost_flag, 
+                                    radio_data, 
+                                    tof)
+        take_emergency_measure(measure, radio_data)        
+        
+        flight_mode = radio_data.switch_C()
+        
+        match flight_mode:
+            case ThreeWaySwitch.MID.value:
+                altitude_hold(radio_data, tof)       
+
+        esp_bridge.send_to_esp(radio_data)
         return keep_running
         
 
@@ -409,10 +424,10 @@ if __name__ == '__main__':
           EspBridge() as esp_bridge):
         starttime = time_ns()
         while keep_running:
-            elapsed_time = time_ns() - starttime
-            if elapsed_time > 100000:
-                starttime = time_ns()
-                keep_running = control_loop(tof, esp_bridge)
+            # elapsed_time = time_ns() - starttime
+            # print(elapsed_time/1000)
+            keep_running = control_loop(tof, esp_bridge)
+            time.sleep(0.1)
             
 
 

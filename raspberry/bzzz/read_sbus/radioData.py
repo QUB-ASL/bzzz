@@ -108,7 +108,8 @@ class RadioData:
 
         :return: percentage reference of throttle.
         """
-        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_THROTTLE])
+        return self.__map_trimmer_to_percentage(
+            self.m_channelData[RADIO_CHANNEL_THROTTLE])
 
     def switch_B(self):
         """Checks if switch B has been toggled.
@@ -181,6 +182,14 @@ class RadioData:
         """
         return minVal + percentage * (maxVal - minVal)
     
+    def set_throttle(self, throttle):
+        self.m_channelData[RADIO_CHANNEL_THROTTLE] = throttle
+        print(f"AFTER: {self.m_channelData}")
+    
+    def set_switch_D(self, switch_value=True):
+        # True = Kill = Down
+        self.m_channelData[10] =  1000 if switch_value else 1600
+
     def format_radio_data_for_sending(self):
         """Processes, encodes, and formats the radio data into a 
         string so that it can be sent via UART.
@@ -223,9 +232,23 @@ class RadioData:
         :return: Formatted string that contains the processed radio data, 
                  where each data point is seperated by a comma.
         """
-        reArrangedYPRTData = [self.yaw_rate_reference_rad_sec(), self.pitch_reference_angle_rad(), self.roll_reference_angle_rad(), self.__map_prcnt(self.throttle_reference_percentage(), ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM)]
-        bitEncodedSwithcesData = (self.switch_B() << 4) | (self.switch_A() << 3) | (self.switch_C() << 1) | self.switch_D()
-        reArrangedABCETrimmersData = [self.trimmer_VRA_percentage(), self.trimmer_VRB_percentage(), self.trimmer_VRC_percentage(), self.trimmer_VRE_percentage()]
+        reArrangedYPRTData = [
+            self.yaw_rate_reference_rad_sec(), 
+            self.pitch_reference_angle_rad(), 
+            self.roll_reference_angle_rad(), 
+            self.__map_prcnt(self.throttle_reference_percentage(), 
+                             ZERO_ROTOR_SPEED, 
+                             ABSOLUTE_MAX_PWM)]
+        bitEncodedSwithcesData = (
+            self.switch_B() << 4) \
+        | (self.switch_A() << 3) \
+        | (self.switch_C() << 1) \
+        | self.switch_D()
+        reArrangedABCETrimmersData = [
+            self.trimmer_VRA_percentage(), 
+            self.trimmer_VRB_percentage(), 
+            self.trimmer_VRC_percentage(), 
+            self.trimmer_VRE_percentage()]
 
         reArrangedData = reArrangedYPRTData + reArrangedABCETrimmersData
         
