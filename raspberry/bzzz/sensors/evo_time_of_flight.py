@@ -124,7 +124,7 @@ class EvoSensor:
         """
         with self.__lock:
             return self.__data_processor.process(
-                self.__values_cache[:, 0:], cursor=self.__cursor)
+                self.__values_cache[:, 0:], cursor=self.__cursor)[0]
 
 
 if __name__ == "__main__":

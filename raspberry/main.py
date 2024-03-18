@@ -1,5 +1,6 @@
 import numpy as np  # for matrix based calculations
 import pandas as pd  # pandas for storing cached data into csv files
+import time
 
 from time import time_ns  # function to get system-up time in nano seconds
 from datetime import datetime  # to get date-time stamps for naming the csv files
@@ -7,9 +8,10 @@ from math import pi, atan2, sqrt  # math functions for calculations
 
 from bzzz.controllers.altitude_LQR import LQR  # altitude hold controller
 from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
-from bzzz.scheduler import Scheduler
 from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
 from bzzz.read_sbus import RC  # for radio data receiving, encoding and sending to ESP
+from bzzz.read_sbus.radioData import *
+from bzzz.read_sbus.esp_bridge import *
 
 from bzzz.sensors.evo_time_of_flight import EvoSensor
 from bzzz.sensors.pressure_sensor import PressureSensor
@@ -45,7 +47,7 @@ if __name__ == '__main__':
               initial_beta_t=-9.81)
 
     rc = RC()
-    scheduler = Scheduler(use_threading=False)
+
 
     # NOTE: single element lists are used to avoid python-env re-declaring
     # new local variables with in the functions that follow below.
@@ -354,45 +356,91 @@ if __name__ == '__main__':
     if enable_caching[0]:
         time_before_thread_starts[0] = time_ns()
 
-    # schedule the necessary functions
-    scheduler.schedule("process_radio_data",
-                       process_radio_data,
-                       function_call_frequency=50,
-                       function_call_count=0)
-    scheduler.schedule("process_ESP_data",
-                       process_ESP_data,
-                       function_call_frequency=50,
-                       function_call_count=0)
-    scheduler.schedule("read_ToF_run_kf_and_LQR",
-                       read_ToF_run_kf_and_LQR,
-                       function_call_frequency=sampling_frequency,
-                       function_call_count=0)
 
-    # THE MAIN LOOP
-    EVO_filename = datetime.datetime.now().strftime("Evo-ToF-%d-%m-%y--%H-%M.csv")
-    BAR_filename = datetime.datetime.now().strftime("PressureSensor-%d-%m-%y--%H-%M.csv")
-    ANE_filename = datetime.datetime.now().strftime("Anemometer-%d-%m-%y--%H-%M.csv")
-    GNSS_filename = datetime.datetime.now().strftime("GNSS-%d-%m-%y--%H-%M.csv")
-    processor = AverageFilter()  # You need to define this class based on your requirements
-    with (EvoSensor(window_length=3,  
-                    data_processor=processor,  
-                    log_file=EVO_filename) as tof, 
-          PressureSensor(window_length=100,  
-                         data_processor=processor,  
-                         reference_pressure_at_sea_level=102500, 
-                         log_file=BAR_filename) as PSensor, 
-          Anemometer(window_length=5,  
-                     data_processor=processor,  
-                     log_file=ANE_filename) as ASensor,
-          Gnss(window_length=3,  
-                     data_processor=processor,  
-                     log_file=GNSS_filename) as GnssSensor):
+    class EmergencyMeasures(Enum):
+        NO_PROBLEM = 0
+        BELOW_HOVERING = 1
+        ASSASSINATION = 2
+
+    def kill_motors_sequence():
+        dummy_values = [1000]*16
+        dummy_values[10] = 1700  # Kill switch: ON (Kill)
+        return str(dummy_values)[1:-1]
+
+    def hovering_motors_sequence(hovering_throttle_ref=680):
+        dummy_values = [1000]*16
+        dummy_values[2] = hovering_throttle_ref  # Hovering throttle
+        dummy_values[10] = 360  # Kill switch: OFF (NOT Kill)
+        return str(dummy_values)[1:-1]
+
+    def emergency_measure(connection_lost, 
+                           radio_data, 
+                           tof,
+                           min_critical_altitude = 0.6):
+        #TODO (important) radio_data could be None; the ESP deals with cases where no data is sent
+        distance_from_ground = tof.distance        
+        kill_switch = radio_data.switch_D()
+        if kill_switch or connection_lost:
+            if np.isnan(distance_from_ground) or distance_from_ground < min_critical_altitude:
+                return EmergencyMeasures.ASSASSINATION
+            else:
+                return EmergencyMeasures.BELOW_HOVERING
+        return EmergencyMeasures.NO_PROBLEM
+
+
+    def control_loop(tof, esp_bridge):
+        keep_running = True
+        connection_lost_flag, radio_data = rc.get_radio_data()
+        radio_data = RadioData(radio_data)
+        # measure = emergency_measure(connection_lost_flag, radio_data, tof)
+        data_to_go = radio_data.format_radio_data_for_sending()
+        # esp_bridge.send_to_esp(data_to_go)
+        print(data_to_go)
+        return keep_running
         
-        while True:
-            scheduler.run()  # run the scheduled functions
 
-            if is_kill[0] and switch_a_status[0]:
-                print("All sensors are saving data")
-                break
+
+    # ------------------------------------------------
+    # MAIN LOOP!
+    # ------------------------------------------------
+    keep_running = True
+    EVO_filename = datetime.datetime.now().strftime("Evo-%d-%m-%y--%H-%M.csv")
+    with (EvoSensor(log_file=EVO_filename) as tof,
+          EspBridge() as esp_bridge):
+        starttime = time_ns()
+        while keep_running:
+            elapsed_time = time_ns() - starttime
+            if elapsed_time > 100000:
+                starttime = time_ns()
+                keep_running = control_loop(tof, esp_bridge)
+            
+
+
+    # # THE MAIN LOOP
+    # EVO_filename = datetime.datetime.now().strftime("Evo-ToF-%d-%m-%y--%H-%M.csv")
+    # BAR_filename = datetime.datetime.now().strftime("PressureSensor-%d-%m-%y--%H-%M.csv")
+    # ANE_filename = datetime.datetime.now().strftime("Anemometer-%d-%m-%y--%H-%M.csv")
+    # GNSS_filename = datetime.datetime.now().strftime("GNSS-%d-%m-%y--%H-%M.csv")
+    # processor = AverageFilter()  # You need to define this class based on your requirements
+    # with (EvoSensor(window_length=3,  
+    #                 data_processor=processor,  
+    #                 log_file=EVO_filename) as tof, 
+    #       PressureSensor(window_length=100,  
+    #                      data_processor=processor,  
+    #                      reference_pressure_at_sea_level=102500, 
+    #                      log_file=BAR_filename) as PSensor, 
+    #       Anemometer(window_length=5,  
+    #                  data_processor=processor,  
+    #                  log_file=ANE_filename) as ASensor,
+    #       Gnss(window_length=3,  
+    #                  data_processor=processor,  
+    #                  log_file=GNSS_filename) as GnssSensor):
+        
+    #     while True:
+    #         scheduler.run()  # run the scheduled functions
+
+    #         if is_kill[0] and switch_a_status[0]:
+    #             print("All sensors are saving data")
+    #             break
     
     

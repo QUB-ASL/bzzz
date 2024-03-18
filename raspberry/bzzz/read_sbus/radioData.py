@@ -46,16 +46,19 @@ ABSOLUTE_MAX_PWM = 1900
 
 
 
-class RadioDataParser:
+class RadioData:
     """RadioDataParser Class provides functions that help 
     in processing and encoding radio data.
     """
-    def __init__(self):
+    def __init__(self, raw_channel_data=None):
         """Constructor
         """
-        self.m_channelData = None
+        if raw_channel_data is not None:
+            self.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (
+                2000 if int(x) > 2000 else int(x)), raw_channel_data.strip().split(",")))
         self.rawRatePercentage = None
         self.switchValue = None
+
 
     def __map_radio_to_angle(self, x, stick_min=RADIO_STICK_MIN, stick_max=RADIO_STICK_MAX):
         """Maps radio stick positions to corresponding angles in radians linearly.
