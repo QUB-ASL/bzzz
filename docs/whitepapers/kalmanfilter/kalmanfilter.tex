@@ -1,11 +1,16 @@
 \documentclass{article}
 
+\RequirePackage{units}
 \usepackage{amsmath,amsfonts,amssymb,mathtools}
 \usepackage[margin=1.2in]{geometry}
 \usepackage{graphicx} 
 \usepackage{float}
 \usepackage{pgfplots}
-\pgfplotsset{width=10cm,compat=1.9}
+\usepackage{pgfplotstable}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+\pgfplotsset{width=15cm,compat=1.9}
 
 \title{Kalman Filter for Quadcopter Position Hold}
 \author{Peter Davidson and Pantelis Sopasakis}
@@ -145,29 +150,88 @@ The discretization of the altitude dynamics of the system \eqref{eq:4} with a sa
     -g
     \end{bmatrix},
 \end{equation}
+
+\section{Estimator Design}
+
 \subsection{State Vector Definition}
 The state vector \( x_t \) is defined as,
 \begin{equation}
     x_t = 
     \begin{bmatrix}
         z_t &
-        e_{t} & 
+        v_{t} & 
         \alpha_t & 
         \beta_t &
         d{_t}^{\rm bar}&
-        d{_t}^{\rm ToF}&
+        d{_t}^{\rm GPS}&
     \end{bmatrix}
 \end{equation}
 
-\subsection{State Transition Equation}
+\begin{align}
+    z_{t+1} =& z_t + {T_s}{v_t} + w^{z}_{t}\\
+    v_{t+1}^z =& v_t^z + T_s (\alpha_t \tau_t + \beta_t) + w_t^v\\
+    \alpha_{t+1} =& \alpha_t + w_t^\alpha,\\
+    \beta_{t+1} =& \beta_t + w_t^\beta\\
+\end{align}
+
+We define $w_t^z$ and $w_t^v$ as the process noise elements.
+$w_t^z$ is distributed normally with zero mean and variance
+$\sigma_z^2$, expressed as $w_t^z \sim \mathcal{N}(0, \sigma_z^2)$, 
+and similarly, $w_t^v$ follows a normal distribution with $w_t^v \sim \mathcal{N}(0, \sigma_v^2)$.
+Additionally, $w_t^\alpha$ and $w_t^\beta$ represent white noise processes with distributions
+$w_t^\alpha \sim \mathcal{N}(0, T_s \sigma_\alpha^2)$ and $w_t^\beta \sim \mathcal{N}(0, T_s \sigma_\beta^2)$ 
+respectively. The system's state needing estimation is denoted by $x_t = (z_t, v_t^z, \alpha_t, \beta_t)$, 
+with the The state vector \( x_t \) is defined as,
 \begin{equation}
-    {x}_{t+1} = A_t {x}_t + W_t
+    x_{t+1} = A_t x_t + w_t^z,
 \end{equation}
 
-\subsection{Measurement Model}
+\subsection{State transition matrix \( A_t \)}
+The state transition matrix \( A \) describes how the state at time \( t \) evolves to the state at time \( t+1 \). For the given system.
+Given the state vector \( x_t = \begin{bmatrix} z_t&  v_t^z&  \alpha_t&  \beta_t& d_{bar}& d_{GPS} \end{bmatrix} \), the state transition matrix \( A_t \) from the system's dynamic model is defined as:
+\begin{equation}
+A_t = 
+\begin{bmatrix}
+1 & T_s & 0 & 0 & 0 & 0\\
+0 & 1 & T_s \tau_t & T_s & 0 & 0\\
+0 & 0 & 1 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 & 0 & 0 \\
+0 & 0 & 0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 0 & 0 & 1 \\
+\end{bmatrix}
+\end{equation}
+where \( T_s \) is the sampling time, and \( \tau_t \) represents the throttle signal at time \( t \).
+
+\subsection{Process Noise Covariance Matrix \( Q \)}
+The process noise covariance matrix \( Q \) represents the covariance of the process noise, accounting for the uncertainty in the model dynamics:
+\begin{equation}
+Q = 
+\begin{bmatrix}
+\sigma_z^2 & 0 & 0 & 0 & 0 & 0 \\
+0 & \sigma_v^2 & 0 & 0 & 0 & 0 \\
+0 & 0 & T_s \sigma_\alpha^2 & 0 & 0 & 0 \\
+0 & 0 & 0 & T_s \sigma_\beta^2 & 0 & 0 \\
+0 & 0 & 0 & 0 & \sigma^2_{d_{bar}} & 0 \\
+0 & 0 & 0 & 0 & 0 & \sigma^2_{d_{GPS}} \\
+\end{bmatrix}
+\end{equation}
+Here, \( \sigma_z^2 \), \( \sigma_v^2 \), \( \sigma_\alpha^2 \), \( \sigma_\beta^2 \), \( \sigma^2_{d_{bar}} \) and \( \sigma^2_{d_{GPS}} \) represent the variances of the altitude, velocity, and the coefficients \( \alpha \) and \( \beta \), which relate the throttle signal to the lift.
+
+\subsection{Measurement Matrix \( C \)}
+The measurement matrix \( C \) links the state vector to the measurement vector:
+\begin{equation}
+C = 
+\begin{bmatrix}
+1 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 1 \\
+1 & 0 & 0 & 0 & 1 & 0 \\
+\end{bmatrix}
+\end{equation}
+This matrix considers the direct measurement of altitude by all sensors and accounts for biases in the GPS and barometer sensors.
+
 The measurement model is defined as
 \begin{equation}
-y_t = C_t x_t + e_t
+y_t = C x_t + e_t
 \end{equation}
 \begin{equation}
     y_t  = 
@@ -178,91 +242,6 @@ y_t = C_t x_t + e_t
     \end{bmatrix}
         x_t + e_t
 \end{equation}
-We may need to estimate \(\alpha\) or \(\beta\) for simplisity.
-
-\section{Estimator Design}
-A sentence
-\begin{align}
-    z_{t+1} =& z_t + T_s v_t^z + \frac{1}{2} T_s^2 (\alpha_t \tau_t + \beta_t) + w_t^z (\rm not In Use)\\
-    z_{t+1} =& z_t + {T_s}{v_t} + w^{z}_{t}\\
-    v_{t+1}^z =& v_t^z + T_s (\alpha_t \tau_t + \beta_t) + w_t^v\\
-    \alpha_{t+1} =& \alpha_t + w_t^\alpha,\\
-    \beta_{t+1} =& \beta_t + w_t^\beta\\
-\end{align}
-Consider using quation 14 for grater accuracy
-
-where, 
-\begin{equation}
-    a_t =
-    {\alpha_t}{\tau_t} + \beta_t
-\end{equation}
-We define $w_t^z$ and $w_t^v$ as the process noise elements.
-$w_t^z$ is distributed normally with zero mean and variance
-$\sigma_z^2$, expressed as $w_t^z \sim \mathcal{N}(0, \sigma_z^2)$, 
-and similarly, $w_t^v$ follows a normal distribution with $w_t^v \sim \mathcal{N}(0, \sigma_v^2)$.
-Additionally, $w_t^\alpha$ and $w_t^\beta$ represent white noise processes with distributions
-$w_t^\alpha \sim \mathcal{N}(0, T_s \sigma_\alpha^2)$ and $w_t^\beta \sim \mathcal{N}(0, T_s \sigma_\beta^2)$ 
-respectively. The system's state needing estimation is denoted by $x_t = (z_t, v_t^z, \alpha_t, \beta_t)$, 
-with the system's dynamic model being describable as follows,
-\begin{equation}
-    x_{t+1} = A_t x_t + w_t^z,
-\end{equation}
-
-% altitude:
-% \begin{equation}
-%     z_{t+1} = z_t + {T_s}{v_t} + w^{z}_{t}
-% \end{equation}
-
-% velocity:
-% \begin{equation}
-%     v^{z}_{t+1} = v^{z}_t + T_s({\alpha_t}{\tau_t} + \beta_t) + w^{v}_t
-% \end{equation}
-% where, 
-% \begin{equation}
-%     a_t =
-%     {\alpha_t}{\tau_t} + \beta_t
-% \end{equation}
-
-\subsection{State transition matrix \( A_t \)}
-The state transition matrix \( A \) describes how the state at time \( t \) evolves to the state at time \( t+1 \). For the given system, \( A \) is defined as:
-
-Given the state vector \( x_t = \begin{bmatrix} z_t&  v_t^z&  \alpha_t&  \beta_t \end{bmatrix} \), the state transition matrix \( A_t \) from the system's dynamic model is defined as:
-\begin{equation}
-A_t = 
-\begin{bmatrix}
-1 & T_s & T_s \tau_t & T_s \\
-0 & 1 & T_s \tau_t & T_s \\
-0 & 0 & 1 & 0 \\
-0 & 0 & 0 & 1
-\end{bmatrix}
-\end{equation}
-where \( T_s \) is the sampling time, and \( \tau_t \) represents the throttle signal at time \( t \).
-
-\subsection{Process Noise Covariance Matrix \( Q \)}
-The process noise covariance matrix \( Q \) represents the covariance of the process noise, accounting for the uncertainty in the model dynamics:
-\begin{equation}
-Q = 
-\begin{bmatrix}
-\sigma_z^2 & 0 & 0 & 0 \\
-0 & \sigma_v^2 & 0 & 0 \\
-0 & 0 & T_s \sigma_\alpha^2 & 0 \\
-0 & 0 & 0 & T_s \sigma_\beta^2
-\end{bmatrix}
-\end{equation}
-Here, \( \sigma_z^2 \), \( \sigma_v^2 \), \( \sigma_\alpha^2 \), and \( \sigma_\beta^2 \) represent the variances of the altitude, velocity, and the coefficients \( \alpha \) and \( \beta \), which relate the throttle signal to the lift.
-
-\subsection{Measurement Matrix \( C \)}
-The measurement matrix \( C \) links the state vector to the measurement vector:
-\begin{equation}
-C_t = 
-\begin{bmatrix}
-1 & 0 & 0 & 0 & 0 & 0 \\
-1 & 0 & 0 & 0 & 0 & 1 \\
-1 & 0 & 0 & 0 & 1 & 0 \\
-\end{bmatrix}
-\end{equation}
-This matrix considers the direct measurement of altitude by all sensors and accounts for biases in the ToF and barometer sensors.
-
 \subsection{Measurement Noise Covariance Matrix \( R \)}
 The measurement noise covariance matrix \( R \) accounts for the uncertainty in sensor measurements:
 \begin{equation}
@@ -273,90 +252,119 @@ R =
 0 & 0 & \sigma_{ToF}^2
 \end{bmatrix}
 \end{equation}
-where \( \sigma_{barom}^2 \), \( \sigma_{gps}^2 \), and \( \sigma_{ToF}^2 \) are the variances of the measurement noises for the barometer, GPS, and Time-of-Flight sensors, respectively.
+where \( \sigma_{barom}^2 \), \( \sigma_{gps}^2 \), and \( \sigma_{ToF}^2 \) are the variances of the measurement noises for the 
+barometer, GPS, and Time-of-Flight sensors, respectively.
 
-\section{Relationship between throttle signal and lift}
-\begin{figure}[H]
+\section{Relationship between Throttle refferance and Lift}
+\begin{figure}[h]
     \centering
     \begin{tikzpicture}
-        \begin{axis}[width=3in, height=1.5in, xlabel=Throttle signal, ylabel=Lift]
-            \addplot table[x=Throttle signal, y=Lift, col sep=comma] {data.csv}; 
-        \end{axis}
+      \begin{axis}[
+          width= 2.2in,
+          height=1.2in,
+          scale only axis,
+          ylabel={Lift (g)},
+          xlabel={Throttle reference (\%)},
+          xmajorgrids,
+          ymajorgrids,
+          ylabel near ticks,
+          xmin=10, xmax=40,
+          ymin=0, ymax=2500,
+          legend columns=1,
+          legend style={fill=white, fill opacity=0.4, text opacity=1, font=\scriptsize},
+          legend style={at={(axis cs:10.5,2450)},anchor=north west},
+          legend cell align={left},
+        ]
+  
+        \addplot[mark=x, blue, only marks, line width=1.2pt]
+        table
+          [x=throttle_percentage, y=weight_decrease, col sep=comma]
+          {Data/1045_full.csv};
+        \addlegendentry{Full battery ($R^2=99.99\%$)};
+  
+        \addplot[mark=none, blue!50, only marks, line width=1.2pt, mark=x]
+        table
+          [x=throttle_percentage, y=weight_decrease, col sep=comma]
+          {Data/1045_low.csv};
+        \addlegendentry{Low battery ($R^2=90.1\%$)};
+  
+  
+        \addplot[domain=0:50, blue, dashed]
+        table
+          [x=throttle_percentage, y = {create col/linear regression = {y=weight_decrease}}, col sep=comma]
+          {Data/1045_full.csv};
+        \addplot[no marks, blue, dashed, domain=0:50]{\pgfplotstableregressiona*x+\pgfplotstableregressionb};
+  
+        \addplot[domain=0:50, blue!50, dashed]
+        table
+          [x=throttle_percentage, y = {create col/linear regression = {y=weight_decrease}}, col sep=comma]
+          {Data/1045_low.csv};
+        \addplot[no marks, blue!50, dashed, domain=0:50]{\pgfplotstableregressiona*x+\pgfplotstableregressionb};
+  
+      \end{axis}
     \end{tikzpicture}
-    \label{fig:fig1}
-    \caption{}
+    \caption{Static lift (g) plotted against throttle reference (\%).}
+    \label{fig:liftpwm}
 \end{figure}
+
+
 This graph represents the relationship between throttle signal 
 From our radio, and how this effects the lifing force on the quad.
 (please note that this graph is not to scale)
 This relationship is catagorised by the equation, 
 \[
-\alpha_t\tau_t + \beta_t
+a = \alpha_t\tau_t + \beta_t
 \]
+where a is the acceleration
 
-
-/section{Controler}
-In order to simulate if our kalman filter will work we will have to design a controler which will graph the 
-real position and the estimated on. To do this we will first need to define the values for the Bias of Tof and Baramoter.
-
+\section{Kalman filter equations}
+The Kalman filter equations for the above system are:
 \begin{align}
-d^{Tof} &=  \\
-d^{bar} &=  
-\end{align}
+    \text{Measurement} &
+    \left[
+    \begin{array}{l}
+      \hat{x}_{t{}\mid{}t}
+      {}={}
+      \hat{x}_{t{}\mid{}t-1}
+      {}+{}
+      \Sigma_{t{}\mid{}t-1}C^\intercal
+      (C\Sigma_{t{}\mid{}t-1}C^\intercal + R)^{-1}(y_t - C\hat{x}_{t{}\mid{}t-1})
+      \\
+      \Sigma_{t{}\mid{}t}
+      {}={}
+      \Sigma_{t{}\mid{}t-1}
+      {}-{}
+      \Sigma_{t{}\mid{}t-1}C^\intercal
+      (C\Sigma_{t{}\mid{}t-1}C^\intercal + R)^{-1}
+      C\Sigma_{t{}\mid{}t-1}
+    \end{array}
+    \right.
+    \\
+    \text{Time update}        &
+    \left[
+    \begin{array}{l}
+      \hat{x}_{t+1{}\mid{}t}
+      {}={}
+      A_t \hat{x}_{t{}\mid{}t}
+      \\
+      \Sigma_{t+1{}\mid{}t}
+      {}={}
+      A_t \Sigma_{t{}\mid{}t} A_t^\intercal + Q
+    \end{array}
+    \right.
+    \\
+    \text{Initial conditions} &
+    \left[
+    \begin{array}{l}
+      \hat{x}_{0{}\mid{}-1}
+      {}={}
+      \tilde{x}_0
+      \\
+      \Sigma_{0{}\mid{}-1}
+      {}={}
+      P_0
+    \end{array}
+    \right.
+  \end{align}
 
-Next we may need to set a value for \(\alpha\) or \(\beta\) as we may have introduced too many variables. This can be tested using the controller in order to find an optimal value for either.
-
-
-
-
-% \section{vikram Kannur additions}
-% \section{Kalman Filter equations}
-% We are using 3 sensors for the altitude control namely the barometer, GPS, and the time of flight sensor. The barometer is known to have the least precision and has a significant bias. The Kalman filter equations for a sensor with bias is given as,
-% \begin{align}
-%     z_{t+1}=&\begin{bmatrix}
-%         A_{Bar}&\\
-%         &I
-%     \end{bmatrix}
-%         z_t^{Bar}
-%     +
-%         \Tilde{w}_t \\
-%     y_t=&\begin{bmatrix}
-%         C_{Bar}&I
-%     \end{bmatrix}
-%         x_t+v_t
-% \end{align}
-% $z_t^{Bar}=(x_t^{Bar},b_t)$, where $b_t$ defines the bias of the sensor and $x_t^{Bar}$ is the state. It is important to note that the above equation only suffices for the barometer which has a large bias. 
-
-% The other sensors which are the GPS and the time of flight do not have a great bias. So we can assume that they have the form of,
-% \begin{align}
-%     x_{t+1}=&Ax_t+w_t\\
-%     y_t=&Cx_t+v_t
-% \end{align}
-
-% So we can define our Kalman filter such that,
-% \begin{align}
-%     z_{t+1}=&\begin{bmatrix}
-%         B&&\\
-%         &ToF&\\
-%         &&GPS
-%     \end{bmatrix}z_t+\Tilde{w}_t \\
-%     y_t=&\begin{bmatrix}
-%         C_B&C_{ToF}&C_{GPS}
-%     \end{bmatrix}
-%         x_t+v_t
-% \end{align}
-% where,
-% \begin{align}
-%     B=&\begin{bmatrix}
-%         A_{Bar}&\\
-%         &I
-%     \end{bmatrix}\\
-%     ToF=&A_{ToF}\\
-%     GPS=&A_{GPS}
-% \end{align}
-% we also have $z_t=\begin{bmatrix}
-%    z_t^{Bar}&z_t^{ToF}&z_t^{GPS} 
-% \end{bmatrix}^\intercal,$  and $x_t=\begin{bmatrix}
-%     x_t^{Bar}&x_t^{ToF}&x_t^{GPS}
-% \end{bmatrix}^\intercal.$
-\end{document}
+  \end{document}
