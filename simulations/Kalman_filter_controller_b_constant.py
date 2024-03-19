@@ -8,20 +8,21 @@ mass = 3000
 
 # Let tau be the % throttle
 # lift (g) = alpha_0 * tau  + beta_0
-alpha_0 = 4052.6
-beta_0  = -66.378
+alpha_0 = 8654
+beta_0  = -797.67
 
 # acc (m/s^2) = alpha * tau + beta
+
 alpha_est = alpha_0 / mass
-beta_est = beta_0 / mass - 9.81
+beta_est = (beta_0 - mass*g) / mass
 
 # Equilibrium throttle
 tau_eq = -beta_est / alpha_est 
 tau_t = tau_eq  # throttle signal, will vary for real application  
 
 # Process noise covariance matrix Q
-sigma_z, sigma_v, sigma_alpha = 0.05, 0.03, 0.01
-sigma_d_bar, sigma_d_ToF = 0.1, 0.1  # variances for biases, will vary for real application
+sigma_z, sigma_v, sigma_alpha = 0.0005, 0.0005, 0.0001
+sigma_d_bar, sigma_d_ToF = 0.50, 0.10  # variances for biases, will vary for real application
 Q = np.diag([sigma_z**2, sigma_v**2, T_s*sigma_alpha**2, sigma_d_bar**2, sigma_d_ToF**2])
 
 # Measurement matrix C
@@ -43,7 +44,7 @@ x_true = np.array([1, 0, alpha_est, 0, 0]).reshape(-1, 1)  # Initial true state 
 
 
 # Simulation parameters
-t_sim = 70
+t_sim = 80
 x_true_cache = np.zeros((5, t_sim))
 x_meas_cache = np.zeros((5, t_sim))
 

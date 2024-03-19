@@ -12,12 +12,12 @@ alpha_0 = 8654
 beta_0  = -797.67
 
 # acc (m/s^2) = alpha * tau + beta
-beta_est = beta_0 / mass - g
-alpha_est = alpha_0 / mass
 
+alpha_est = alpha_0 / mass
+beta_est = (beta_0 - mass*g) / mass
 
 # Equilibrium throttle
-tau_eq = -beta_est / alpha_est
+tau_eq = -beta_est / alpha_est 
 tau_t = tau_eq  # throttle signal, will vary for real application  
 
 # Measurement matrix C
@@ -28,8 +28,8 @@ C = np.array([
 ])
 
 # Process noise covariance matrix Q
-sigma_z, sigma_v, sigma_beta = 0.05, 0.03, 0.1
-sigma_d_bar, sigma_d_ToF = 0.1, 0.1  
+sigma_z, sigma_v, sigma_beta = 0.0005, 0.00005, 0.00001
+sigma_d_bar, sigma_d_ToF = 0.5, 0.1  
 Q = np.diag([sigma_z**2, sigma_v**2, T_s*sigma_beta**2, sigma_d_bar**2, sigma_d_ToF**2])
 
 # Measurement noise covariance matrix R
@@ -42,7 +42,7 @@ x_pred = np.array([1, 0, beta_est, 0, 0]).reshape(-1, 1)  # Initial predicted st
 x_true = np.array([1, 0, beta_est, 0, 0]).reshape(-1, 1)  # Initial true state with biases
 
 # Simulation parameters
-t_sim = 200
+t_sim = 80
 x_true_cache = np.zeros((5, t_sim))
 x_meas_cache = np.zeros((5, t_sim))
 
