@@ -23,4 +23,19 @@ class EspBridge:
     def __exit__(self, *args):
         if self.ser is not None:
             self.ser.close()
+    
+    def receive_from_esp(self):
+        """
+        Read data from ESP32 via UART.
+
+        :return: String if data is received, None otherwise.
+        """
+        while self.ser.inWaiting() > 0:
+            try:
+                line = self.ser.readline().decode('ascii').rstrip()
+                return line
+            except UnicodeDecodeError as e:
+                print(f"UnicodeDecodeError {e}, retrying....")
+        else:
+            return None
         
