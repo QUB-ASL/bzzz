@@ -266,6 +266,7 @@ class BMP180Sensor:
         self.__calibrated = False
         self.altitude_initialization = None
         self.__start_time = time.time()
+        self.__average_altitude = None  # Average altitude based on average pressure during initialization
         
         
         self.log_file = log_file
@@ -290,8 +291,9 @@ class BMP180Sensor:
                     # Calculate the average pressure during the initialization phase
                     average_pressure = sum(initialization_pressures) / len(initialization_pressures)
                     self.reference_pressure_at_sea_level = average_pressure
+                    self.__average_altitude = self._calculate_altitude_from_pressure(average_pressure)
                     self.__calibrated = True
-                    print(f"Initialization complete. Average pressure: {average_pressure:.2f} Pa")
+                    print(f"Initialization complete. Average pressure: {average_pressure:.2f} Pa, Average altitude: {self.__average_altitude:.2f} meters")
             
             # Update pressure readings after initialization
             self.__pressure_readings_list.append(pressure_reading)
