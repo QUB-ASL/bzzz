@@ -250,7 +250,7 @@ def _getShort(data, index):
     return value - 65536 if value > 32767 else value
 
 class BMP180Sensor:
-    def __init__(self, data_processor, window_length, DEVICE_ADDRESS=0x77, reference_pressure_at_sea_level=101325, log_file=None, initialization_time = 20):
+    def __init__(self, data_processor, window_length, DEVICE_ADDRESS=0x77, reference_pressure_at_sea_level=101325, log_file=None, initialization_time = 5):
         self.daemon = True
         self.__lock = Lock()
         self.__thread = Thread(target=self.__get_measurements_in_background)
@@ -265,6 +265,8 @@ class BMP180Sensor:
         self.__current_altitude = None
         self.__calibrated = False
         self.altitude_initialization = None
+        self.__start_time = time.time()
+        
         
         self.log_file = log_file
         if log_file is not None:
@@ -275,16 +277,16 @@ class BMP180Sensor:
 
     def __get_measurements_in_background(self):
         initialization_pressures = []
-        start_time = time.time()
 
         while True:
             pressure_reading = self._get_pressure_measurement()
             current_time = time.time()
 
             # During the initialization phase
-            if not self.__calibrated and current_time - start_time < self.initialization_time:
+            if not self.__calibrated:
                 initialization_pressures.append(pressure_reading)
-                if current_time - start_time >= self.initialization_time:
+                if current_time - self.__start_time  >= self.initialization_time:
+                    print("1")
                     # Calculate the average pressure during the initialization phase
                     average_pressure = sum(initialization_pressures) / len(initialization_pressures)
                     self.reference_pressure_at_sea_level = average_pressure
