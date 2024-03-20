@@ -96,21 +96,7 @@ class RC:
         # is received properly on the ESP's end
         # Send data from Pi to ESP32, send a new line char so ESP32 knows when to stop reading
         self.ser.write(f'S,{channel_data}\n'.encode())
-
-    def receive_data_from_ESP(self):
-        """
-        Read data from ESP32 via UART.
-
-        :return: String if data is received, None otherwise.
-        """
-        while self.ser.inWaiting() > 0:
-            try:
-                line = self.ser.readline().decode('ascii').rstrip()
-                return line
-            except UnicodeDecodeError as e:
-                print(f"UnicodeDecodeError {e}, retrying....")
-        else:
-            return None
+    
 
     def __get_radio_data_parse_and_send_to_ESP(self,
                                              return_channel_data=False,
