@@ -250,7 +250,7 @@ def _getShort(data, index):
     return value - 65536 if value > 32767 else value
 
 class BMP180Sensor:
-    def __init__(self, data_processor, window_length, DEVICE_ADDRESS=0x77, reference_pressure_at_sea_level=101325, log_file=None):
+    def __init__(self, data_processor, window_length, DEVICE_ADDRESS=0x77, reference_pressure_at_sea_level=101325, log_file=None, initialization_time = 20):
         self.daemon = True
         self.__lock = Lock()
         self.__thread = Thread(target=self.__get_measurements_in_background)
@@ -258,12 +258,14 @@ class BMP180Sensor:
         self.DEVICE_ADDRESS = DEVICE_ADDRESS
         self.bus = smbus.SMBus(1)
         self.data_processor = data_processor
-        self.reference_pressure_at_sea_level = reference_pressure_at_sea_level
+        self.initialization_time = initialization_time  # Duration for initial calibration
 
         self.__current_pressure = None
         self.__pressure_readings_list = []
         self.__current_altitude = None
-
+        self.__calibrated = False
+        self.altitude_initialization = None
+        
         self.log_file = log_file
         if log_file is not None:
             feature_names = ("Date_Time", "Pressure", "Altitude")
@@ -272,13 +274,36 @@ class BMP180Sensor:
         self.__thread.start()
 
     def __get_measurements_in_background(self):
+        initialization_pressures = []
+        start_time = time.time()
+
         while True:
-            self._update_pressure()
+            pressure_reading = self._get_pressure_measurement()
+            current_time = time.time()
+
+            # During the initialization phase
+            if not self.__calibrated and current_time - start_time < self.initialization_time:
+                initialization_pressures.append(pressure_reading)
+                if current_time - start_time >= self.initialization_time:
+                    # Calculate the average pressure during the initialization phase
+                    average_pressure = sum(initialization_pressures) / len(initialization_pressures)
+                    self.reference_pressure_at_sea_level = average_pressure
+                    self.__calibrated = True
+                    print(f"Initialization complete. Average pressure: {average_pressure:.2f} Pa")
+            
+            # Update pressure readings after initialization
+            self.__pressure_readings_list.append(pressure_reading)
+            if len(self.__pressure_readings_list) > self.window_length:
+                self.__pressure_readings_list.pop(0)
+            self.__current_pressure = self.data_processor.process(self.__pressure_readings_list)
+
             self._calculate_altitude()
-            if self.log_file is not None:
+
+            if self.log_file is not None and self.__calibrated:
                 current_timestamp = datetime.datetime.now()
                 data_to_log = (self.__current_pressure, self.__current_altitude)
                 self.logger.record(current_timestamp, data_to_log)
+
             time.sleep(0.5)  # Delay between measurements
 
     def _update_pressure(self):
@@ -363,8 +388,9 @@ class BMP180Sensor:
 
     def _calculate_altitude(self):
         with self.__lock:
-            altitude = 44330 * (1 - pow((self.__current_pressure / self.reference_pressure_at_sea_level), 0.1903))
-            self.__current_altitude = altitude
+            if self.__calibrated:
+                altitude = 44330 * (1 - pow((self.__current_pressure / self.reference_pressure_at_sea_level), 0.1903))
+                self.__current_altitude = altitude
 
     def _convert_to_signed(self, data):
         value = data[0] * 256 + data[1]
@@ -385,6 +411,6 @@ class BMP180Sensor:
 
 if __name__ == "__main__":
     log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_BMP180Sensor.csv")
-    processor = AverageFilter()  # Ensure this is implemented
+    processor = AverageFilter()  
     with BMP180Sensor(window_length=5, data_processor=processor, reference_pressure_at_sea_level=101325, log_file=log_filename) as sensor:
         time.sleep(600)  # Collect data for 10 minutes
