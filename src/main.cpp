@@ -106,11 +106,11 @@ void setup()
 void setGainsFromRcTrimmers()
 {
   controller.setQuaternionGain(
-      -raspberryEsp32Interface.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
+      -QUATERNION_XY_GAIN * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
   controller.setAngularVelocityXYGain(
-      -raspberryEsp32Interface.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
+      -OMEGA_XY_GAIN * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
   controller.setYawAngularVelocityGain(
-      -raspberryEsp32Interface.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+      -OMEGA_Z_GAIN * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 }
 
 /**
