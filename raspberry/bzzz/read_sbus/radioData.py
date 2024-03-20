@@ -149,21 +149,21 @@ class RadioData:
 
         :return: VRA percentage in range [0, 1].
         """
-        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRA])
+        return  min(1, max(0, self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRA])))
 
     def trimmer_VRC_percentage(self):
         """Maps Variable Resistor C data to percentage.
 
         :return: VRC percentage in range [0, 1].
         """
-        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRC])
+        return min(1, max(0, self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRC])))
 
     def trimmer_VRB_percentage(self):
         """Maps Variable Resistor B data to percentage.
 
         :return: VRB percentage in range [0, 1].
         """
-        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRB])
+        return  min(1, max(0, self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRB])))
 
     def trimmer_VRE_percentage(self):
         """Maps Variable Resistor E data to percentage.

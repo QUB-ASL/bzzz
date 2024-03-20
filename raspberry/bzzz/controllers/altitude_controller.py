@@ -5,7 +5,6 @@ class AltitudeController:
         self.__p_gain = 5
         self.__d_gain = 3
         self.__tau_eq = 0.4
-        pass
 
     def increment_reference(self, by=0):
         self.__altitude_reference += by

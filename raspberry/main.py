@@ -27,6 +27,10 @@ if __name__ == '__main__':
     enable_caching = [True]
     enable_printing_cache_to_screen = [False and enable_caching[0]]
 
+    feature_names = ("datetime", "z_ref", "z", "z_hat", "v_hat", "alpha_1", "alpha_0", "tau")
+    logger = DataLogger(num_features=7,
+                        feature_names=feature_names)
+
     params = constants.constants()
 
     # objects declaration
@@ -82,13 +86,9 @@ if __name__ == '__main__':
             return (val - 0.35)/0.35
         return 0
 
-    def altitude_estimator(radio_data, tof):
-        y = tof.distance
-        if y < MIN_ALTITUDE_HOLD_ALTITUDE:
-            return
+    def altitude_estimator(radio_data, y):
         tau = radio_data.throttle_reference_percentage()
         altitude_kf.update(tau, 0, 0, y)
-
 
     def percentage_to_throttle_radio(val):
         return 300 + 1400 * val
@@ -102,75 +102,69 @@ if __name__ == '__main__':
         altitude_ctrl.increment_reference(increment_action)     
         altitude_ctrl.set_tau_eq(altitude_kf.tau_eq_estimate())
         altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 3)
-        altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 2)
+        altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 0.05)
         state_est = altitude_kf.x_measured()
         tau = altitude_ctrl.control_action(state_est[0], state_est[1])
+        print(state_est[0], state_est[1], state_est[2], state_est[3], altitude_kf.tau_eq_estimate(), tau)
         clip_throttle = percentage_to_throttle_radio(0.5)
-        throttle = int(min(percentage_to_throttle_radio(tau), clip_throttle)[0])
-        radio_data.set_throttle(throttle)
+        throttle = int(min(percentage_to_throttle_radio(tau)[0], clip_throttle))
+        radio_data.set_throttle(throttle)        
         
+    def save_data():
+        blackbox_fname = datetime.datetime.now().strftime("BB-%d-%m-%y--%H-%M.csv")
+        logger.save_to_csv(blackbox_fname)
+        print("All sensors are saving data; bye!")
 
+    def record_black_box_data(radio_data, y):
+        current_timestamp = datetime.datetime.now()
+        state_est = altitude_kf.x_measured()
+        data_to_log = np.zeros((7, ))
+        data_to_log[0] = y
+        data_to_log[1] = altitude_ctrl.altitude_reference()
+        data_to_log[2:6] = state_est.reshape((4, ))
+        data_to_log[6] = radio_data.throttle_reference_percentage()        
+        logger.record(current_timestamp, data_to_log)
+    
     def control_loop(tof, esp_bridge):
-        keep_running = True
         connection_lost_flag, radio_data = rc.get_radio_data()
-        
         radio_data = RadioData(radio_data)
+
+        do_kill = radio_data.switch_D()
+        do_save = radio_data.switch_A()
+        
+        if do_kill and do_save:
+            save_data()
+            return False
+            
         measure = emergency_measure(connection_lost_flag,
                                     radio_data,
                                     tof)
         take_emergency_measure(measure, radio_data)
 
         flight_mode = radio_data.switch_C()
-
-        if tof.distance > 0.6:
-            altitude_estimator(radio_data, tof)
+        y = tof.distance
+        if y > 0.6:
+            altitude_estimator(radio_data, y)  # deals with nans
         
         match flight_mode:
             case ThreeWaySwitch.MID.value:
-                altitude_control(radio_data)
-            case other:
+                if y > 0.6:
+                    altitude_control(radio_data)
+            case _:
                 altitude_ctrl.set_altitude_reference(tof.distance)
 
         esp_bridge.send_to_esp(radio_data)
-        return keep_running
+        record_black_box_data(radio_data, y)       
+        return True
 
     # ------------------------------------------------
     # MAIN LOOP!
     # ------------------------------------------------
     keep_running = True
     evo_filename = datetime.datetime.now().strftime("Evo-%d-%m-%y--%H-%M.csv")
-    with (EvoSensor(log_file=evo_filename) as tof,
+    with (EvoSensor(log_file=evo_filename, data_processor=MedianFilter()) as tof,
           EspBridge() as esp_bridge):
         starttime = time_ns()
         while keep_running:
-            # elapsed_time = time_ns() - starttime
-            # print(elapsed_time/1000)
             keep_running = control_loop(tof, esp_bridge)
             time.sleep(0.018)
-
-    # # THE MAIN LOOP
-    # EVO_filename = datetime.datetime.now().strftime("Evo-ToF-%d-%m-%y--%H-%M.csv")
-    # BAR_filename = datetime.datetime.now().strftime("PressureSensor-%d-%m-%y--%H-%M.csv")
-    # ANE_filename = datetime.datetime.now().strftime("Anemometer-%d-%m-%y--%H-%M.csv")
-    # GNSS_filename = datetime.datetime.now().strftime("GNSS-%d-%m-%y--%H-%M.csv")
-    # processor = AverageFilter()  # You need to define this class based on your requirements
-    # with (EvoSensor(window_length=3,
-    #                 data_processor=processor,
-    #                 log_file=EVO_filename) as tof,
-    #       PressureSensor(window_length=100,
-    #                      data_processor=processor,
-    #                      reference_pressure_at_sea_level=102500,
-    #                      log_file=BAR_filename) as PSensor,
-    #       Anemometer(window_length=5,
-    #                  data_processor=processor,
-    #                  log_file=ANE_filename) as ASensor,
-    #       Gnss(window_length=3,
-    #                  data_processor=processor,
-    #                  log_file=GNSS_filename) as GnssSensor):
-
-    #     while True:
-    #         scheduler.run()  # run the scheduled functions
-
-    #         if is_kill[0] and switch_a_status[0]:
-    #             print("All sensors are saving data")
-    #             break
