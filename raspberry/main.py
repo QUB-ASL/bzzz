@@ -4,7 +4,7 @@ import datetime
 import bzzz.util.constants as constants
 
 from time import time_ns  # function to get system-up time in nano seconds
-from bzzz.controllers.altitude_LQR import LQR  # altitude hold controller
+from bzzz.controllers.altitude_controller import *  # altitude hold controller
 from bzzz.estimators.altitude_hold_kalman_filter import *
 from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
 from bzzz.read_sbus import RC
@@ -38,6 +38,7 @@ if __name__ == '__main__':
         initial_sigma=np.diagflat(kf_params["initial_sigma"]),
         state_cov=np.diagflat(kf_params["state_cov"]),
         meas_cov=kf_params["meas_cov"])
+    altitude_ctrl = AltitudeController()
 
     rc = RC()    
 
@@ -72,13 +73,42 @@ if __name__ == '__main__':
 
     MIN_ALTITUDE_HOLD_ALTITUDE = 0.6
 
-    def altitude_hold(radio_data, tof):
+    def trimmer_to_altitude_increment(val):
+        if val >= 0.35 and val <= 0.65:
+            return 0
+        if val > 0.65:
+            return (val - 0.65)/0.35
+        if val < 0.35:
+            return (val - 0.35)/0.35
+        return 0
+
+    def altitude_estimator(radio_data, tof):
         y = tof.distance
         if y < MIN_ALTITUDE_HOLD_ALTITUDE:
             return
         tau = radio_data.throttle_reference_percentage()
         altitude_kf.update(tau, 0, 0, y)
-        print(altitude_kf.x_measured())
+        state_est = altitude_kf.x_measured()
+        vre = radio_data.trimmer_VRE_percentage()
+        sc_vre = trimmer_to_altitude_increment(vre)
+        cm_pre_sec_max_increment = 0.02
+        cm_pre_tick_max_increment = cm_pre_sec_max_increment * sampling_time
+    
+        increment_action = sc_vre * cm_pre_tick_max_increment
+        altitude_ctrl.increment_reference(increment_action)     
+
+        alpha_0_est, alpha_1_est = state_est[2], state_est[3]
+        tau_eq_est = -alpha_0_est/alpha_1_est
+        altitude_ctrl.set_tau_eq(tau_eq_est)
+
+        altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 1)
+        altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 1)
+        
+        print(tau_eq_est)
+        # tau = altitude_ctrl.control_action(state_est[0], state_est[1])
+
+        # print(altitude_ctrl.altitude_reference(), altitude_kf.x_measured()[0], y, tau)
+        # print(f"{tau =}, err = {state_est[0] - altitude_ctrl.altitude_reference()}")
 
     def control_loop(tof, esp_bridge):
         keep_running = True
@@ -92,9 +122,15 @@ if __name__ == '__main__':
 
         flight_mode = radio_data.switch_C()
 
+        if tof.distance > 0.6:
+            altitude_estimator(radio_data, tof)
+        
         match flight_mode:
             case ThreeWaySwitch.MID.value:
-                altitude_hold(radio_data, tof)
+                pass
+                # altitude_hold_controller(radio_data, tof)
+            case default:
+                altitude_ctrl.set_altitude_reference(tof.distance)
 
         esp_bridge.send_to_esp(radio_data)
         return keep_running
