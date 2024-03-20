@@ -14,10 +14,8 @@ mass = 3000
 alpha_0 = 8654
 beta_0  = -797.67
 
-# acc (m/s^2) = alpha * tau + beta
-alpha_est = 23
-#alpha_0 / mass
-beta_est = beta_0 / mass - 9.81
+alpha_est = alpha_0 / mass
+beta_est = (beta_0 - mass*g) / mass
 
 # Equilibrium throttle
 tau_eq = -beta_est / alpha_est 
@@ -97,8 +95,8 @@ def output(x):
 
 tau = tau_eq
 # PD Controller Parameters
-Kp = 0.2  # Proportional gain
-Kd = 0.1  # Derivative gain
+Kp = 1  # Proportional gain
+Kd = 0.5  # Derivative gain
 
 # Desired altitude
 altitude_ref = 1.0  # meters
@@ -124,8 +122,8 @@ for t in range(t_sim):
 
     # Simulate sensor measurements
     y = output(x_true)
-    if t > 100:
-        altitude_ref = 1.5
+    # if t > 100:
+    #     altitude_ref = 1.5
 
     
     # Kalman Filter: Measurement update
