@@ -1,5 +1,5 @@
 {
-    "sampling_time": 0.1,
+    "sampling_time": 0.02,
     "ah_kf": {
         "state_cov": [
             0.001,

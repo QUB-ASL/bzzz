@@ -68,7 +68,7 @@ if __name__ == '__main__':
             case EmergencyMeasures.ASSASSINATION:
                 radio_data.set_throttle(300)
             case EmergencyMeasures.BELOW_HOVERING:
-                radio_data.set_throttle(700)
+                radio_data.set_throttle(800)
                 radio_data.set_switch_D(True)
 
     MIN_ALTITUDE_HOLD_ALTITUDE = 0.6
@@ -88,27 +88,27 @@ if __name__ == '__main__':
             return
         tau = radio_data.throttle_reference_percentage()
         altitude_kf.update(tau, 0, 0, y)
-        state_est = altitude_kf.x_measured()
+
+
+    def percentage_to_throttle_radio(val):
+        return 300 + 1400 * val
+
+    def altitude_control(radio_data):
         vre = radio_data.trimmer_VRE_percentage()
         sc_vre = trimmer_to_altitude_increment(vre)
         cm_pre_sec_max_increment = 0.02
         cm_pre_tick_max_increment = cm_pre_sec_max_increment * sampling_time
-    
         increment_action = sc_vre * cm_pre_tick_max_increment
         altitude_ctrl.increment_reference(increment_action)     
-
-        alpha_0_est, alpha_1_est = state_est[2], state_est[3]
-        tau_eq_est = -alpha_0_est/alpha_1_est
-        altitude_ctrl.set_tau_eq(tau_eq_est)
-
-        altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 1)
-        altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 1)
+        altitude_ctrl.set_tau_eq(altitude_kf.tau_eq_estimate())
+        altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 3)
+        altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 2)
+        state_est = altitude_kf.x_measured()
+        tau = altitude_ctrl.control_action(state_est[0], state_est[1])
+        clip_throttle = percentage_to_throttle_radio(0.5)
+        throttle = int(min(percentage_to_throttle_radio(tau), clip_throttle)[0])
+        radio_data.set_throttle(throttle)
         
-        print(tau_eq_est)
-        # tau = altitude_ctrl.control_action(state_est[0], state_est[1])
-
-        # print(altitude_ctrl.altitude_reference(), altitude_kf.x_measured()[0], y, tau)
-        # print(f"{tau =}, err = {state_est[0] - altitude_ctrl.altitude_reference()}")
 
     def control_loop(tof, esp_bridge):
         keep_running = True
@@ -127,9 +127,8 @@ if __name__ == '__main__':
         
         match flight_mode:
             case ThreeWaySwitch.MID.value:
-                pass
-                # altitude_hold_controller(radio_data, tof)
-            case default:
+                altitude_control(radio_data)
+            case other:
                 altitude_ctrl.set_altitude_reference(tof.distance)
 
         esp_bridge.send_to_esp(radio_data)
@@ -147,7 +146,7 @@ if __name__ == '__main__':
             # elapsed_time = time_ns() - starttime
             # print(elapsed_time/1000)
             keep_running = control_loop(tof, esp_bridge)
-            time.sleep(0.1)
+            time.sleep(0.018)
 
     # # THE MAIN LOOP
     # EVO_filename = datetime.datetime.now().strftime("Evo-ToF-%d-%m-%y--%H-%M.csv")

@@ -70,6 +70,11 @@ class AltitudeHoldKalmanFilter:
 
     def sigma_measured(self):
          return self.__sigma_meas
+    
+    def tau_eq_estimate(self):
+         alpha_1_est, alpha_0_est = self.__x_meas[2], self.__x_meas[3]
+         tau_eq_est = -alpha_0_est/alpha_1_est
+         return tau_eq_est
         
     
     
