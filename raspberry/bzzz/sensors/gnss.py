@@ -3,8 +3,8 @@ import numpy as np
 from threading import Thread, Lock
 import time
 import datetime
-from data_logger import DataLogger
-from filters import MedianFilter
+from .data_logger import DataLogger
+from .filters import MedianFilter
 
 def deg_min_sec_to_decimal(degrees, minutes, direction):
     """
@@ -26,7 +26,7 @@ class Gnss:
     This class is used to interface the GNSS Module
     """
     def __init__(self, 
-                 serial_path="/dev/tty.usbmodem14201", 
+                 serial_path="/dev/ttyACM0", 
                  baud=57600, 
                  window_length=3,
                  data_processor=MedianFilter(),
