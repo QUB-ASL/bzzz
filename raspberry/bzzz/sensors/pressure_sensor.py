@@ -128,7 +128,6 @@ class BMP180Sensor:
 
     def __calculate_altitude(self):
         with self.__lock:
-            # altitude = 44330 * (1 - pow((self.__current_pressure / self.reference_pressure_at_sea_level), 0.1903))
             temp = 20 #temp in celcius 
             k = 1.380649e-23 #Boltzmann's Number
             m = 4.8e-26 #mass of one molicule of air 
