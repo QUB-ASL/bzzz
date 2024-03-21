@@ -29,7 +29,7 @@ The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (
 The structure of the quadcopter is shown below
 
 
-<img width="400" scr="docs/images/bzzz-parts.png">
+<img width="400" src="docs/images/bzzz-parts.png">
 
 The parts shown in the figure are: 1. GNSS L1/L2 antenna, 2. 3D anemometer, 3. Carbon fibre pole, 4. Telemetry radio pair, 5. Box with electronics (Raspberry Pi, ESP32, IMU, GNSS module, radio receiver module), 6. Time-of-flight altimeter, 7. Barometer, 8. LiPo battery and UBEC, 9. IMU, 10. ESP32 microcontroller (attitude control system), 11. Raspberry Pi, 12. Interface between Raspberry Pi and sensors board, 13. Base station GNSS module, 14. GNSS module on the vehicle (inside the box), 15. Base GPS station.
 
