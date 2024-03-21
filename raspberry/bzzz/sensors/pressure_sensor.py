@@ -152,7 +152,6 @@ class BMP180Sensor:
             if initial_altitudes:
                 self.__altitude_initilisation = sum(initial_altitudes) / len(initial_altitudes)
                 self.__calibrated = True
-                print(self.__altitude_initilisation)
 
 
     def convert_to_signed(self, data):
