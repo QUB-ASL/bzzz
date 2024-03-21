@@ -6,7 +6,7 @@ import datetime
 from .data_logger import DataLogger
 from .filters import MedianFilter
 
-def deg_min_sec_to_decimal(degrees, minutes, direction):
+def _deg_min_sec_to_decimal(degrees, minutes, direction):
     """
     Convert degrees-minutes-seconds from GNGLL to decimal
     :param degrees: degrees
@@ -97,12 +97,12 @@ class Gnss:
                 if msg_key == "$GNGLL" and tokens[1] and tokens[3]:
                     lat_deg = int(float(tokens[1]) / 100)
                     lat_min = float(tokens[1]) % 100
-                    latitude = deg_min_sec_to_decimal(lat_deg, lat_min, 
+                    latitude = _deg_min_sec_to_decimal(lat_deg, lat_min, 
                                                       tokens[2])
 
                     lon_deg = int(float(tokens[3]) / 100)
                     lon_min = float(tokens[3]) % 100
-                    longitude = deg_min_sec_to_decimal(lon_deg, lon_min, 
+                    longitude = _deg_min_sec_to_decimal(lon_deg, lon_min, 
                                                        tokens[4])
                     
                 elif msg_key == "$GNGGA" and len(tokens) > 5:
@@ -134,23 +134,23 @@ class Gnss:
         ser.close()
         return
 
-    def gnss_altitude_initilisation(self):
-        altitude_values_for_Initilisation = []
+    def gnss_altitude_initilisation(self, num_samples=10):
+        sum_altitudes = 0    
         """
         Returns the calibrated GNSS altitude based on the average 
         altitude measured in the first minute of readings.
         """
-        if not self.__calibrated:
-
-            for i in range(60):
-                time.sleep(1)
-                current_altitude = self.Altitude
-                if not np.isnan(current_altitude ):
-                    altitude_values_for_Initilisation.append(current_altitude)
-            if altitude_values_for_Initilisation:
-                self.__altitude_initilisation = np.mean(altitude_values_for_Initilisation)
-                self.__calibrated = True
-        return self.__altitude_initilisation
+        i = 0
+        while True:            
+            current_altitude = self.altitude
+            if not np.isnan(current_altitude):
+                i += 1
+                sum_altitudes += current_altitude
+            if i == num_samples:
+                break
+        average_altitude = sum_altitudes / num_samples
+        
+        return average_altitude
 
     def __enter__(self):
         return self
@@ -178,7 +178,7 @@ class Gnss:
                                                  cursor=self.__cursor)
 
     @property
-    def Latitude(self):
+    def latitude(self):
         """
         Returns Latitude position in decimal
         """
@@ -187,7 +187,7 @@ class Gnss:
                                                  cursor=self.__cursor)
 
     @property
-    def Longitude(self):
+    def longitude(self):
         """
         Returns Longitude position in decimal
         """
@@ -196,7 +196,7 @@ class Gnss:
                                                  cursor=self.__cursor)
 
     @property
-    def Altitude(self):
+    def altitude(self):
         """
         Returns the Altitude position
         """
