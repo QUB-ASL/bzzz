@@ -147,16 +147,21 @@ class BMP180Sensor:
         """        
         sum_pressures = 0
         do_run = True
-        i = 0
+        idx_valid_measurements = 0
+        idx_attempts = 0
+        max_attempts = 4*num_initial_readings
         time.sleep(3)
         while do_run:
             p = self.pressure()
             if not np.isnan(p):
                 sum_pressures += p
-                i += 1
-            if i == num_initial_readings:
+                idx_valid_measurements += 1
+            if idx_valid_measurements == num_initial_readings:
                 break
             time.sleep(0.2)
+            idx_attempts += 1
+            if idx_attempts >= max_attempts:
+                raise Exception("Barometer initialisation took too long (too many nan's)")
         av_pressure = sum_pressures / num_initial_readings
         return av_pressure
         
