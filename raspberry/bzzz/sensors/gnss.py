@@ -142,7 +142,7 @@ class Gnss:
         """
         if not self.__calibrated:
 
-            for i in range(10):
+            for i in range(60):
                 time.sleep(1)
                 current_altitude = self.Altitude
                 if not np.isnan(current_altitude ):
