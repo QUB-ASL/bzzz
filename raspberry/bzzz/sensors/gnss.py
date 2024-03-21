@@ -3,8 +3,8 @@ import numpy as np
 from threading import Thread, Lock
 import time
 import datetime
-from .data_logger import DataLogger
-from .filters import MedianFilter
+from data_logger import DataLogger
+from filters import MedianFilter
 
 def _deg_min_sec_to_decimal(degrees, minutes, direction):
     """
@@ -26,7 +26,7 @@ class Gnss:
     This class is used to interface the GNSS Module
     """
     def __init__(self, 
-                 serial_path="/dev/ttyACM0", 
+                 serial_path="/dev/tty.usbmodem14201", 
                  baud=57600, 
                  window_length=3,
                  data_processor=MedianFilter(),
@@ -62,14 +62,14 @@ class Gnss:
         self.__data_processor = data_processor
         self.__log_file = log_file
         self.__max_samples = max_samples
-        self.__calibrated = False  # Initialization of the __calibrated attribute
-        self.__altitude_initilisation = np.nan
+        self.__average_altitude = None
         if log_file is not None:
             feature_names = ("Date_Time", "Latitude", "Longitude", "Altitude")
             self.__logger = DataLogger(num_features=3,
                                        max_samples=max_samples,
                                        feature_names=feature_names)    
         self.__thread.start()
+        self.__gnss_altitude_initilisation()
     
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
@@ -94,6 +94,7 @@ class Gnss:
                 tokens = line.split(",")
                 msg_key = tokens[0]
 
+
                 if msg_key == "$GNGLL" and tokens[1] and tokens[3]:
                     lat_deg = int(float(tokens[1]) / 100)
                     lat_min = float(tokens[1]) % 100
@@ -105,8 +106,11 @@ class Gnss:
                     longitude = _deg_min_sec_to_decimal(lon_deg, lon_min, 
                                                        tokens[4])
                     
-                elif msg_key == "$GNGGA" and len(tokens) > 5:
-                    altitude = float(tokens[9])
+                elif msg_key == "$GNGGA" and len(tokens) > 10:
+                    try:
+                        altitude = float(tokens[9])
+                    except:
+                        print("err")
 
                 # Check if any of the values are NaN before saving or
                 # processing
@@ -134,7 +138,7 @@ class Gnss:
         ser.close()
         return
 
-    def gnss_altitude_initilisation(self, num_samples=10):
+    def __gnss_altitude_initilisation(self, num_samples=10):
         sum_altitudes = 0    
         """
         Returns the calibrated GNSS altitude based on the average 
@@ -149,8 +153,7 @@ class Gnss:
             if i == num_samples:
                 break
         average_altitude = sum_altitudes / num_samples
-        
-        return average_altitude
+        self.__average_altitude = average_altitude
 
     def __enter__(self):
         return self
@@ -201,17 +204,20 @@ class Gnss:
         Returns the Altitude position
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 2], 
-                                                 cursor=self.__cursor)
-        
+            current_altitude = self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
+            # Check if __average_altitude is not None and subtract it from current altitude
+            if self.__average_altitude is not None:
+                return current_altitude - self.__average_altitude
+            else:
+                return current_altitude
+            
 if __name__ == '__main__':
 
     while True:
         filename = datetime.datetime.now().strftime("Gnss_%d-%m-%y--%H-%M.csv")
         processor = MedianFilter()
-        with Gnss(window_length=5,
-                  data_processor=processor,
-                  log_file=filename) as gnss_sensor:
-            gnss_sensor.gnss_altitude_initilisation()
-            time.sleep(600) # set time for how long you want to record data 
-                            # for in seconds                
+        with Gnss(log_file=filename) as gnss_sensor:
+            for _ in range(1000):
+                print(gnss_sensor.altitude)    
+                time.sleep(1)
+                
