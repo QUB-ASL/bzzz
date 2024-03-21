@@ -104,6 +104,7 @@ class Gnss:
                     lon_min = float(tokens[3]) % 100
                     longitude = deg_min_sec_to_decimal(lon_deg, lon_min, 
                                                        tokens[4])
+                    
                 elif msg_key == "$GNGGA" and len(tokens) > 5:
                     altitude = float(tokens[9])
 
@@ -133,7 +134,7 @@ class Gnss:
         ser.close()
         return
 
-    def GNSS_altitude_Initilisation(self):
+    def gnss_altitude_initilisation(self):
         altitude_values_for_Initilisation = []
         """
         Returns the calibrated GNSS altitude based on the average 
@@ -141,14 +142,13 @@ class Gnss:
         """
         if not self.__calibrated:
 
-            for i in range(120):
+            for i in range(10):
                 time.sleep(1)
                 current_altitude = self.Altitude
                 if not np.isnan(current_altitude ):
                     altitude_values_for_Initilisation.append(current_altitude)
             if altitude_values_for_Initilisation:
                 self.__altitude_initilisation = np.mean(altitude_values_for_Initilisation)
-                print(f"Initilisation complete. Average altitude: {self.__altitude_initilisation:.2f} meters")
                 self.__calibrated = True
         return self.__altitude_initilisation
 
@@ -212,6 +212,6 @@ if __name__ == '__main__':
         with Gnss(window_length=5,
                   data_processor=processor,
                   log_file=filename) as gnss_sensor:
-            gnss_sensor.GNSS_altitude_Initilisation()
+            gnss_sensor.gnss_altitude_initilisation()
             time.sleep(600) # set time for how long you want to record data 
                             # for in seconds                
