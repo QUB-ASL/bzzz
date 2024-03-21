@@ -22,8 +22,8 @@ tau_eq = -beta_est / alpha_est
 tau_t = tau_eq  # throttle signal, will vary for real application  
 
 # Process noise covariance matrix Q
-sigma_z, sigma_v, sigma_alpha, sigma_beta = 0.0005, 0.00005, 0.0001, 0.0001
-sigma_d_bar, sigma_d_ToF = 0.25/3, 0.02  # variances for biases, will vary for real application
+sigma_z, sigma_v, sigma_alpha, sigma_beta = 0.001, 0.01, 2.77e-06, 1.74e-07
+sigma_d_bar, sigma_d_ToF = 0.50, 0.10  # variances for biases, will vary for real application
 Q = np.diag([sigma_z**2, sigma_v**2, T_s*sigma_alpha**2, T_s*sigma_beta**2, sigma_d_bar**2, sigma_d_ToF**2])
 
 # Measurement matrix C
@@ -34,7 +34,7 @@ C = np.array([
 ])
 
 # Measurement noise covariance matrix R
-sigma_barom, sigma_gps, sigmaToF = 0.50 * T_s, 0.50 * T_s, 0.10 * T_s
+sigma_barom, sigma_gps, sigmaToF = 0.25 * T_s, 0.075 * T_s, 0.01 * T_s
 R = np.diag([sigma_barom**2, sigma_gps**2, sigmaToF**2])
 
 # Initial conditions
@@ -45,7 +45,7 @@ x_true = np.array([0.5, 0, alpha_est, beta_est, 0, 0]).reshape(-1, 1)  # Initial
 
 
 # Simulation parameters
-t_sim = 200
+t_sim = 2000
 x_true_cache = np.zeros((6, t_sim))
 x_meas_cache = np.zeros((6, t_sim))
 
@@ -99,13 +99,16 @@ Kp = 1  # Proportional gain
 Kd = 0.5  # Derivative gain
 
 # Desired altitude
-altitude_ref = 1.0  # meters
+altitude_ref = 0.5  # meters
 
 # Initialize previous error for derivative calculation
 previous_error = 0
 
 # Main simulation loop
 for t in range(t_sim):
+    
+    if t >= 50 and t <= 150:
+        altitude_ref += 0.0005
     
     # Calculate altitude error
     altitude = x_true[0, 0]  # Current altitude from the state vector
@@ -123,7 +126,9 @@ for t in range(t_sim):
     # Simulate sensor measurements
     y = output(x_true)
     # if t > 100:
-    #     altitude_ref = 1.5
+    #     altitude_ref = 0.6
+    
+
 
     
     # Kalman Filter: Measurement update
