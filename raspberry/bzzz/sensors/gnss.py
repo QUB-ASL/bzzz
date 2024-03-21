@@ -63,7 +63,7 @@ class Gnss:
         self.__log_file = log_file
         self.__max_samples = max_samples
         self.__calibrated = False  # Initialization of the __calibrated attribute
-        self.__altitude_Initilisation = np.nan
+        self.__altitude_initilisation = np.nan
         if log_file is not None:
             feature_names = ("Date_Time", "Latitude", "Longitude", "Altitude")
             self.__logger = DataLogger(num_features=3,
@@ -99,7 +99,6 @@ class Gnss:
                     lat_min = float(tokens[1]) % 100
                     latitude = deg_min_sec_to_decimal(lat_deg, lat_min, 
                                                       tokens[2])
-                    print(latitude)
 
                     lon_deg = int(float(tokens[3]) / 100)
                     lon_min = float(tokens[3]) % 100
@@ -148,10 +147,10 @@ class Gnss:
                 if not np.isnan(current_altitude ):
                     altitude_values_for_Initilisation.append(current_altitude)
             if altitude_values_for_Initilisation:
-                self.__altitude_Initilisation = np.mean(altitude_values_for_Initilisation)
-                print(f"Initilisation complete. Average altitude: {self.__altitude_Initilisation:.2f} meters")
+                self.__altitude_initilisation = np.mean(altitude_values_for_Initilisation)
+                print(f"Initilisation complete. Average altitude: {self.__altitude_initilisation:.2f} meters")
                 self.__calibrated = True
-        return self.__altitude_Initilisation
+        return self.__altitude_initilisation
 
     def __enter__(self):
         return self
