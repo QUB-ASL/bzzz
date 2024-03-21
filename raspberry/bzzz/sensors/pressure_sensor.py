@@ -1,6 +1,5 @@
 import math
-from filters import MedianFilter
-from filters import AverageFilter
+from filters import *
 import smbus
 import time
 from ctypes import c_short
@@ -8,7 +7,7 @@ from threading import Thread, Lock
 from data_logger import DataLogger
 import datetime
 
-def _getShort(data, index):
+def getShort(data, index):
     """
     Extract a signed 16-bit value from a data array starting at the specified index.
     :param data: A list or tuple containing byte data.
@@ -37,22 +36,22 @@ class BMP180Sensor:
         self.__thread.start()
     def __get_measurements_in_background(self):
         while True:
-            self._update_pressure()
-            self._calculate_altitude()
+            self.update_pressure()
+            self.__calculate_altitude()
             if self.log_file is not None:
                 current_timestamp = datetime.datetime.now()
                 data_to_log = (self.__current_pressure, self.__current_altitude)
                 self.logger.record(current_timestamp, data_to_log)
             time.sleep(0.5)  # Delay between measurements
-    def _update_pressure(self):
+    def update_pressure(self):
         with self.__lock:
-            pressure_reading = self._get_pressure_measurement()
+            pressure_reading = self.get_pressure_measurement()
             self.__pressure_readings_list.append(pressure_reading)
             if len(self.__pressure_readings_list) > self.window_length:
                 self.__pressure_readings_list.pop(0)
             self.__current_pressure = self.data_processor.process(self.__pressure_readings_list)
 
-    def _get_pressure_measurement(self):
+    def get_pressure_measurement(self):
         # Reading calibration data
         data = self.bus.read_i2c_block_data(self.DEVICE_ADDRESS, 0xAA, 22)
 
@@ -124,18 +123,18 @@ class BMP180Sensor:
         pressure = (pressure + (X1 + X2 + 3791) / 16.0)
         return pressure
 
-    def _calculate_altitude(self):
+    def __calculate_altitude(self):
         with self.__lock:
             altitude = 44330 * (1 - pow((self.__current_pressure / self.reference_pressure_at_sea_level), 0.1903))
             self.__current_altitude = altitude
 
-    def _convert_to_signed(self, data):
+    def convert_to_signed(self, data):
         value = data[0] * 256 + data[1]
         if value > 32767:
             value -= 65536
         return value
     
-    def _convert_to_unsigned(self, data):
+    def convert_to_unsigned(self, data):
         return data[0] * 256 + data[1]
     
     def __enter__(self):
