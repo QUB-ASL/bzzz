@@ -29,6 +29,9 @@ class BMP180Sensor:
         self.__current_pressure = None
         self.__pressure_readings_list = []
         self.__current_altitude = None
+        self.__calibrated = False  # Initialization of the __calibrated attribute
+        self.__altitude_initilisation = None
+        
         self.log_file = log_file
         if log_file is not None:
             feature_names = ("Date_Time", "Pressure", "Altitude")
@@ -127,6 +130,26 @@ class BMP180Sensor:
         with self.__lock:
             altitude = 44330 * (1 - pow((self.__current_pressure / self.reference_pressure_at_sea_level), 0.1903))
             self.__current_altitude = altitude
+            
+    def altitude_initialization(self, num_initial_readings=10):
+        """
+        Initialize the altitude by averaging the first few readings.
+        :param num_initial_readings: Number of readings to average for initial altitude.
+        """
+        if not self.__calibrated:
+            initial_altitudes = []
+            for _ in range(num_initial_readings):
+                self.update_pressure()  # Update pressure to get the latest reading
+                self.__calculate_altitude()  # Calculate altitude based on current pressure
+                if self.__current_altitude is not None:
+                    initial_altitudes.append(self.__current_altitude)
+                time.sleep(1)  # Wait a bit before the next reading
+
+            if initial_altitudes:
+                self.__altitude_initilisation = sum(initial_altitudes) / len(initial_altitudes)
+                self.__calibrated = True
+                print(self.__altitude_initilisation)
+
 
     def convert_to_signed(self, data):
         value = data[0] * 256 + data[1]
@@ -147,6 +170,7 @@ class BMP180Sensor:
 
 if __name__ == "__main__":
     log_filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_BMP180Sensor.csv")
-    processor = AverageFilter() 
+    processor = AverageFilter()
     with BMP180Sensor(window_length=5, data_processor=processor, reference_pressure_at_sea_level=101325, log_file=log_filename) as sensor:
+        sensor.altitude_initialization()  # Initialize the starting altitude
         time.sleep(600)  # Collect data for 10 minutes
