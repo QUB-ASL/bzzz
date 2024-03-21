@@ -129,7 +129,11 @@ if __name__ == '__main__':
         take_emergency_measure(measure, radio_data)
 
         flight_mode = radio_data.switch_C()
-        y = tof.distance
+        y_tof = tof.distance
+        y_bar = ...
+        y_gps = ...
+        y = np.array([y_tof, y_bar, y_gps])
+        
         if y > min_altitude_hold_altitude:
             altitude_estimator(radio_data, y)  # deals with nans
 
