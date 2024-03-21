@@ -128,10 +128,15 @@ class BMP180Sensor:
 
     def __calculate_altitude(self):
         with self.__lock:
-            altitude = 44330 * (1 - pow((self.__current_pressure / self.reference_pressure_at_sea_level), 0.1903))
-            self.__current_altitude = altitude
+            # altitude = 44330 * (1 - pow((self.__current_pressure / self.reference_pressure_at_sea_level), 0.1903))
+            temp = 20 #temp in celcius 
+            k = 1.380649e-23 #Boltzmann's Number
+            m = 4.8e-26 #mass of one molicule of air 
+            g = 9.81 #gravity
+            self.__current_altitude = (((temp+273.15)*k)/((m)*g)) * math.log(self.reference_pressure_at_sea_level/self.__current_pressure)
+            self.__current_altitude 
             
-    def altitude_initialization(self, num_initial_readings=10):
+    def altitude_initialization(self, num_initial_readings=60):
         """
         Initialize the altitude by averaging the first few readings.
         :param num_initial_readings: Number of readings to average for initial altitude.
@@ -143,7 +148,7 @@ class BMP180Sensor:
                 self.__calculate_altitude()  # Calculate altitude based on current pressure
                 if self.__current_altitude is not None:
                     initial_altitudes.append(self.__current_altitude)
-                time.sleep(0.2)  # Wait a bit before the next reading
+                time.sleep(1)  # Wait a bit before the next reading
 
             if initial_altitudes:
                 self.__altitude_initilisation = sum(initial_altitudes) / len(initial_altitudes)
