@@ -143,7 +143,7 @@ class BMP180Sensor:
                 self.__calculate_altitude()  # Calculate altitude based on current pressure
                 if self.__current_altitude is not None:
                     initial_altitudes.append(self.__current_altitude)
-                time.sleep(1)  # Wait a bit before the next reading
+                time.sleep(0.2)  # Wait a bit before the next reading
 
             if initial_altitudes:
                 self.__altitude_initilisation = sum(initial_altitudes) / len(initial_altitudes)
