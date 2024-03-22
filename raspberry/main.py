@@ -113,7 +113,7 @@ if __name__ == '__main__':
         data_to_log[6] = radio_data.throttle_reference_percentage()
         logger.record(current_timestamp, data_to_log)
 
-    def control_loop(tof, esp_bridge):
+    def control_loop(tof, bar, gps, esp_bridge):
         connection_lost_flag, radio_data = rc.get_radio_data()
         radio_data = RadioData(radio_data)
         do_kill = radio_data.switch_D()
@@ -153,8 +153,10 @@ if __name__ == '__main__':
     # ------------------------------------------------
     keep_running = True
     with (EvoSensor(data_processor=MedianFilter()) as tof,
+          Barometer as barom
+          Gnss(data_processor=MedianFilter()) as gps,
           EspBridge() as esp_bridge):
         starttime = time_ns()
         while keep_running:
-            keep_running = control_loop(tof, esp_bridge)
+            keep_running = control_loop(tof, bar, gps, esp_bridge)
             time.sleep(0.018)
