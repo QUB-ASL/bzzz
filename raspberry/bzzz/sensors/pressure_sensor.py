@@ -4,25 +4,43 @@ import smbus
 import time
 from ctypes import c_short
 from threading import Thread, Lock
-from data_logger import DataLogger
+from .data_logger import DataLogger
 import datetime
 
+"""
+Calculate altitude from pressure and temperature using the barometric formula.
 
+:param pres: Measured pressure
+:param temp: Measured temperature in Celsius
+:param reference_pressure_at_sea_level: Reference pressure at sea level
+:return: Calculated altitude in meters
+"""
 def _calculate_altitude(pres, temp, reference_pressure_at_sea_level):
     k = 1.380649e-23 #Boltzmann's Number
-    m = 4.8e-26 #mass of one molicule of air 
+    m = 4.8e-26 #mass of one molecule of air 
     g = 9.81 #gravity
     alt = (((temp+273.15)*k)/((m)*g)) * math.log(reference_pressure_at_sea_level/pres)
     return alt
     
 class BMP180Sensor:
-
+    """
+    Interface for the BMP180 sensor to measure pressure and calculate altitude.
+    """
     def __init__(self, 
                  data_processor=MedianFilter(), 
                  window_length=3, 
                  DEVICE_ADDRESS=0x77, 
                  reference_pressure_at_sea_level=101325, 
                  log_file=None):
+        """
+        Initialize the BMP180 sensor object.
+        
+        :param data_processor: Object to process the data readings (default: MedianFilter)
+        :param window_length: Number of readings to keep in the moving window (default: 3)
+        :param DEVICE_ADDRESS: I2C address of the BMP180 sensor (default: 0x77)
+        :param reference_pressure_at_sea_level: Reference pressure at sea level for altitude calculations (default: 101325 Pa)
+        :param log_file: File path to log data readings (default: None)
+        """
         self.__lock = Lock()
         self.__keep_running = True
         self.__thread = Thread(target=self.__get_measurements_in_background)
@@ -44,10 +62,19 @@ class BMP180Sensor:
         self.__av_pressure = av
 
     def __pressure_correction(self, p):
+        """
+        Apply correction to the measured pressure based on initial average pressure.
+        
+        :param p: Measured pressure
+        :return: Corrected pressure
+        """
         delta = self.__av_pressure - self.__reference_pressure_at_sea_level
         return p - delta
     
     def __get_measurements_in_background(self):
+        """
+        Thread method to continuously read measurements from the sensor, process them, and log them.
+        """
         while self.__keep_running:
             pres_raw, temp = self.__pressure_temp_from_sensor()
             pres = self.__pressure_correction(pres_raw) if self.__av_pressure > 0 else pres_raw
@@ -59,15 +86,39 @@ class BMP180Sensor:
                 data_to_log = (pres, alt)
                 self.__logger.record(current_timestamp, data_to_log)  
 
+    @property
     def pressure(self):
+        """
+        Get the current pressure reading, processed through the data processor.
+        :return: Processed pressure reading
+        """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)[0]
     
+    @property
     def altitude(self):
+        """
+        Get the current altitude reading, processed through the data processor.
+        :return: Processed altitude reading
+        """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)[1]
 
     def __pressure_temp_from_sensor(self):
+        """
+        Read raw pressure and temperature data from the BMP180 sensor.
+
+        This method communicates with the BMP180 sensor over the I2C bus to fetch the raw
+        temperature and pressure readings. It then uses the sensor's calibration data to
+        convert these raw readings into true temperature (in Celsius) and pressure (in Pa)
+        values based on the sensor's calibration coefficients.
+
+        The method handles the entire process of sending the correct commands to the sensor,
+        reading the raw data, and applying the necessary conversion formulas as outlined
+        in the BMP180 datasheet.
+
+        :return: A tuple containing the true pressure (in Pa) and temperature (in Celsius).
+        """
         # Reading calibration data
         data = self.__bus.read_i2c_block_data(self.__DEVICE_ADDRESS, 0xAA, 22)
 
