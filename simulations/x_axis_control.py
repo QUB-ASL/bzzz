@@ -36,21 +36,28 @@ position = initial_position.copy()
 positions = [position.copy()]
 velocities = [velocity.copy()]
 
+# wind force
+# wind_force = np.array([0.01, -0.02])
+
 # Main simulation loop
 current_step = 0  # Track the current simulation step
 for _ in range(t_sim):
     current_step += 1  # Increment the current step
-    if current_step > 500 and current_step < 600:  # Change target at step 500
-        target_position = target_position + [0.0001, -0.001]
+    # if current_step > 500 and current_step < 600:  # Change target at step 500
+    #     target_position = target_position + [0.0001, -0.001]
 
     # Compute errors
     error_lat = target_position[0] - position[0]
     error_long = target_position[1] - position[1]
 
     # Update velocities based on PID output
-    velocity[0] = pid_lat.compute(error_lat, dt)
-    velocity[1] = pid_long.compute(error_long, dt)
-
+    velocity[0] = pid_lat.compute(error_lat, dt) 
+    velocity[1] = pid_long.compute(error_long, dt) 
+    # velocity[0] = pid_lat.compute(error_lat, dt) + wind_force[0]
+    # velocity[1] = pid_long.compute(error_long, dt) + wind_force[1]
+    
+    # wind_force = np.array([0.01 * current_step / t_sim, -0.02 * current_step / t_sim])
+    
     # Update position
     position += velocity * dt
 
