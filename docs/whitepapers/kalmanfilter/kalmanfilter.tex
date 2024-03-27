@@ -89,7 +89,7 @@ Then the corresponding state-space representation is,
 \noindent
 for the barometer sensor's output, denoted by \( y_{barom} \), is described by the equation,
 \begin{equation}
-y_{barom} = z + d^{bar} + e_{barom}
+y_{barom} = z + d^{bar} + v^{barom}
 \end{equation}
 where, 
 \begin{equation}
@@ -100,28 +100,28 @@ the second reading of the bias should be equal to the first allowing for some ad
 
 \noindent
 for the GPS sensor's output, 
-denoted by \( y_{gps} \), is described by the equation,
+denoted by \( y^{gps} \), is described by the equation,
 \begin{subequations}
     \begin{align}
         y^{\rm gps} 
         {}={}&
-        z + e^{\rm gps} 
+        z + v^{\rm gps} 
         \\
         {}={}&
         \begin{bmatrix}
             1 & 0
         \end{bmatrix}
-        x + e^{\rm gps} 
+        x + v^{\rm gps} 
     \end{align}
 \end{subequations}
 
-The Time-of-Flight (ToF) sensor's output, denoted by \( y_{ToF} \), is described by the equation,
+The Time-of-Flight (ToF) sensor's output, denoted by \( y^{ToF} \), is described by the equation,
 \begin{equation}
-y^{\rm ToF} = z + d^{\rm ToF} + e_{\rm ToF}
+y^{\rm ToF} = z + d^{\rm ToF} + v^{\rm ToF}
 \end{equation}
 
 
-Throught all sensors \( y \) represents the output from the sensor. The variable \( z \) signifies the quadcopter's altitude, which is the measurement for all sensors. The term \( e \) encapsulates the measurement noise or errors associated with the sensors. This noise term, \( e \), encompasses various factors such as sensor inaccuracies, the impact of environmental conditions on sensor performance, and any systematic bias that might be inherent in the sensor's readings.
+Throught all sensors \( y \) represents the output from the sensor. The variable \( z \) signifies the quadcopter's altitude, which is the measurement for all sensors. The term \( v \) encapsulates the measurement noise or errors associated with the sensors. This noise term, \( v \), encompasses various factors such as sensor inaccuracies, the impact of environmental conditions on sensor performance, and any systematic bias that might be inherent in the sensor's readings.
 
 Equation \eqref{eq:4} describes the continuous-time altitude dynamics of the quadcopter. 
 The discretization of the altitude dynamics of the system \eqref{eq:4} with a sampling frequency of Ts using the zero-order hold technique is,
@@ -448,6 +448,9 @@ The Kalman filter equations for the above system are:
     \caption{Simulations estimating both \(alpha\) and \(beta\)}
     \label{fig:no_constant}
   \end{figure}
+  As you can see from the graphed simulation data above we are estimating both \(\alpha\) and \(\beta\) as well as the velocity, altitude and bias for the barometer and tof module.
+  All data estimates converge to the true value quickly making for a successful simulation. the values we used for.... are....
+
 
 
   \begin{figure}[h]
