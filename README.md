@@ -9,7 +9,7 @@
 
 ## Project Description
 
-The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (QUB) has designed and built a quadcopter with a stabilising attitude control system and (as of v0.2.0) altitude hold. This is part of an ongoing research project whose objective is the development of control methodologies that will enable quadcopters to fly in extreme weather conditions. Currently, the quadcopter can be operated using a radio controller (RC).
+The autonomous systems lab at the school of EEECS of Queens University Belfast (QUB) has designed and built a quadcopter with a stabilising attitude control system and (as of v0.2.0) altitude hold. This is part of an ongoing research project whose objective is the development of control methodologies that will enable quadcopters to fly in extreme weather conditions. Currently, the quadcopter can be operated using a radio controller (RC).
 
 
 ## Getting started
