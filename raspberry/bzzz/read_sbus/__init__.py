@@ -1,1 +1,1 @@
-from .read_sbus_from_GPIO_receiver import *
+from .radio_receiver import *

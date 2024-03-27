@@ -14,12 +14,14 @@ namespace bzzz
     }
 
     void MotorDriver::writeSpeedToEsc(int rotorSpeedFrontLeft, int rotorSpeedFrontRight,
-                                      int rotorSpeedBackLeft, int rotorSpeedBackRight)
-    {
-        m_frontLeftEsc.writeMicroseconds(rotorSpeedFrontLeft);   // sets the ESC speed
-        m_frontRightEsc.writeMicroseconds(rotorSpeedFrontRight); // sets the ESC speed
-        m_backLeftEsc.writeMicroseconds(rotorSpeedBackLeft);     // sets the ESC speed
-        m_backRightEsc.writeMicroseconds(rotorSpeedBackRight);   // sets the ESC speed
+                                      int rotorSpeedBackLeft, int rotorSpeedBackRight,
+                                      int minSpeed)
+    {   
+
+        m_frontLeftEsc.writeMicroseconds(max(minSpeed, rotorSpeedFrontLeft));   // sets the ESC speed
+        m_frontRightEsc.writeMicroseconds(max(minSpeed,rotorSpeedFrontRight)); // sets the ESC speed
+        m_backLeftEsc.writeMicroseconds(max(minSpeed,rotorSpeedBackLeft));     // sets the ESC speed
+        m_backRightEsc.writeMicroseconds(max(minSpeed,rotorSpeedBackRight));   // sets the ESC speed
     };
 
     void MotorDriver::disarm(void)

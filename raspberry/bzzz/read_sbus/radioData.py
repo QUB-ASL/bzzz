@@ -13,7 +13,6 @@ RADIO_STICK_MAX = 1700
 RADIO_MAX_YAW_RATE_RAD_SEC = 0.1745*300
 
 
-
 # Radio data channels
 RADIO_CHANNEL_YAW_RATE = 0
 RADIO_CHANNEL_PITCH = 1
@@ -29,6 +28,8 @@ RADIO_CHANNEL_SWITCH_C = 4
 RADIO_CHANNEL_SWITCH_D = 10
 
 # Enum for three-way switches
+
+
 class ThreeWaySwitch(Enum):
     """Enum for three-way switches
 
@@ -44,16 +45,17 @@ ZERO_ROTOR_SPEED = 1000
 ABSOLUTE_MAX_PWM = 1900
 
 
-
-
-class RadioDataParser:
+class RadioData:
     """RadioDataParser Class provides functions that help 
     in processing and encoding radio data.
     """
-    def __init__(self):
+
+    def __init__(self, raw_channel_data=None):
         """Constructor
         """
-        self.m_channelData = None
+        if raw_channel_data is not None:
+            self.m_channelData = list(map(lambda x: 0 if int(x) < 0 else (
+                2000 if int(x) > 2000 else int(x)), raw_channel_data.strip().split(",")))
         self.rawRatePercentage = None
         self.switchValue = None
 
@@ -67,7 +69,7 @@ class RadioDataParser:
         """
         return -PITCH_MAX_RAD + (x - stick_min) / (stick_max - stick_min) * 2 * PITCH_MAX_RAD
 
-    def __map_trimmer_to_percentage(self, x, stick_min = RADIO_STICK_MIN, stick_max = RADIO_STICK_MAX):
+    def __map_trimmer_to_percentage(self, x, stick_min=RADIO_STICK_MIN, stick_max=RADIO_STICK_MAX):
         """Linearly maps radio timmer or stick data to percentage [0, 1].
 
         :param x: Stick or trimmer position data.
@@ -97,15 +99,17 @@ class RadioDataParser:
 
         :return: reference yaw angle in radians.
         """
-        self.rawRatePercentage = self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_YAW_RATE])
+        self.rawRatePercentage = self.__map_trimmer_to_percentage(
+            self.m_channelData[RADIO_CHANNEL_YAW_RATE])
         return -RADIO_MAX_YAW_RATE_RAD_SEC + 2 * RADIO_MAX_YAW_RATE_RAD_SEC * self.rawRatePercentage
-    
+
     def throttle_reference_percentage(self):
         """Maps throttle stick data to reference percentage.
 
         :return: percentage reference of throttle.
         """
-        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_THROTTLE])
+        return self.__map_trimmer_to_percentage(
+            self.m_channelData[RADIO_CHANNEL_THROTTLE])
 
     def switch_B(self):
         """Checks if switch B has been toggled.
@@ -145,21 +149,21 @@ class RadioDataParser:
 
         :return: VRA percentage in range [0, 1].
         """
-        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRA])
+        return  min(1, max(0, self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRA])))
 
     def trimmer_VRC_percentage(self):
         """Maps Variable Resistor C data to percentage.
 
         :return: VRC percentage in range [0, 1].
         """
-        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRC])
+        return min(1, max(0, self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRC])))
 
     def trimmer_VRB_percentage(self):
         """Maps Variable Resistor B data to percentage.
 
         :return: VRB percentage in range [0, 1].
         """
-        return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRB])
+        return  min(1, max(0, self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRB])))
 
     def trimmer_VRE_percentage(self):
         """Maps Variable Resistor E data to percentage.
@@ -167,7 +171,7 @@ class RadioDataParser:
         :return: VRE percentage in range [0, 1].
         """
         return self.__map_trimmer_to_percentage(self.m_channelData[RADIO_CHANNEL_VRE])
-    
+
     def __map_prcnt(self, percentage, minVal, maxVal):
         """Linearly maps percentage data to range [minVal, maxVal].
 
@@ -177,13 +181,20 @@ class RadioDataParser:
         :return: mapped data in range [minVal, maxVal].
         """
         return minVal + percentage * (maxVal - minVal)
-    
+
+    def set_throttle(self, throttle):
+        self.m_channelData[RADIO_CHANNEL_THROTTLE] = throttle
+
+    def set_switch_D(self, switch_value=True):
+        # True = Kill = Down
+        self.m_channelData[10] = 1000 if switch_value else 1600
+
     def format_radio_data_for_sending(self):
         """Processes, encodes, and formats the radio data into a 
         string so that it can be sent via UART.
 
         The formatted data has the following structure:
-        
+
         ```
         S, Y, P, R, T, VRA, VRB, VRC, VRE, SWTCHs
         ```
@@ -200,13 +211,13 @@ class RadioDataParser:
         - `VRE` is percentage trimmer E value,
         - `SWTCHs` is an integer whose last five bits contain the encoded position data of 
            the A, B, C, and D switches, and the encoding is as follows:
-            
+
             ```
             |0|0|0|B|A|C|c|D| 
             ```
-            
+
             this is the Least-significant byte of the sent integer in which
-            
+
             - bit `|B|` indicates switch B's position 
             - bit `|A|` indicates switch A's position 
             - bits `|C|c|` together indicate switch C's position
@@ -216,14 +227,28 @@ class RadioDataParser:
             were assigned a single bit with 0 indicating that the switch is in off state
             and 1 otherwise. For switch C, as it is a three-way switch, it was assigned with
             two bits with 00 = DOWN, 01 = MID, and 10 = UP.    
-        
+
         :return: Formatted string that contains the processed radio data, 
                  where each data point is seperated by a comma.
         """
-        reArrangedYPRTData = [self.yaw_rate_reference_rad_sec(), self.pitch_reference_angle_rad(), self.roll_reference_angle_rad(), self.__map_prcnt(self.throttle_reference_percentage(), ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM)]
-        bitEncodedSwithcesData = (self.switch_B() << 4) | (self.switch_A() << 3) | (self.switch_C() << 1) | self.switch_D()
-        reArrangedABCETrimmersData = [self.trimmer_VRA_percentage(), self.trimmer_VRB_percentage(), self.trimmer_VRC_percentage(), self.trimmer_VRE_percentage()]
+        reArrangedYPRTData = [
+            self.yaw_rate_reference_rad_sec(),
+            self.pitch_reference_angle_rad(),
+            self.roll_reference_angle_rad(),
+            self.__map_prcnt(self.throttle_reference_percentage(),
+                             ZERO_ROTOR_SPEED,
+                             ABSOLUTE_MAX_PWM)]
+        bitEncodedSwithcesData = (
+            self.switch_B() << 4) \
+            | (self.switch_A() << 3) \
+            | (self.switch_C() << 1) \
+            | self.switch_D()
+        reArrangedABCETrimmersData = [
+            self.trimmer_VRA_percentage(),
+            self.trimmer_VRB_percentage(),
+            self.trimmer_VRC_percentage(),
+            self.trimmer_VRE_percentage()]
 
         reArrangedData = reArrangedYPRTData + reArrangedABCETrimmersData
-        
-        return reArrangedData + [bitEncodedSwithcesData], ",".join(map(lambda x: str(x)[:5], reArrangedData)) + f",{bitEncodedSwithcesData}"
+
+        return ",".join(map(lambda x: str(x)[:5], reArrangedData)) + f",{bitEncodedSwithcesData}"
