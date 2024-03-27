@@ -107,10 +107,7 @@ class Gnss:
                                                        tokens[4])
                     
                 elif msg_key == "$GNGGA" and len(tokens) > 10:
-                    try:
-                        altitude = float(tokens[9])
-                    except:
-                        print("err")
+                    altitude = float(tokens[9])
 
                 # Check if any of the values are NaN before saving or
                 # processing

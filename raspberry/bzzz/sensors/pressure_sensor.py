@@ -7,19 +7,20 @@ from threading import Thread, Lock
 from .data_logger import DataLogger
 import datetime
 
-def _calculate_altitude_from_pressure(pres, temp, reference_pressure_at_sea_level):
+def _calculate_altitude_from_pressure(pres, temp, initial_pressure):
     """
     Calculate altitude from pressure and temperature using the barometric formula.
 
     :param pres: Measured pressure
     :param temp: Measured temperature in Celsius
-    :param reference_pressure_at_sea_level: Reference pressure at sea level
+    :param initial_pressure: 
     :return: Calculated altitude in meters
     """
     k = 1.380649e-23 #Boltzmann's Number
-    m = 4.8e-26 #mass of one molecule of air 
+    molecular_mass = 4.8e-26 #mass of one molecule of air 
     g = 9.81 #gravity
-    alt = (((temp+273.15)*k)/((m)*g)) * math.log(reference_pressure_at_sea_level/pres)
+    celsius_to_kelvin = 273.15 # constant for changing from celsius to Kelvin
+    alt = (((temp+celsius_to_kelvin)*k)/((molecular_mass)*g)) * math.log(initial_pressure/pres)
     return alt
     
 class BMP180Sensor:
@@ -30,7 +31,6 @@ class BMP180Sensor:
                  data_processor=MedianFilter(), 
                  window_length=3, 
                  DEVICE_ADDRESS=0x77, 
-                 reference_pressure_at_sea_level=101325, 
                  log_file=None):
         """
         Initialize the BMP180 sensor object.
@@ -38,7 +38,7 @@ class BMP180Sensor:
         :param data_processor: Object to process the data readings (default: MedianFilter)
         :param window_length: Number of readings to keep in the moving window (default: 3)
         :param DEVICE_ADDRESS: I2C address of the BMP180 sensor (default: 0x77)
-        :param reference_pressure_at_sea_level: Reference pressure at sea level for altitude calculations (default: 101325 Pa)
+        :param initial_pressure: Reference pressure at sea level for altitude calculations (default: 101325 Pa)
         :param log_file: File path to log data readings (default: None)
         """
         self.__lock = Lock()
@@ -50,26 +50,14 @@ class BMP180Sensor:
         self.__DEVICE_ADDRESS = DEVICE_ADDRESS
         self.__bus = smbus.SMBus(1)
         self.__data_processor = data_processor
-        self.__reference_pressure_at_sea_level = reference_pressure_at_sea_level
                 
         self.__log_file = log_file
         if self.__log_file is not None:
             feature_names = ("Date_Time", "Pressure", "Altitude")
             self.__logger = DataLogger(num_features=2, feature_names=feature_names)
         self.__thread.start()
-        self.__av_pressure = -1
-        av = self.__initialise()
-        self.__av_pressure = av
-
-    def __pressure_correction(self, p):
-        """
-        Apply correction to the measured pressure based on initial average pressure.
-        
-        :param p: Measured pressure
-        :return: Corrected pressure
-        """
-        delta = self.__av_pressure - self.__reference_pressure_at_sea_level
-        return p - delta
+        self.__initial_pressure = -1
+        self.__initial_pressure = self.__initialise()
     
     def __get_measurements_in_background(self):
         """
@@ -77,11 +65,11 @@ class BMP180Sensor:
         """
         while self.__keep_running:
             pres_raw, temp = self.__pressure_temp_from_sensor()
-            pres = self.__pressure_correction(pres_raw) if self.__av_pressure > 0 else pres_raw
-            alt = _calculate_altitude_from_pressure(pres, temp, self.__reference_pressure_at_sea_level) 
+            pres = self.__pressure_correction(pres_raw) if self.__initial_pressure > 0 else pres_raw
+            alt = _calculate_altitude_from_pressure(pres, temp, self.__initial_pressure) 
             self.__values_cache[self.__cursor, :] = np.array([pres, alt])
             self.__cursor = (self.__cursor + 1) % self.__window_length
-            if self.__log_file is not None and self.__av_pressure > 0:
+            if self.__log_file is not None and self.__initial_pressure > 0:
                 current_timestamp = datetime.datetime.now()
                 data_to_log = (pres, alt)
                 self.__logger.record(current_timestamp, data_to_log)  
@@ -166,7 +154,7 @@ class BMP180Sensor:
         X1 = (UT - AC6) * AC5 / 32768.0
         X2 = (MC * 2048.0) / (X1 + MD)
         B5 = X1 + X2
-        T = ((B5 + 8.0) / 16.0) / 10.0
+        Temperature = ((B5 + 8.0) / 16.0) / 10.0
 
         # Calculating true pressure
         B6 = B5 - 4000
@@ -188,7 +176,7 @@ class BMP180Sensor:
         X1 = (X1 * 3038.0) / 65536.0
         X2 = ((-7357) * pressure) / 65536.0
         pressure = (pressure + (X1 + X2 + 3791) / 16.0)
-        return pressure, T
+        return pressure, Temperature
               
             
     def __initialise(self, num_initial_readings=30):
