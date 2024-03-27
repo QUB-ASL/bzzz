@@ -69,7 +69,7 @@ class Gnss:
                                        max_samples=max_samples,
                                        feature_names=feature_names)    
         self.__thread.start()
-        self.__gnss_altitude_initilisation()
+        self.__gnss_altitude_initialisation()
     
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
@@ -83,7 +83,7 @@ class Gnss:
         ser = serial.Serial(serial_path, baud, timeout=1)
         ser.reset_input_buffer()
 
-        # Initialize default values for latitude, longitude, and altitude
+        # Initialise default values for latitude, longitude, and altitude
         latitude = np.nan
         longitude = np.nan
         altitude = np.nan
@@ -138,7 +138,7 @@ class Gnss:
         ser.close()
         return
 
-    def __gnss_altitude_initilisation(self, num_samples=10):
+    def __gnss_altitude_initialisation(self, num_samples=10):
         sum_altitudes = 0    
         """
         Returns the calibrated GNSS altitude based on the average 

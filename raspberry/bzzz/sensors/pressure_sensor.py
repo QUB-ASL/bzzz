@@ -7,15 +7,15 @@ from threading import Thread, Lock
 from .data_logger import DataLogger
 import datetime
 
-"""
-Calculate altitude from pressure and temperature using the barometric formula.
+def _calculate_altitude_from_pressure(pres, temp, reference_pressure_at_sea_level):
+    """
+    Calculate altitude from pressure and temperature using the barometric formula.
 
-:param pres: Measured pressure
-:param temp: Measured temperature in Celsius
-:param reference_pressure_at_sea_level: Reference pressure at sea level
-:return: Calculated altitude in meters
-"""
-def _calculate_altitude(pres, temp, reference_pressure_at_sea_level):
+    :param pres: Measured pressure
+    :param temp: Measured temperature in Celsius
+    :param reference_pressure_at_sea_level: Reference pressure at sea level
+    :return: Calculated altitude in meters
+    """
     k = 1.380649e-23 #Boltzmann's Number
     m = 4.8e-26 #mass of one molecule of air 
     g = 9.81 #gravity
@@ -78,7 +78,7 @@ class BMP180Sensor:
         while self.__keep_running:
             pres_raw, temp = self.__pressure_temp_from_sensor()
             pres = self.__pressure_correction(pres_raw) if self.__av_pressure > 0 else pres_raw
-            alt = _calculate_altitude(pres, temp, self.__reference_pressure_at_sea_level) 
+            alt = _calculate_altitude_from_pressure(pres, temp, self.__reference_pressure_at_sea_level) 
             self.__values_cache[self.__cursor, :] = np.array([pres, alt])
             self.__cursor = (self.__cursor + 1) % self.__window_length
             if self.__log_file is not None and self.__av_pressure > 0:
@@ -193,7 +193,7 @@ class BMP180Sensor:
             
     def __initialise(self, num_initial_readings=30):
         """
-        Initialize the altitude by averaging the first few readings.
+        Initialise the altitude by averaging the first few readings.
         :param num_initial_readings: Number of readings to average for initial altitude.
         """        
         sum_pressures = 0
