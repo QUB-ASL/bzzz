@@ -1,10 +1,10 @@
 import math
-from filters import *
 import smbus
 import time
 from ctypes import c_short
 from threading import Thread, Lock
 from .data_logger import DataLogger
+from .filters import *
 import datetime
 
 def _calculate_altitude_from_pressure(pres, temp, initial_pressure):
@@ -64,17 +64,15 @@ class BMP180Sensor:
         Thread method to continuously read measurements from the sensor, process them, and log them.
         """
         while self.__keep_running:
-            pres_raw, temp = self.__pressure_temp_from_sensor()
-            pres = self.__pressure_correction(pres_raw) if self.__initial_pressure > 0 else pres_raw
-            alt = _calculate_altitude_from_pressure(pres, temp, self.__initial_pressure) 
+            pres, temp = self.__pressure_temp_from_sensor()
+            alt = _calculate_altitude_from_pressure(pres, temp, self.__initial_pressure) if self.__initial_pressure > 0 else 0
             self.__values_cache[self.__cursor, :] = np.array([pres, alt])
             self.__cursor = (self.__cursor + 1) % self.__window_length
-            if self.__log_file is not None and self.__initial_pressure > 0:
+            if self.__log_file is not None:
                 current_timestamp = datetime.datetime.now()
                 data_to_log = (pres, alt)
                 self.__logger.record(current_timestamp, data_to_log)  
 
-    @property
     def pressure(self):
         """
         Get the current pressure reading, processed through the data processor.
@@ -83,7 +81,6 @@ class BMP180Sensor:
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)[0]
     
-    @property
     def altitude(self):
         """
         Get the current altitude reading, processed through the data processor.
