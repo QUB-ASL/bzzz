@@ -8,7 +8,7 @@ This sets it to calibration mode.
 After a particular delay the signal to the ESC is set back to low which completes the calibration. 
 
 ### Step to calibrate ESC
-${\color{red}REMOVE \space PROPELLERS \space FROM \space QUADCOPTER}$
+⚠️⚠️⚠️ ${\color{red}\rm REMOVE \space PROPELLERS \space FROM \space QUADCOPTER!}$ ⚠️⚠️⚠️
 * Take the code from `ESC_calibration.cpp` and paste it to the `main.cpp`
 * Flash it to the ESP32
 * Power on the ESC
