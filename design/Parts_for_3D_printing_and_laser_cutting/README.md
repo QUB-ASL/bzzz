@@ -38,6 +38,7 @@ This set up can be seen in [Altitude Hold Video](https://youtu.be/AMWUkB0SQi4)
 Depending on which motor stand is used a different propeller guard will be needed.
 
 If the 'Non-rotating' motor stand is used the 'Symmetrical' propeller guard as seen in the photo below can be used.
+To reduce time with 3D printing, it is printed in two halves (top/bottom) then glued and screwed together.
 
 <img width="500" src="Propeller_guards/symmetrical_propeller_guard.png">
 
@@ -49,6 +50,12 @@ If the 'Rotating' motor stand is used the 'Offset' propeller guard as seen below
 This is used to help support the power disturbution board on the base of the quadcopter frame.
 
 <img width="500" src="Frame_parts/Quadcopter_base_support.png">
+
+## Leg stand for pool noddle
+To attach the pool noddle to the legs of the quadcopter the following stands can be printed. 
+These are then glued and screwed to the legs of the quadcopter and the pool nodddle taped onto this stand.
+
+<img width="500" src="Frame_parts/Leg_stand_for_pool_noddle.png">
 
 ## GNSS and Antenna Parts 
 
