@@ -84,7 +84,7 @@ We order extra screw and headers as we might need to replace them and it works o
 |[GPIO Header for Pi](https://thepihut.com/products/gpio-stacking-header-for-pi-a-b-pi-2-pi-3)|1|2.2|
 |[PCB Socket long leg 20 x1](https://uk.rs-online.com/web/p/pcb-sockets/2081703)|1|3.6|
 |[PCB Socket short leg 32 x1](https://uk.rs-online.com/web/p/pcb-sockets/2081707)|1|3.3|
-|[XT-90 Connectors with cable]([https://uk.rs-online.com/web/p/pcb-sockets/2081707](https://www.amazon.co.uk/Female-Connector-Silicone-RC-Battery/dp/B084M1W4ZH/ref=sr_1_7?crid=3L8CEL774VH79&keywords=xt90%2Bconnectors&qid=1676905240&sprefix=xt90%2Caps%2C84&sr=8-7&th=1))|1|11|
+|[XT-90 Connectors with cable](https://www.amazon.co.uk/Female-Connector-Silicone-RC-Battery/dp/B084M1W4ZH/ref=sr_1_7?crid=3L8CEL774VH79&keywords=xt90%2Bconnectors&qid=1676905240&sprefix=xt90%2Caps%2C84&sr=8-7&th=1)|1|11|
 |Total cost Aproxamation in GBP||115|
 
 ### Optional Anemometer and GNSS
@@ -115,7 +115,71 @@ You will need some of these products or an equivalent (e.g. you will need a batt
 |[TP-LINK Sim Wi-Fi Router](https://www.amazon.co.uk/Archer-MR600-Unlocked-Configuration-required/dp/B07S7DMY3H)|120|
 
 
-## How to build buzz
-* Order the relevent parts above
+## How to build bzzz
+Order the relevent parts above.
+
+### Soldering 
+The following outlines the order compontents should be soldered in as some compontents might be covered by others.
+
+#### Power disturbution board (see photo below)
+* ESCs power supply
+* XT90 connector and UBEC
+
+${\color{red}PHOTO}$
+
+#### ESC PCB
+* 4 x Molex KK 4 x 1 headers
+* 4 signal wires and a ground coming from ESC PCB
+
+${\color{red}PHOTO}$
+
+* Molex KK Terminal Contact to each of the wires coming from ESC PCB (from previous step)
+* Place Terminal Contacts (from previous step) in correct postion of Molex KK 5 x 1 Connector Housing
+
+${\color{red}PHOTO}$
+
+* Molex KK Terminal Contact to each of the small wires on the ESCs
+* Place Terminal Contacts from each ESC in correct postion of Molex KK 4 x 1 Connector Housing
+
+${\color{red}PHOTO}$
+
+#### ESP PCB 
+All components are on the top side of the board
+* Resistors  
+* Diode, capacitor and buzzer (Check  polarity)
+* 10 x 1 PCB socket for MPU9250 IMU
+* Molex KK 5 x 1 header for ESCs
+
+So far the PCB should look as follows
+  
+${\color{red}PHOTO}$
+
+* Now solder on the ESP as shown below
+  
+${\color{red}PHOTO}$
+
+* Solder headerpins on MPU9250 IMU as shown below
+  
+${\color{red}PHOTO}$
+
+* Place IMU in socket with correct orentation  as shown below
+
+${\color{red}PHOTO}$
+
+#### Pi PCB
+* Resistors and diode on bottom side (Check polirity of diode)
 * 
+#### Sensor PCB
+
+### Screw frame together
+* Place 4 screws (**NEED TO CHECK SIZE**) in underside of controller case for anti-vibration board (you won't be able to access this later).
+* Screw controller case onto topside of 4 frame arms (16 short M2.5 screws that come with frame).
+* Place anti-vibration board on 4 screw previously inserted and tighten nuts.
+* Attach 8 of the 15mm long M2.5 standoffs to the bottom side of the 4 frame arms (this leaves space for battery).
+* Attach the 4 legs to the power disturbution board support plate using 8 nuts bolts and washers (**NEED TO CHECK SIZE**) to the inside contoursunk holes only (**PROBABLY NEED A PHOTO TO SHOW THIS**).
+* Attach the sensor board to the power disturbution board and suport board using (**NEED TO CHECK SIZE**).
+* Screw the power disturbution board and suport board to the standoffs on the the 4 frame arms using M2.5x15mm screws.
+* 
+
+
 
