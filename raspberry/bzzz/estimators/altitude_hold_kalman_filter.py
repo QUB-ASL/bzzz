@@ -12,9 +12,9 @@ class AltitudeHoldKalmanFilter:
                  meas_cov,
                  sampling_time=0.1):
         self.__sampling_time = sampling_time
-        self.__C = np.array([[1, 0, 0, 0, 1, 0]
-                             [1, 0, 0, 0, 0, 1]
-                             [1, 0, 0, 0, 0, 0]])        
+        self.__C = np.array([[1, 0, 0, 0, 0, 0]
+                             [1, 0, 0, 0, 1, 0]
+                             [1, 0, 0, 0, 0, 1]])        
         self.__Q = state_cov
         self.__R = meas_cov
         self.__x_pred = initial_state    
