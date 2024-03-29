@@ -136,6 +136,10 @@ The following outlines the order compontents should be soldered in as some compo
 ${\color{red}PHOTO}$
 
 #### ESP PCB 
+* Solder header pins on MPU9250 IMU as shown below
+  
+${\color{red}PHOTO}$
+
 All components are to be soldered on the top side of the board
 * Resistors (R1=100Ω, R2-R5=10kΩ)
 * Diode (1N4001, Check  polarity)
@@ -151,14 +155,7 @@ ${\color{red}PHOTO}$
 
 * Now solder on the ESP as shown below
 * You can now cover the bottom of the PCB with Kapton or electical tape
-  
-${\color{red}PHOTO}$
-
-* Solder headerpins on MPU9250 IMU as shown below
-  
-${\color{red}PHOTO}$
-
-* Place IMU in socket with correct orentation  as shown below
+* Place IMU in socket with correct orentation as shown below
 
 ${\color{red}PHOTO}$
 
