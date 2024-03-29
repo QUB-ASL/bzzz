@@ -11,7 +11,7 @@ from bzzz.read_sbus import RC
 from bzzz.read_sbus.radioData import *
 from bzzz.read_sbus.esp_bridge import *
 from bzzz.sensors.evo_time_of_flight import EvoSensor
-from bzzz.sensors.pressure_sensor import PressureSensor
+from bzzz.sensors.pressure_sensor import BMP180Sensor
 from bzzz.sensors.anemometer import Anemometer
 from bzzz.sensors.gnss import Gnss
 from bzzz.sensors.data_logger import DataLogger
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     sampling_time = params["sampling_time"]
     kf_params = params["ah_kf"]
     altitude_kf = AltitudeHoldKalmanFilter(
-        initial_state=np.array([1, 0, 20, -10]),
+        initial_state=np.array([1, 0, 20, -10, 0, 0]),
         initial_sigma=np.diagflat(kf_params["initial_sigma"]),
         state_cov=np.diagflat(kf_params["state_cov"]),
         meas_cov=kf_params["meas_cov"])
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         data_to_log[6] = radio_data.throttle_reference_percentage()
         logger.record(current_timestamp, data_to_log)
 
-    def control_loop(tof, esp_bridge):
+    def control_loop(tof, bar, gps, esp_bridge):
         connection_lost_flag, radio_data = rc.get_radio_data()
         radio_data = RadioData(radio_data)
         do_kill = radio_data.switch_D()
@@ -129,7 +129,11 @@ if __name__ == '__main__':
         take_emergency_measure(measure, radio_data)
 
         flight_mode = radio_data.switch_C()
-        y = tof.distance
+        y_tof = tof.distance
+        y_bar = bar.altitude
+        y_gps = gps.altitude
+        y = np.array([y_tof, y_bar, y_gps])
+        
         if y > min_altitude_hold_altitude:
             altitude_estimator(radio_data, y)  # deals with nans
 
@@ -149,8 +153,10 @@ if __name__ == '__main__':
     # ------------------------------------------------
     keep_running = True
     with (EvoSensor(data_processor=MedianFilter()) as tof,
+          BMP180Sensor as bar,
+          Gnss(data_processor=MedianFilter()) as gps,
           EspBridge() as esp_bridge):
         starttime = time_ns()
         while keep_running:
-            keep_running = control_loop(tof, esp_bridge)
+            keep_running = control_loop(tof, bar, gps, esp_bridge)
             time.sleep(0.018)

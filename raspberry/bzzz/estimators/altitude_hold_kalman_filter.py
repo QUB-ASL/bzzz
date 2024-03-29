@@ -12,7 +12,9 @@ class AltitudeHoldKalmanFilter:
                  meas_cov,
                  sampling_time=0.1):
         self.__sampling_time = sampling_time
-        self.__C = np.array([[1, 0, 0, 0]])        
+        self.__C = np.array([[1, 0, 0, 0, 0, 0]
+                             [1, 0, 0, 0, 1, 0]
+                             [1, 0, 0, 0, 0, 1]])        
         self.__Q = state_cov
         self.__R = meas_cov
         self.__x_pred = initial_state    
@@ -25,10 +27,12 @@ class AltitudeHoldKalmanFilter:
     def __matrix_a(self, tau):
         k_t = 0.5 * self.__sampling_time**2
         return np.array([
-                [1, self.__sampling_time, k_t * self.__sampling_time, k_t],
-                [0, 1, self.__sampling_time * tau, self.__sampling_time],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1]])
+                [1, self.__sampling_time, 0, 0, 0, 0],
+                [0, 1, self.__sampling_time * tau, self.__sampling_time, 0, 0],
+                [0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0 ,1]])
     
     def __measurement_update(self,
                              y_t,
@@ -53,7 +57,7 @@ class AltitudeHoldKalmanFilter:
         """Does time update step of the kalman filter.
         """
         A = self.__matrix_a(tau)        
-        self.__x_pred = A @ self.__x_meas.reshape((4, 1))
+        self.__x_pred = A @ self.__x_meas.reshape((6, 1))
         self.__sigma_pred = A @ self.__sigma_meas @ A.T + self.__Q
     
     def update(self, tau, pitch_rad, roll_rad, y_t):
