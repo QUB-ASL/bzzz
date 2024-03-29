@@ -71,10 +71,10 @@ We order extra screw and headers as we might need to replace them and it works o
 |[M2.5, 15mm standoff]()|box of 10|6|
 |[Hex Cap Screw M2.5 x 15mm](https://uk.rs-online.com/web/p/socket-screws/4733445)|box of 50|7.7|
 |[Molex KK Crimp Terminal Contact](https://uk.rs-online.com/web/p/crimp-contacts/0467598)|box of 100|15|
-|[Molex KK Pin Header, 2 X 1](https://uk.rs-online.com/web/p/pcb-headers/4838461)|box of 10|2.5|
-|[Molex KK Pin Header, 4 X 1](https://uk.rs-online.com/web/p/pcb-headers/4838483)|box of 10|3.7|
-|[Molex KK Pin Header, 5 X 1](https://uk.rs-online.com/web/p/pcb-headers/4838499)|box of 10|4.7|
-|[Molex KK Pin Header, 6 X 1](https://uk.rs-online.com/web/p/pcb-headers/4838506)|box of 10|6|
+|[Molex KK Pin Header, 2 x 1](https://uk.rs-online.com/web/p/pcb-headers/4838461)|box of 10|2.5|
+|[Molex KK Pin Header, 4 x 1](https://uk.rs-online.com/web/p/pcb-headers/4838483)|box of 10|3.7|
+|[Molex KK Pin Header, 5 x 1](https://uk.rs-online.com/web/p/pcb-headers/4838499)|box of 10|4.7|
+|[Molex KK Pin Header, 6 x 1](https://uk.rs-online.com/web/p/pcb-headers/4838506)|box of 10|6|
 |[Molex KK Connector Housing 2 x 1](https://uk.rs-online.com/web/p/wire-housings-plugs/6795363)|box of 10|2.3|
 |[Molex KK Connector Housing 4 x 1](https://uk.rs-online.com/web/p/wire-housings-plugs/6795388)|box of 10|2|
 |[Molex KK Connector Housing 5 x 1](https://uk.rs-online.com/web/p/wire-housings-plugs/6795385)|box of 10|1.8|
@@ -82,8 +82,8 @@ We order extra screw and headers as we might need to replace them and it works o
 |[1mm Pitch 14 Way Straight FFC connector](https://uk.rs-online.com/web/p/fpc-connectors/7632578)|box of 5|8.8|
 |[1mm Pitch 14 Way FFC cable 20cm](https://www.mouser.co.uk/ProductDetail/Wurth-Elektronik/686714200001?qs=sGAEpiMZZMuuPJj6pSfD6Q4dde1ofFDUsmGX7ZLZjryLo0snSgGnhQ%3D%3D)|1|2.6|
 |[GPIO Header for Pi](https://thepihut.com/products/gpio-stacking-header-for-pi-a-b-pi-2-pi-3)|1|2.2|
-|[PCB Socket long leg 20 x1](https://uk.rs-online.com/web/p/pcb-sockets/2081703)|1|3.6|
-|[PCB Socket short leg 32 x1](https://uk.rs-online.com/web/p/pcb-sockets/2081707)|1|3.3|
+|[PCB Socket long leg 20 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081703)|1|3.6|
+|[PCB Socket short leg 32 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081707)|1|3.3|
 |[XT-90 Connectors with cable](https://www.amazon.co.uk/Female-Connector-Silicone-RC-Battery/dp/B084M1W4ZH/ref=sr_1_7?crid=3L8CEL774VH79&keywords=xt90%2Bconnectors&qid=1676905240&sprefix=xt90%2Caps%2C84&sr=8-7&th=1)|1|11|
 |Total cost Aproxamation in GBP||115|
 
@@ -122,27 +122,35 @@ Order the relevent parts above.
 The following outlines the order compontents should be soldered in as some compontents might be covered by others.
 
 #### Power disturbution board and ESCs
-* ESCs power supply
-* XT90 connector and UBEC
+* Solder ESCs power supply to each coner of the power disturbution board
+* Solder XT90 connector and UBEC to the center of the power disturbution board
 * Cut header off the three thin wires (Close to header)
-* The black and red thin wires are the BEC outputs and aren't being used. Insulate them (cover any copper) and tape them to ESC 
+* The black and red thin wires are the BEC outputs and aren't being used. Insulate them (cover any copper) and tape them to ESC
+
+  (if you have a V2 ESC, the yellow wire isn't used either and can be insulate and taped to the ESC)
+  
 * Solder Molex KK Terminal Contact to each of the white signal wires coming from each ESC
-* Place heat sinker on the 3 voltage output wire from ESC and temperaly solder each of the motors to an ESC (wires might need swaped to change direction)
+* Place heat sinker on the 3 voltage output wire from ESC and temperaly solder each of the motors to an ESC (wires might need swaped to change motor spin direction)
+* Solder Molex KK Terminal Contact to the wires on output 1 of the UBEC
 
 ${\color{red}PHOTO}$
 
 #### ESP PCB 
-All components are on the top side of the board
-* Resistors  
-* Diode, capacitor and buzzer (Check  polarity)
+All components are to be soldered on the top side of the board
+* Resistors (R1=100Ω, R2-R5=10kΩ)
+* Diode (1N4001, Check  polarity)
+* Capacitor (10uF, Check  polarity)
+* Buzzer (Check  polarity)
 * 10 x 1 PCB socket for MPU9250 IMU
 * Molex KK 5 x 1 header for ESCs
 
 So far the PCB should look as follows
+* You can now cover these conponets with Kapton or electical tape
   
 ${\color{red}PHOTO}$
 
 * Now solder on the ESP as shown below
+* You can now cover the bottom of the PCB with Kapton or electical tape
   
 ${\color{red}PHOTO}$
 
@@ -168,36 +176,54 @@ These components are solderd on top side of board
 * 6 x 1 Power header
 * Buzzer (Check  polarity)
 
+${\color{red}PHOTO}$
+
 #### Sensor PCB
 * Solder header on BMP180 Presure sensor as shown below
 
 ${\color{red}PHOTO}$
 
-* Cut and strip the wires of the Evo ToF as shown below
-* Attach Evo ToF to sensor PBC with (**NEED TO CHECK SIZE**)
+* Cut and strip the wires of the Evo ToF as shown below (red wire=1, strip 1,2,7,8, remove rest)
 
 ${\color{red}PHOTO}$  
 
-
-All components are on the top side of the board
+All components are soldered on the top side of board
 * 14 x 1 FFC connector
 * BMP180 Presure sensor
 * Evo ToF
+* Attach Evo ToF to sensor PBC with M2 x 10mm bolts and M2 nuts.
+
+${\color{red}PHOTO}$  
 
 ### Screw frame together
-* Place 4 screws (**NEED TO CHECK SIZE**) in underside of controller case for anti-vibration board (you won't be able to access this later).
-* Screw controller case onto topside of 4 frame arms (16 short M2.5 screws that come with frame).
+* Screw 4 M3 x 6mm screws into the underside of the controller case for anti-vibration board (you won't be able to access this later).
+* Screw controller case onto topside of 4 frame arms (16 M2.5 x 6mm  screws that come with frame).
 * Place anti-vibration board on 4 screw previously inserted and tighten nuts.
-* Attach 8 of the 15mm long M2.5 standoffs to the bottom side of the 4 frame arms (this leaves space for battery).
-* Attach the 4 legs to the power disturbution board support plate using 8 nuts bolts and washers (**NEED TO CHECK SIZE**) to the inside contoursunk holes only (**PROBABLY NEED A PHOTO TO SHOW THIS**).
+
+${\color{red}PHOTO}$ 
+
+* Attach the 4 legs to the power disturbution board support plate using 8 M2.5 x 15mm bolts, M2.5 washers and M2.5 nuts, to the inside contoursunk holes only.
+
+${\color{red}PHOTO}$ 
+
 * Attach the sensor board to the power disturbution board and suport board using (**NEED TO CHECK SIZE**).
-* Screw the power disturbution board and suport board to the standoffs on the the 4 frame arms using M2.5x15mm screws.
+* Attach 8 of the 15mm long M2.5 standoffs to the bottom side of the 4 frame arms (this leaves space for battery).
+* Screw the power disturbution board and suport board to the standoffs on the the 4 frame arms using M2.5 x 15mm screws.
+
+${\color{red}PHOTO}$ 
+
 * Place a leg stands for pool noddle in each leg and mark on each leg where the hole needs bored (check orentation is correct).
-* Bore out the hole with a (**NEED TO CHECK SIZE**) drill bit.
-* Atach the leg stands for pool noddle to the bottom of the legs with epoxy resin (or super gule) and.
+* Bore out the hole with a 3mm drill bit.
+* Attach the leg stands for pool noddle to the bottom of the legs with epoxy resin (or super gule) and M3 x 20mm bolts and M3 nuts.
 * Cut pool noddle to length (at least 40cm) x 2.
 * Tape each Cut pool noddle to the leg stands.
-* Attach the top and bottom part of the propeller gaurds together with (**NEED TO CHECK SIZE**) and epoxy resin (or super gule)
+
+${\color{red}PHOTO}$ 
+
+* Attach the top and bottom part of the propeller gaurds together with M3 x 20mm self tappers and epoxy resin (or super gule).
+* Attach a propeller guard and motor stand to each frame arm using the M3x20mm bolts, M3 washers and M3 nuts.
+
+
 
 * Place Terminal Contacts from each ESC in correct postion of Molex KK 5 x 1 Connector Housing
 
