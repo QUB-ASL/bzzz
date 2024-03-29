@@ -43,7 +43,7 @@ The following files are the files we use for the machines at QUB. If you require
 |[SanDisk 128GB USB](https://www.amazon.co.uk/dp/B07855LJ99/ref=twister_B0BMW6CSWS?_encoding=UTF8&th=1)|1|14|
 |[MPU9250 IMU](https://www.ebay.co.uk/itm/404535708292?itmmeta=01HT0RPGK67JKM68TTB2JH4BAV&hash=item5e30350a84:g:rsgAAOSwO3tko9sC&itmprp=enc%3AAQAJAAAA4Pbl8Zh0yrOJTcmARopfXnFG2OyInuYaBBNBI9iWtS90l0n2Orj88aRGCVnk%2FbWDGaXPm%2BdIJBCpOMhodEu3GlxECfLCABK%2BIlJrFCZL3mOUYb03aV8Eq1PdQVKQTS2GF7MtAG%2FOpDzuAyAHMUXJn%2BxTny9yoU7Nv1JXfU%2B0bybGexRJMGANGh0a9BYgRQGXDrBt2wVqdOid5u69LclJITWxpNjmZhhfZQc8nL6qBlrNd7AHc9aFQsJs9gkn6iHf690Iyrxdid%2BXDLxwP2fGzJlGDD4jY4EPi9OCvYf576sd%7Ctkp%3ABk9SR9SJ2pjQYw)|1|5|
 |[Terabee TR-EVO-60M-I2C (ToF)](https://www.mouser.co.uk/ProductDetail/Terabee/TR-EVO-60M-I2C?qs=OTrKUuiFdkY40qKbhIyQcg%3D%3D&mgh=1&vip=1&utm_id=20797887762&gad_source=1&gclid=CjwKCAjwh4-wBhB3EiwAeJsppHum56FIXwjQGIzYsYOzYrGh84n9l-Po4yk9_-FqA2RmetqPqxtaLBoCNNYQAvD_BwE)|1|113|
-|[BMP180 Pressure Temperature](https://www.ebay.co.uk/itm/155842796879?chn=ps&_ul=GB&_trkparms=ispr%3D1&amdata=enc%3A1AzZtnxarQ0qpVL0sCVC_eg53&norover=1&mkevt=1&mkrid=710-134428-41853-0&mkcid=2&mkscid=101&itemid=155842796879&targetid=1647205088800&device=c&mktype=pla&googleloc=9045199&poi=&campaignid=17206177401&mkgroupid=136851690655&rlsatarget=pla-1647205088800&abcId=9300866&merchantid=505743214&gclid=CjwKCAiA44OtBhAOEiwAj4gpOVfMyBkR8TCBzgzfP1dPT0NulDS75gh1xsRwp9gLvtiJUoT9JKTKlxoCJrYQAvD_BwE)|1|3|
+|[BMP180 Pressure Sensor](https://www.ebay.co.uk/itm/155842796879?chn=ps&_ul=GB&_trkparms=ispr%3D1&amdata=enc%3A1AzZtnxarQ0qpVL0sCVC_eg53&norover=1&mkevt=1&mkrid=710-134428-41853-0&mkcid=2&mkscid=101&itemid=155842796879&targetid=1647205088800&device=c&mktype=pla&googleloc=9045199&poi=&campaignid=17206177401&mkgroupid=136851690655&rlsatarget=pla-1647205088800&abcId=9300866&merchantid=505743214&gclid=CjwKCAiA44OtBhAOEiwAj4gpOVfMyBkR8TCBzgzfP1dPT0NulDS75gh1xsRwp9gLvtiJUoT9JKTKlxoCJrYQAvD_BwE)|1|3|
 |[UBEC Voltage regulator](https://www.3dxr.co.uk/electronics-c78/power-management-c91/voltage-regulators-becs-c101/matek-systems-matek-ubec-duo-4a-5-12v-4a-5v-p2900)|1|20|
 |[USB A to Micro USB](https://www.amazon.co.uk/Bolongking-Plated-Angle-angled-Charge/dp/B07KTXJ28G/ref=asc_df_B07KTXJ28G/?tag=googshopuk-21&linkCode=df0&hvadid=326462779181&hvpos=&hvnetw=g&hvrand=3720108917475740690&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=1006886&hvtargid=pla-657947583815&psc=1)|1|6|
 |Total cost Aproxamation in GBP||230|
@@ -121,25 +121,13 @@ Order the relevent parts above.
 ### Soldering 
 The following outlines the order compontents should be soldered in as some compontents might be covered by others.
 
-#### Power disturbution board (see photo below)
+#### Power disturbution board and ESCs
 * ESCs power supply
 * XT90 connector and UBEC
-
-${\color{red}PHOTO}$
-
-#### ESC PCB
-* 4 x Molex KK 4 x 1 headers
-* 4 signal wires and a ground coming from ESC PCB
-
-${\color{red}PHOTO}$
-
-* Molex KK Terminal Contact to each of the wires coming from ESC PCB (from previous step)
-* Place Terminal Contacts (from previous step) in correct postion of Molex KK 5 x 1 Connector Housing
-
-${\color{red}PHOTO}$
-
-* Molex KK Terminal Contact to each of the small wires on the ESCs
-* Place Terminal Contacts from each ESC in correct postion of Molex KK 4 x 1 Connector Housing
+* Cut header off the three thin wires (Close to header)
+* The black and red thin wires are the BEC outputs and aren't being used. Insulate them (cover any copper) and tape them to ESC 
+* Solder Molex KK Terminal Contact to each of the white signal wires coming from each ESC
+* Place heat sinker on the 3 voltage output wire from ESC and temperaly solder each of the motors to an ESC (wires might need swaped to change direction)
 
 ${\color{red}PHOTO}$
 
@@ -167,9 +155,34 @@ ${\color{red}PHOTO}$
 ${\color{red}PHOTO}$
 
 #### Pi PCB
-* Resistors and diode on bottom side (Check polirity of diode)
-* 
+These components are solderd on bottom side of board
+* Resistor and diode (Check polirity of diode)
+* Pi GPIO Header (keep legs long)
+* 14 x 1 FFC connector
+
+${\color{red}PHOTO}$
+
+These components are solderd on top side of board
+* 4 x 1 Wind header
+* 4 x 1 Recveier header
+* 6 x 1 Power header
+* Buzzer (Check  polarity)
+
 #### Sensor PCB
+* Solder header on BMP180 Presure sensor as shown below
+
+${\color{red}PHOTO}$
+
+* Cut and strip the wires of the Evo ToF as shown below
+* Attach Evo ToF to sensor PBC with (**NEED TO CHECK SIZE**)
+
+${\color{red}PHOTO}$  
+
+
+All components are on the top side of the board
+* 14 x 1 FFC connector
+* BMP180 Presure sensor
+* Evo ToF
 
 ### Screw frame together
 * Place 4 screws (**NEED TO CHECK SIZE**) in underside of controller case for anti-vibration board (you won't be able to access this later).
@@ -179,7 +192,14 @@ ${\color{red}PHOTO}$
 * Attach the 4 legs to the power disturbution board support plate using 8 nuts bolts and washers (**NEED TO CHECK SIZE**) to the inside contoursunk holes only (**PROBABLY NEED A PHOTO TO SHOW THIS**).
 * Attach the sensor board to the power disturbution board and suport board using (**NEED TO CHECK SIZE**).
 * Screw the power disturbution board and suport board to the standoffs on the the 4 frame arms using M2.5x15mm screws.
-* 
+* Place a leg stands for pool noddle in each leg and mark on each leg where the hole needs bored (check orentation is correct).
+* Bore out the hole with a (**NEED TO CHECK SIZE**) drill bit.
+* Atach the leg stands for pool noddle to the bottom of the legs with epoxy resin (or super gule) and.
+* Cut pool noddle to length (at least 40cm) x 2.
+* Tape each Cut pool noddle to the leg stands.
+* Attach the top and bottom part of the propeller gaurds together with (**NEED TO CHECK SIZE**) and epoxy resin (or super gule)
+
+* Place Terminal Contacts from each ESC in correct postion of Molex KK 5 x 1 Connector Housing
 
 
 
