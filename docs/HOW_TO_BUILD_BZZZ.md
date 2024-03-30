@@ -119,7 +119,7 @@ You will need some of these products or an equivalent (e.g. you will need a batt
 Order the relevant parts above.
 
 ### Soldering 
-The following outlines the order components should be soldered in as some components might be covered by others.
+The following outlines the order components should be soldered, as some components might be covered by others.
 
 #### Power disturbution board and ESCs
 * Solder ESCs power supply to each corner of the power distribution board
@@ -193,6 +193,8 @@ All components are soldered on the top side of board
 
 <img width="400" src="images/Sensor_PCB.png"> 
 
+#### Receiver
+
 
 ### How to Build the Flight Controller
 Now that all the soldering is done, the Flight Controller can be put together.
@@ -238,7 +240,7 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 
 ${\color{red}PHOTO}$ 
 
-* Place a leg stands for pool noddle in each leg and mark on each leg where the hole needs bored (check orientation is correct).
+* Place a leg stand for pool noddle in each leg and mark on each leg where the hole needs bored (check orientation is correct).
 * Bore out the hole with a 3mm drill bit.
 * Attach the leg stands for pool noddle to the bottom of the legs with epoxy resin (or super glue) and M3 x 20mm bolts and M3 nuts.
 * Cut pool noddle to length (at least 40cm) x 2.
@@ -248,10 +250,25 @@ ${\color{red}PHOTO}$
 
 * Attach the top and bottom part of the propeller guards together with M3 x 20mm self tappers and epoxy resin (or super glue).
 * Attach a propeller guard and motor stand to each frame arm using the M3x20mm bolts, M3 washers and M3 nuts.
+* Attach the motors to the motor stand using the M3 x 8mm countersunk Screws.
+* Cable tie the ESCs to the arms of the frame.
 
+${\color{red}PHOTO}$ 
 
+* Attach a (**NEED TO CHECK SIZE**) in each slot at the back of the power distribution board. (These will stop the battery going back too far)
+* Place the UBEC flat against the screws mentioned above.
+* Add another (**NEED TO CHECK SIZE**) in each slot to help keep the UBEC in place.
+* Put electrical tape around all 4 screw and the UBEC to make sure it is securely attached to the quadcopter.
 
-* Place Terminal Contacts from each ESC in correct position of Molex KK 5 x 1 Connector Housing
+${\color{red}PHOTO}$ 
+
+* Use double sided tape to stick the receiver  to inside of the front of the controller case.
+* place the receivers antennas through one of the slots in the controller case and tape cablt tie them to the arms or legs approx 90° apart.
+* Use double sided tape to stick the flight controller (Pi and ESP) to the anti-vibration plate.
+* Attach the reciver wires to the correct header on the Pi PCB.
+* Feed the ESC white signal wires through the holes in the controller case.
+* Place the terminal contacts from each ESC signal wires in the correct position of the Molex KK 5 x 1 Connector Housing.
+* Attach the ESC conector from the previous step to the correct header on the Pi PCB.
 
 
 
