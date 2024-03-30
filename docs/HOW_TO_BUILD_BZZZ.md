@@ -202,10 +202,12 @@ Now that all the soldering is done, the Flight Controller can be put together.
 * Screw 4 (**NEED TO CHECK SIZE**) onto the bottom of the Pi
 * Add M3 nuts for the Pi PCB to rest on
 
-<img width="400" src="images/Pi_bolts.png">
+<img width="400" src="images/Pi_with_bolts.png">
 
-* 
+* Place the Pi PCB on top of the Pi (Make sure the GPIO header lines up with the pins)
+* Add M3 nuts to keep the Pi PCB in place and as a spacer for the ESP PCB
 
+<img width="400" src="images/Pi_with_Pi_PCB.png">
 
 
 ### Screw frame together
