@@ -3,8 +3,8 @@ This documentation includes the relevant information on how to build our quadcop
 
 
 ## Parts  
-This section includes all the parts needed to build bzzz and where they can be ordered from (other options avilable).
-You might wamt to order some spares when initially buying incase of an accident or the product goes out of stock.
+This section includes all the parts needed to build bzzz and where they can be ordered from (other options available).
+You might want to order some spares when initially buying in case of an accident or the product goes out of stock.
 
 ### Main Quadcopter parts
 | Part | Quantity | approx. price £ |
@@ -15,14 +15,14 @@ You might wamt to order some spares when initially buying incase of an accident 
 |[1045 Propellers](https://www.amazon.co.uk/Propellers-10x4-5-Flights-Airplane-Adapter/dp/B0848SYBDR/ref=sr_1_3?keywords=1045+propeller&qid=1686927903&sprefix=1045+%2Caps%2C134&sr=8-3)|1|13|
 |[Landing Gear/Frame legs](https://www.unmannedtechshop.co.uk/product/high-landing-gear-for-f450-sk480-f550/?attribute_pa_colour=white-11)|1|4|
 |[Shock Absorber Anti-vibration](https://www.amazon.co.uk/powerday-Absorber-Anti-vibration-Pixhawk-Controller/dp/B07DXFKDDC/ref=sr_1_7?crid=FDJ7Z05X1JZI&keywords=Maxmoral+Flight+Controller+Damping+Board+Anti-Vibration+Shock+Absorber+Plate+Mount+Set+for+Quadcopter+Pixhawk+APM2.5%2F2.6%2FKK%2FMWC&qid=1676933103&sprefix=maxmoral+flight+controller+damping+board+anti-vibration+shock+absorber+plate+mount+set+for+quadcopter+pixhawk+apm2.5%2F2.6%2Fkk%2Fmwc%2Caps%2C72&sr=8-7)|1|5|
-|[Pool Noddel/quadcopter feet](https://www.amazon.co.uk/Hillington-Flexible-Swimming-Pool-Noodles/dp/B01MXEKKBG/ref=sxin_17_pa_sp_search_thematic_sspa?content-id=amzn1.sym.c03b262b-067f-42dc-9432-c79b30f89d17%3Aamzn1.sym.c03b262b-067f-42dc-9432-c79b30f89d17&crid=2KA9RKDI37WVC&cv_ct_cx=pool%2Bnoodle&keywords=pool%2Bnoodle&pd_rd_i=B01MXEKKBG&pd_rd_r=f73a7191-0132-431a-9e58-ad8ae1da2108&pd_rd_w=jQuSZ&pd_rd_wg=Czv74&pf_rd_p=c03b262b-067f-42dc-9432-c79b30f89d17&pf_rd_r=534W1N92J9DWCT804BG5&qid=1686873974&sprefix=pool%2Bnoodle%2Caps%2C154&sr=1-3-ad3222ed-9545-4dc8-8dd8-6b2cb5278509-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWM&th=1&psc=1)|1|15|
+|[Pool Noddle/quadcopter feet](https://www.amazon.co.uk/Hillington-Flexible-Swimming-Pool-Noodles/dp/B01MXEKKBG/ref=sxin_17_pa_sp_search_thematic_sspa?content-id=amzn1.sym.c03b262b-067f-42dc-9432-c79b30f89d17%3Aamzn1.sym.c03b262b-067f-42dc-9432-c79b30f89d17&crid=2KA9RKDI37WVC&cv_ct_cx=pool%2Bnoodle&keywords=pool%2Bnoodle&pd_rd_i=B01MXEKKBG&pd_rd_r=f73a7191-0132-431a-9e58-ad8ae1da2108&pd_rd_w=jQuSZ&pd_rd_wg=Czv74&pf_rd_p=c03b262b-067f-42dc-9432-c79b30f89d17&pf_rd_r=534W1N92J9DWCT804BG5&qid=1686873974&sprefix=pool%2Bnoodle%2Caps%2C154&sr=1-3-ad3222ed-9545-4dc8-8dd8-6b2cb5278509-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWM&th=1&psc=1)|1|15|
 |[RadioLink AT10 II RC + R12DS Receiver](https://www.ebay.co.uk/itm/325829598039?chn=ps&_ul=GB&norover=1&mkevt=1&mkrid=710-134428-41853-0&mkcid=2&mkscid=101&itemid=325829598039&targetid=1403035015187&device=c&mktype=pla&googleloc=9045199&poi=&campaignid=19926858371&mkgroupid=155977582267&rlsatarget=pla-1403035015187&abcId=9311017&merchantid=6995734&gad_source=1&gclid=Cj0KCQjwqpSwBhClARIsADlZ_Tmj8YfiYkLlbhdla_tpo2vwVD3eA0HkCdlmdPkm9l2iNycQ_5g0XSIaAmryEALw_wcB)|1|120|
 |[LiPo Battery GNB 5500mAh 4S 70C (XT90)](https://www.hobbyrc.co.uk/gnb-5500mah-4s-70c-lipo-battery-xt90)|as req.|(each)50|
 |[LiPo Battery GNB 7000mAh 4S 70C (XT90)](https://www.hobbyrc.co.uk/gnb-7000mah-4s-70c-lipo-battery-xt90)|as req.|(each)60|
-|Total cost Aproxamation in GBP||380|
+|Total cost Approximation in GBP||380|
 
 ### 3D Printed and Laser cut parts
-The following files are the files we use for the machines at QUB. If you require a differnt type of file check [here](https://github.com/QUB-ASL/bzzz/tree/main/design/Parts_for_3D_printing_and_laser_cutting) or create an issue [here](https://github.com/QUB-ASL/bzzz/issues/new?assignees=&labels=question%2Chelp+wanted&projects=&template=questions.yml).
+The following files are the files we use for the machines at QUB. If you require a different type of file check [here](https://github.com/QUB-ASL/bzzz/tree/main/design/Parts_for_3D_printing_and_laser_cutting) or create an issue [here](https://github.com/QUB-ASL/bzzz/issues/new?assignees=&labels=question%2Chelp+wanted&projects=&template=questions.yml).
 | Part | Quantity |
 | --- | ---: |
 |[Controller Case](https://github.com/QUB-ASL/bzzz/blob/main/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case%20v6.stl)|1|
@@ -31,7 +31,7 @@ The following files are the files we use for the machines at QUB. If you require
 |[Propeller Guard top half](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Propeller_guards/symmetrical_propeller_guard_top_half.stl)|4|
 |[Propeller Guard bottom half](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Propeller_guards/symmetrical_propeller_guard_bottom_half.stl)|4|
 |[Leg stands for pool noddle](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Frame_parts/Leg_stand_for_pool_noddle%20v2.stl)|2|
-|[Pwer disturbution board suport](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Frame_parts/Quadcopter_base_suport%20Drawing%20v5.cdr)|1|
+|[Power distribution board support](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Frame_parts/Quadcopter_base_suport%20Drawing%20v5.cdr)|1|
 |[Anemometer case (optional)](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Anemometer_parts/Amemometer_case%20v6.stl)|1|
 |[GNSS Base station antenna adapter (optional)](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/GPS_and_antenna_parts/Base_station_adapter%20v7.stl)|1|
 
@@ -46,10 +46,10 @@ The following files are the files we use for the machines at QUB. If you require
 |[BMP180 Pressure Sensor](https://www.ebay.co.uk/itm/155842796879?chn=ps&_ul=GB&_trkparms=ispr%3D1&amdata=enc%3A1AzZtnxarQ0qpVL0sCVC_eg53&norover=1&mkevt=1&mkrid=710-134428-41853-0&mkcid=2&mkscid=101&itemid=155842796879&targetid=1647205088800&device=c&mktype=pla&googleloc=9045199&poi=&campaignid=17206177401&mkgroupid=136851690655&rlsatarget=pla-1647205088800&abcId=9300866&merchantid=505743214&gclid=CjwKCAiA44OtBhAOEiwAj4gpOVfMyBkR8TCBzgzfP1dPT0NulDS75gh1xsRwp9gLvtiJUoT9JKTKlxoCJrYQAvD_BwE)|1|3|
 |[UBEC Voltage regulator](https://www.3dxr.co.uk/electronics-c78/power-management-c91/voltage-regulators-becs-c101/matek-systems-matek-ubec-duo-4a-5-12v-4a-5v-p2900)|1|20|
 |[USB A to Micro USB](https://www.amazon.co.uk/Bolongking-Plated-Angle-angled-Charge/dp/B07KTXJ28G/ref=asc_df_B07KTXJ28G/?tag=googshopuk-21&linkCode=df0&hvadid=326462779181&hvpos=&hvnetw=g&hvrand=3720108917475740690&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=1006886&hvtargid=pla-657947583815&psc=1)|1|6|
-|Total cost Aproxamation in GBP||230|
+|Total cost Approximation in GBP||230|
 
 ### PCBs
-We ordered our PCBs from [JLCPCB](https://jlcpcb.com/) (other options avilable). They have a minimum buy quantity of 5 and a delivery and customs fee of approx £10 - £40 depending on how quickly it needs delevered.
+We ordered our PCBs from [JLCPCB](https://jlcpcb.com/) (other options available). They have a minimum buy quantity of 5 and a delivery and customs fee of approx £10 - £40 depending on how quickly it needs delivered.
 They can have additional offers for first orders etc.
 
 To order from JLCPCB download the .zip files below and upload them to the section "Add gerber file" [here](https://jlcpcb.com/).
@@ -58,7 +58,7 @@ To order from JLCPCB download the .zip files below and upload them to the sectio
 |[ESP PCB](https://github.com/QUB-ASL/bzzz/blob/main/design/PCBs/ESP_PCB/ESP_PCB_1_IMU/Gerber_PCB_DRONE_ESP_SHIELD.zip)|5|2|
 |[Pi PCB](https://github.com/QUB-ASL/bzzz/blob/main/design/PCBs/PI_PCB/PI_PCB_FPC/Gerber_PCB_DRONE_PI_SHIELD_FPC.zip)|5|3|
 |[Sensor PCB](https://github.com/QUB-ASL/bzzz/blob/main/design/PCBs/SENSOR_PCB/SENSOR_PCB_FPC/Gerber_PCB_DRONE_SENSOR_BOARD_FPC.zip)|5|3|
-|Total cost Aproxamation including delivery and customs in GBP||20 - 30|
+|Total cost Approximation including delivery and customs in GBP||20 - 30|
 
 ### General Parts (Screw and Headers etc)
 We order extra screw and headers as we might need to replace them and it works out cheaper per an item.
@@ -85,7 +85,7 @@ We order extra screw and headers as we might need to replace them and it works o
 |[PCB Socket long leg 20 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081703)|1|3.6|
 |[PCB Socket short leg 32 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081707)|1|3.3|
 |[XT-90 Connectors with cable](https://www.amazon.co.uk/Female-Connector-Silicone-RC-Battery/dp/B084M1W4ZH/ref=sr_1_7?crid=3L8CEL774VH79&keywords=xt90%2Bconnectors&qid=1676905240&sprefix=xt90%2Caps%2C84&sr=8-7&th=1)|1|11|
-|Total cost Aproxamation in GBP||115|
+|Total cost Approximation in GBP||115|
 
 ### Optional Anemometer and GNSS
 | Part | Quantity | approx. price £ |
@@ -102,7 +102,7 @@ We order extra screw and headers as we might need to replace them and it works o
 |[UBEC Voltage regulator](https://www.3dxr.co.uk/electronics-c78/power-management-c91/voltage-regulators-becs-c101/matek-systems-matek-ubec-duo-4a-5-12v-4a-5v-p2900)|1|20|
 |[LiPo Battery GNB 8500mAh 4S 70C (XT90)](https://www.hobbyrc.co.uk/gnb-8500mah-4s-150c-dr-1-lipo-battery-xt90)|1|100|
 |[HOLYBRO - Telemetry Radio Set](https://www.3dxr.co.uk/radio-gear-c33/telemetry-c31/433-mhz-telemetry-c32/holybro-sik-telemetry-radio-set-v3-100mw-433mhz-p3021)|1|65|
-|Total cost Aproxamation in GBP||3000|
+|Total cost Approximation in GBP||3000|
 
 ### Others
 You will need some of these products or an equivalent (e.g. you will need a battery charger of some sort), some or optional. 
@@ -116,21 +116,21 @@ You will need some of these products or an equivalent (e.g. you will need a batt
 
 
 ## How to build bzzz
-Order the relevent parts above.
+Order the relevant parts above.
 
 ### Soldering 
-The following outlines the order compontents should be soldered in as some compontents might be covered by others.
+The following outlines the order components should be soldered in as some components might be covered by others.
 
 #### Power disturbution board and ESCs
-* Solder ESCs power supply to each coner of the power disturbution board
-* Solder XT90 connector and UBEC to the center of the power disturbution board
+* Solder ESCs power supply to each corner of the power distribution board
+* Solder XT90 connector and UBEC to the center of the power distribution board
 * Cut header off the three thin wires (Close to header)
 * The black and red thin wires are the BEC outputs and aren't being used. Insulate them (cover any copper) and tape them to ESC
 
   (if you have a V2 ESC, the yellow wire isn't used either and can be insulate and taped to the ESC)
   
 * Solder Molex KK Terminal Contact to each of the white signal wires coming from each ESC
-* Place heat sinker on the 3 voltage output wire from ESC and temperaly solder each of the motors to an ESC (wires might need swaped to change motor spin direction)
+* Place heat sinker on the 3 voltage output wire from ESC and temporally solder each of the motors to an ESC (wires might need swapped to change motor spin direction)
 * Solder Molex KK Terminal Contact to the wires on output 1 of the UBEC
 
 <img width="600" src="images/Power_disturbution_board.png">
@@ -149,28 +149,28 @@ All components are to be soldered on the top side of the board
 * Molex KK 5 x 1 header for ESCs
 
 So far the PCB should look as follows
-* You can now cover the resistors and diode conponets with Kapton or electical tape
+* You can now cover the resistors and diode components with Kapton or electrical tape
   
 <img width="400" src="images/ESP_PCB_no_ESC.png">
 
 * Now solder on the ESP
-* You can now cover the bottom of the PCB with Kapton or electical tape
-* Place IMU in socket with correct orentation as shown below
+* You can now cover the bottom of the PCB with Kapton or electrical tape
+* Place IMU in socket with correct orientation as shown below
 
 <img width="400" src="images/ESP_PCB.png">
 
 #### Pi PCB
-These components are solderd on the bottom side of board
-* Resistor and diode (Check polirity of diode)
+These components are soldered on the bottom side of board
+* Resistor and diode (Check polarity of diode)
 * Pi GPIO Header (keep legs long)
 * 14 x 1 FFC connector
-* You can now cover the resistor and diode conponets with Kapton or electical tape
+* You can now cover the resistor and diode components with Kapton or electrical tape
 
 <img width="400" src="images/Bottom_Pi_PCB.png">
 
-These components are solderd on the top side of board
+These components are soldered on the top side of board
 * 4 x 1 Wind header
-* 4 x 1 Recveier header
+* 4 x 1 Receiver header
 * 6 x 1 Power header
 * Buzzer (Check  polarity)
 
@@ -187,7 +187,7 @@ These components are solderd on the top side of board
 
 All components are soldered on the top side of board
 * 14 x 1 FFC connector
-* BMP180 Presure sensor
+* BMP180 Pressure sensor
 * Evo ToF
 * Attach Evo ToF to sensor PBC with M2 x 10mm bolts and M2 nuts.
 
@@ -228,30 +228,30 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 
 <img width="400" src="images/Controller_case_and_arms.png">
 
-* Attach the 4 legs to the power disturbution board support plate using 8 M2.5 x 15mm bolts, M2.5 washers and M2.5 nuts, to the inside contoursunk holes only.
+* Attach the 4 legs to the power distribution board support plate using 8 M2.5 x 15mm bolts, M2.5 washers and M2.5 nuts, to the inside countersunk holes only.
 
 <img width="400" src="images/LEGS.png">
 
-* Attach the sensor board to the power disturbution board and suport board using (**NEED TO CHECK SIZE**).
+* Attach the sensor board to the power distribution board and support board using (**NEED TO CHECK SIZE**).
 * Attach 8 of the 15mm long M2.5 standoffs to the bottom side of the 4 frame arms (this leaves space for battery).
-* Screw the power disturbution board and suport board to the standoffs on the the 4 frame arms using M2.5 x 15mm screws.
+* Screw the power distribution board and support board to the standoffs on the the 4 frame arms using M2.5 x 15mm screws.
 
 ${\color{red}PHOTO}$ 
 
-* Place a leg stands for pool noddle in each leg and mark on each leg where the hole needs bored (check orentation is correct).
+* Place a leg stands for pool noddle in each leg and mark on each leg where the hole needs bored (check orientation is correct).
 * Bore out the hole with a 3mm drill bit.
-* Attach the leg stands for pool noddle to the bottom of the legs with epoxy resin (or super gule) and M3 x 20mm bolts and M3 nuts.
+* Attach the leg stands for pool noddle to the bottom of the legs with epoxy resin (or super glue) and M3 x 20mm bolts and M3 nuts.
 * Cut pool noddle to length (at least 40cm) x 2.
 * Tape each Cut pool noddle to the leg stands.
 
 ${\color{red}PHOTO}$ 
 
-* Attach the top and bottom part of the propeller gaurds together with M3 x 20mm self tappers and epoxy resin (or super gule).
+* Attach the top and bottom part of the propeller guards together with M3 x 20mm self tappers and epoxy resin (or super glue).
 * Attach a propeller guard and motor stand to each frame arm using the M3x20mm bolts, M3 washers and M3 nuts.
 
 
 
-* Place Terminal Contacts from each ESC in correct postion of Molex KK 5 x 1 Connector Housing
+* Place Terminal Contacts from each ESC in correct position of Molex KK 5 x 1 Connector Housing
 
 
 
