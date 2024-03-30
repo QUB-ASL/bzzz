@@ -193,6 +193,21 @@ All components are soldered on the top side of board
 
 <img width="400" src="images/Sensor_PCB.png"> 
 
+
+### How to Build the Flight Controller
+Now that all the soldering is done, the Flight Controller can be put together.
+
+(You might need to use a round file to make the holes in the PCB slightly bigger.)
+
+* Screw 4 (**NEED TO CHECK SIZE**) onto the bottom of the Pi
+* Add M3 nuts for the Pi PCB to rest on
+
+<img width="400" src="images/Pi_bolts.png">
+
+* 
+
+
+
 ### Screw frame together
 * Screw 4 M3 x 6mm screws into the underside of the controller case for anti-vibration board (you won't be able to access this later).
 
