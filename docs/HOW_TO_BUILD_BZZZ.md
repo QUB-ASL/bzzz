@@ -133,12 +133,12 @@ The following outlines the order components should be soldered in as some compon
 * Place heat sinker on the 3 voltage output wire from ESC and temporally solder each of the motors to an ESC (wires might need swapped to change motor spin direction)
 * Solder Molex KK Terminal Contact to the wires on output 1 of the UBEC
 
-<img width="600" src="images/Power_disturbution_board.png">
+<img width="700" src="images/Power_disturbution_board.png">
 
 #### ESP PCB 
 * Solder header pins on MPU9250 IMU as shown below
   
-<img width="400" src="images/MPU9250.png">
+<img width="200" src="images/MPU9250.png">
 
 All components are to be soldered on the top side of the board
 * Resistors (R1=100Ω, R2-R5=10kΩ)
@@ -179,11 +179,11 @@ These components are soldered on the top side of board
 #### Sensor PCB
 * Solder header on BMP180 Presure sensor as shown below
 
-<img width="400" src="images/BMP180.png">
+<img width="150" src="images/BMP180.png">
 
 * Cut and strip the wires of the Evo ToF as shown below (red wire=1, strip 1,2,7,8, remove rest)
 
-<img width="400" src="images/EvoToF.png">
+<img width="200" src="images/EvoToF.png">
 
 All components are soldered on the top side of board
 * 14 x 1 FFC connector
@@ -226,7 +226,7 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 * Screw controller case onto topside of 4 frame arms (16 M2.5 x 6mm  screws that come with frame).
 * Place anti-vibration board on 4 screw previously inserted and tighten nuts.
 
-<img width="400" src="images/Controller_case_and_arms.png">
+<img width="600" src="images/Controller_case_and_arms.png">
 
 * Attach the 4 legs to the power distribution board support plate using 8 M2.5 x 15mm bolts, M2.5 washers and M2.5 nuts, to the inside countersunk holes only.
 
