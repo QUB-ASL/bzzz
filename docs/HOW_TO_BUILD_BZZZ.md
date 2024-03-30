@@ -133,7 +133,7 @@ The following outlines the order compontents should be soldered in as some compo
 * Place heat sinker on the 3 voltage output wire from ESC and temperaly solder each of the motors to an ESC (wires might need swaped to change motor spin direction)
 * Solder Molex KK Terminal Contact to the wires on output 1 of the UBEC
 
-<img width="400" src="images/Power_disturbution_board.png">
+<img width="600" src="images/Power_disturbution_board.png">
 
 #### ESP PCB 
 * Solder header pins on MPU9250 IMU as shown below
@@ -208,6 +208,14 @@ Now that all the soldering is done, the Flight Controller can be put together.
 * Add M3 nuts to keep the Pi PCB in place and as a spacer for the ESP PCB
 
 <img width="400" src="images/Pi_with_Pi_PCB.png">
+
+* Place the ESP PCB on top of the Pi PCB
+* Add M3 nuts to keep the ESP PCB in place
+* Attach the USB A to Micro USB as shown below
+
+<img width="400" src="images/FC.png">
+
+The Flight Controller is now built. With the USB memory stick you can now follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SETUP.md) or come back to this at a later stage.
 
 
 ### Screw frame together
