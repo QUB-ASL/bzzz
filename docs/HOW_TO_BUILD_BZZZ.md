@@ -149,7 +149,7 @@ All components are to be soldered on the top side of the board
 * Molex KK 5 x 1 header for ESCs
 
 So far the PCB should look as follows
-* You can now cover these conponets with Kapton or electical tape
+* You can now cover the resistors and diode conponets with Kapton or electical tape
   
 <img width="400" src="images/ESP_PCB_no_ESC.png">
 
@@ -160,14 +160,15 @@ So far the PCB should look as follows
 <img width="400" src="images/ESP_PCB.png">
 
 #### Pi PCB
-These components are solderd on bottom side of board
+These components are solderd on the bottom side of board
 * Resistor and diode (Check polirity of diode)
 * Pi GPIO Header (keep legs long)
 * 14 x 1 FFC connector
+* You can now cover the resistor and diode conponets with Kapton or electical tape
 
 <img width="400" src="images/Bottom_Pi_PCB.png">
 
-These components are solderd on top side of board
+These components are solderd on the top side of board
 * 4 x 1 Wind header
 * 4 x 1 Recveier header
 * 6 x 1 Power header
