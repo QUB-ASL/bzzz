@@ -133,12 +133,12 @@ The following outlines the order compontents should be soldered in as some compo
 * Place heat sinker on the 3 voltage output wire from ESC and temperaly solder each of the motors to an ESC (wires might need swaped to change motor spin direction)
 * Solder Molex KK Terminal Contact to the wires on output 1 of the UBEC
 
-${\color{red}PHOTO}$
+<img width="400" src="images/Power_disturbution_board.png">
 
 #### ESP PCB 
 * Solder header pins on MPU9250 IMU as shown below
   
-${\color{red}PHOTO}$
+<img width="400" src="images/MPU9250.png">
 
 All components are to be soldered on the top side of the board
 * Resistors (R1=100Ω, R2-R5=10kΩ)
@@ -151,13 +151,13 @@ All components are to be soldered on the top side of the board
 So far the PCB should look as follows
 * You can now cover these conponets with Kapton or electical tape
   
-${\color{red}PHOTO}$
+<img width="400" src="images/ESP_PCB_no_ESC.png">
 
-* Now solder on the ESP as shown below
+* Now solder on the ESP
 * You can now cover the bottom of the PCB with Kapton or electical tape
 * Place IMU in socket with correct orentation as shown below
 
-${\color{red}PHOTO}$
+<img width="400" src="images/ESP_PCB.png">
 
 #### Pi PCB
 These components are solderd on bottom side of board
@@ -165,7 +165,7 @@ These components are solderd on bottom side of board
 * Pi GPIO Header (keep legs long)
 * 14 x 1 FFC connector
 
-${\color{red}PHOTO}$
+<img width="400" src="images/Bottom_Pi_PCB.png">
 
 These components are solderd on top side of board
 * 4 x 1 Wind header
@@ -173,16 +173,16 @@ These components are solderd on top side of board
 * 6 x 1 Power header
 * Buzzer (Check  polarity)
 
-${\color{red}PHOTO}$
+<img width="400" src="images/Top_Pi_PCB.png">
 
 #### Sensor PCB
 * Solder header on BMP180 Presure sensor as shown below
 
-${\color{red}PHOTO}$
+<img width="400" src="images/BMP180.png">
 
 * Cut and strip the wires of the Evo ToF as shown below (red wire=1, strip 1,2,7,8, remove rest)
 
-${\color{red}PHOTO}$  
+<img width="400" src="images/EvoToF.png">
 
 All components are soldered on the top side of board
 * 14 x 1 FFC connector
@@ -190,18 +190,21 @@ All components are soldered on the top side of board
 * Evo ToF
 * Attach Evo ToF to sensor PBC with M2 x 10mm bolts and M2 nuts.
 
-${\color{red}PHOTO}$  
+<img width="400" src="images/Sensor_PCB.png"> 
 
 ### Screw frame together
 * Screw 4 M3 x 6mm screws into the underside of the controller case for anti-vibration board (you won't be able to access this later).
+
+<img width="400" src="images/Controller_case_with_bolts.png">
+
 * Screw controller case onto topside of 4 frame arms (16 M2.5 x 6mm  screws that come with frame).
 * Place anti-vibration board on 4 screw previously inserted and tighten nuts.
 
-${\color{red}PHOTO}$ 
+<img width="400" src="images/Controller_case_and_arms.png">
 
 * Attach the 4 legs to the power disturbution board support plate using 8 M2.5 x 15mm bolts, M2.5 washers and M2.5 nuts, to the inside contoursunk holes only.
 
-${\color{red}PHOTO}$ 
+<img width="400" src="images/LEGS.png">
 
 * Attach the sensor board to the power disturbution board and suport board using (**NEED TO CHECK SIZE**).
 * Attach 8 of the 15mm long M2.5 standoffs to the bottom side of the 4 frame arms (this leaves space for battery).
