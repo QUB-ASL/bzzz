@@ -61,15 +61,20 @@ To order from JLCPCB download the .zip files below and upload them to the sectio
 |Total cost Approximation including delivery and customs in GBP||20 - 30|
 
 ### General Parts (Screw and Headers etc)
-We order extra screw and headers as we might need to replace them and it works out cheaper per an item.
+We order extra screw and headers as we might need to replace them and it works out cheaper per an item (other options available).
 | Part | Quantity | approx. price £ |
 | --- | ---: | ---: |
 |[Hex Countersunk Screw M3 x 8mm](https://uk.rs-online.com/web/p/socket-screws/3044918)|box of 50|7|
 |[Hex Cap Screw M3 x 20mm](https://uk.rs-online.com/web/p/socket-screws/4733530)|box of 100|10|
-|[M3 Lock Nuts](https://uk.rs-online.com/web/p/hex-nuts/0524281)|box of 100|6|
-|[Washers](https://uk.rs-online.com/web/p/washers/4899488)|box of 200|3|
-|[M2.5, 15mm standoff]()|box of 10|6|
+|[Pozidriv Pan Screws M3 x 30mm](https://uk.rs-online.com/web/p/machine-screws/0560647)|box of 100|5|
+|[Pozidriv Pan Screws M3 x 6mm](https://uk.rs-online.com/web/p/machine-screws/0560580)|box of 100|3|
+|[M3 Lock Nuts](https://uk.rs-online.com/web/p/hex-nuts/0524281)|box of 100|5.5|
+|[M3 Washers](https://uk.rs-online.com/web/p/washers/4899488)|box of 200|3|
+|[M2.5, 15mm standoff](https://uk.rs-online.com/web/p/standoffs/2052955)|box of 10|6|
 |[Hex Cap Screw M2.5 x 15mm](https://uk.rs-online.com/web/p/socket-screws/4733445)|box of 50|7.7|
+|[Slot Pan Screws M2.5 x 10mm](https://uk.rs-online.com/web/p/machine-screws/9087582)|box of 100|3.3|
+|[M2.5 Washers](https://uk.rs-online.com/web/p/washers/0560322)|box of 250|3.4|
+|[M2.5 Nuts](https://uk.rs-online.com/web/p/hex-nuts/6934889)|box of 50|2.3|
 |[Molex KK Crimp Terminal Contact](https://uk.rs-online.com/web/p/crimp-contacts/0467598)|box of 100|15|
 |[Molex KK Pin Header, 2 x 1](https://uk.rs-online.com/web/p/pcb-headers/4838461)|box of 10|2.5|
 |[Molex KK Pin Header, 4 x 1](https://uk.rs-online.com/web/p/pcb-headers/4838483)|box of 10|3.7|
@@ -82,10 +87,9 @@ We order extra screw and headers as we might need to replace them and it works o
 |[1mm Pitch 14 Way Straight FFC connector](https://uk.rs-online.com/web/p/fpc-connectors/7632578)|box of 5|8.8|
 |[1mm Pitch 14 Way FFC cable 20cm](https://www.mouser.co.uk/ProductDetail/Wurth-Elektronik/686714200001?qs=sGAEpiMZZMuuPJj6pSfD6Q4dde1ofFDUsmGX7ZLZjryLo0snSgGnhQ%3D%3D)|1|2.6|
 |[GPIO Header for Pi](https://thepihut.com/products/gpio-stacking-header-for-pi-a-b-pi-2-pi-3)|1|2.2|
-|[PCB Socket long leg 20 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081703)|1|3.6|
-|[PCB Socket short leg 32 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081707)|1|3.3|
+|[PCB Socket 32 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081707)|1|3.3|
 |[XT-90 Connectors with cable](https://www.amazon.co.uk/Female-Connector-Silicone-RC-Battery/dp/B084M1W4ZH/ref=sr_1_7?crid=3L8CEL774VH79&keywords=xt90%2Bconnectors&qid=1676905240&sprefix=xt90%2Caps%2C84&sr=8-7&th=1)|1|11|
-|Total cost Approximation in GBP||115|
+|Total cost Approximation in GBP||???|
 
 ### Optional Anemometer and GNSS
 | Part | Quantity | approx. price £ |
@@ -209,7 +213,7 @@ Now that all the soldering is done, the Flight Controller can be put together.
 
 (You might need to use a round file to make the holes in the PCB slightly bigger.)
 
-* Screw 4 (**NEED TO CHECK SIZE**) onto the bottom of the Pi
+* Attach 4 M3 x 30mm bolts with M3 nuts onto the bottom of the Pi
 * Add M3 nuts for the Pi PCB to rest on
 
 <img width="400" src="images/Pi_with_bolts.png">
@@ -238,7 +242,7 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 
 <img width="600" src="images/Controller_case_and_arms.png">
 
-* Attach the 4 legs to the power distribution board support plate using 8 M2.5 x 15mm bolts, M2.5 washers and M2.5 nuts, to the inside countersunk holes only.
+* Attach the 4 legs to the power distribution board support plate using 8 M2.5 x 12mm bolts, M2.5 washers and M2.5 nuts, to the inside countersunk holes only.
 
 <img width="400" src="images/LEGS.png">
 
@@ -263,9 +267,9 @@ ${\color{red}PHOTO}$
 
 ${\color{red}PHOTO}$ 
 
-* Attach a (**NEED TO CHECK SIZE**) in each slot at the back of the power distribution board. (These will stop the battery going back too far)
+* Attach a M3 x 30mm bolts with M3 washers and nuts in each slot at the back of the power distribution board. (These will stop the battery going back too far)
 * Place the UBEC flat against the screws mentioned above.
-* Add another (**NEED TO CHECK SIZE**) in each slot to help keep the UBEC in place.
+* Add another M3 x 30mm bolts with M3 washers and nuts in each slot to help keep the UBEC in place.
 * Put electrical tape around all 4 screw and the UBEC to make sure it is securely attached to the quadcopter.
 
 ${\color{red}PHOTO}$ 
