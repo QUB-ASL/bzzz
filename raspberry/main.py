@@ -1,10 +1,10 @@
-import numpy as np  # for matrix based calculations
+import numpy as np
 import time
 import datetime
 import bzzz.util.constants as constants
 
-from time import time_ns  # function to get system-up time in nano seconds
-from bzzz.controllers.altitude_controller import *  # altitude hold controller
+from time import time_ns
+from bzzz.controllers.altitude_controller import *
 from bzzz.estimators.altitude_hold_kalman_filter import *
 from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
 from bzzz.read_sbus import RC
@@ -16,6 +16,7 @@ from bzzz.sensors.anemometer import Anemometer
 from bzzz.sensors.gnss import Gnss
 from bzzz.sensors.data_logger import DataLogger
 from bzzz.sensors.filters import *
+from raspberry.bzzz.controllers import position_controller
 
 
 if __name__ == '__main__':
@@ -36,6 +37,7 @@ if __name__ == '__main__':
         meas_cov=kf_params["meas_cov"])
     altitude_ctrl = AltitudeController()
     rc = RC()
+    position_ctrl = position_controller.PositionController()  # Instantiate PositionController
 
     class EmergencyMeasures(Enum):
         NO_PROBLEM = 0
@@ -113,6 +115,12 @@ if __name__ == '__main__':
         data_to_log[6] = radio_data.throttle_reference_percentage()
         logger.record(current_timestamp, data_to_log)
 
+    def position_control(radio_data, gps):
+        position_ctrl.set_gnss_device(gps)
+        position_ctrl.set_radio_data(radio_data)
+        position_ctrl.set_reference_position()
+        position_ctrl.apply_control()
+
     def control_loop(tof, bar, gps, esp_bridge):
         connection_lost_flag, radio_data = rc.get_radio_data()
         radio_data = RadioData(radio_data)
@@ -133,7 +141,7 @@ if __name__ == '__main__':
         y_bar = bar.altitude
         y_gps = gps.altitude
         y = np.array([y_tof, y_bar, y_gps])
-        
+
         if y > min_altitude_hold_altitude:
             altitude_estimator(radio_data, y)  # deals with nans
 
@@ -141,8 +149,13 @@ if __name__ == '__main__':
             case ThreeWaySwitch.MID.value:
                 if y > min_altitude_hold_altitude:
                     altitude_control(radio_data)
+            case ThreeWaySwitch.DOWN.value:
+                if y > min_altitude_hold_altitude:
+                    altitude_control(radio_data)
+                    position_control(radio_data, gps)
             case _:
                 altitude_ctrl.set_altitude_reference(tof.distance)
+                position_ctrl.set_reference_position()
 
         esp_bridge.send_to_esp(radio_data)
         record_black_box_data(radio_data, y)

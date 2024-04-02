@@ -184,6 +184,12 @@ class RadioData:
 
     def set_throttle(self, throttle):
         self.m_channelData[RADIO_CHANNEL_THROTTLE] = throttle
+        
+    def set_roll(self, roll):
+        self.m_channelData[RADIO_CHANNEL_ROLL] = roll
+        
+    def set_pitch(self, pitch):
+        self.m_channelData[RADIO_CHANNEL_PITCH] = pitch
 
     def set_switch_D(self, switch_value=True):
         # True = Kill = Down
