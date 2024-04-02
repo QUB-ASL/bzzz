@@ -123,6 +123,11 @@ You will need some of these products or an equivalent (e.g. you will need a batt
 ## How to build bzzz
 Order the relevant parts above.
 
+### Header and connector housing labeling configuration
+When lableing headers and connector housing, we go from left to right. The figures below show the correct orentation for labling the headers and connector housing.
+
+${\color{red}PHOTO}$ 
+
 ### Soldering 
 The following outlines the order components should be soldered, as some components might be covered by others.
 
