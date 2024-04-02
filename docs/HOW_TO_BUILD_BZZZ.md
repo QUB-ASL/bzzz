@@ -89,6 +89,7 @@ We order extra screw and headers as we might need to replace them and it works o
 |[GPIO Header for Pi](https://thepihut.com/products/gpio-stacking-header-for-pi-a-b-pi-2-pi-3)|1|2.2|
 |[PCB Socket 32 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081707)|1|3.3|
 |[XT-90 Connectors with cable](https://www.amazon.co.uk/Female-Connector-Silicone-RC-Battery/dp/B084M1W4ZH/ref=sr_1_7?crid=3L8CEL774VH79&keywords=xt90%2Bconnectors&qid=1676905240&sprefix=xt90%2Caps%2C84&sr=8-7&th=1)|1|11|
+|[24AWG 10 colour wire kit](https://cpc.farnell.com/velleman-sa/k-mow/wire-kit-8x5m-2x10m-24awg-multicore/dp/MK00170)|1|11.3|
 |Total cost Approximation in GBP||???|
 
 ### Optional Anemometer and GNSS
@@ -274,13 +275,25 @@ ${\color{red}PHOTO}$
 
 ${\color{red}PHOTO}$ 
 
-* Use double sided tape to stick the receiver  to inside of the front of the controller case.
+* Use double sided tape to stick the receiver to inside of the front of the controller case.
 * place the receivers antennas through one of the slots in the controller case and tape cable tie them to the arms or legs approx 90° apart.
-* Use double sided tape to stick the flight controller (Pi and ESP) to the anti-vibration plate.
+
+${\color{red}PHOTO}$ 
+  
+* Attach the 14 Way FFC cable to the Pi PCB.
+* Use double sided tape to stick the flight controller (Pi and ESP) to the anti-vibration plate and place the FFC cable through the slot in the controller case.
+* Attach the 14 Way FFC cable to the Sensor PCB.
+
+${\color{red}PHOTO}$ 
+
 * Attach the reviver wires to the correct header on the Pi PCB.
 * Feed the ESC white signal wires through the holes in the controller case.
-* Place the terminal contacts from each ESC signal wires in the correct position of the Molex KK 5 x 1 Connector Housing.
+* Place the terminal contacts from each ESC signal wires in the correct position of the Molex KK 5 x 1 Connector Housing (back left, back right, front left, front right).
 * Attach the ESC connector from the previous step to the correct header on the Pi PCB.
+* Feed the wires on output 1 of the UBEC through the holes in the controller case.
+* Place the terminal contacts from output 1 of the UBEC in the correct position of the Molex KK 6 x 1 Connector Housing (Ground, 4 blanks, Power).
+* Attach the Power (UBEC) connector from the previous step to the correct header on the Pi PCB.
 
+${\color{red}PHOTO}$ 
 
 
