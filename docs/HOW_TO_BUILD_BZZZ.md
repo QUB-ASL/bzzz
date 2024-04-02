@@ -237,7 +237,7 @@ Now that all the soldering is done, the Flight Controller can be put together.
 
 <img width="400" src="images/FC.png">
 
-The Flight Controller is now built. With the USB memory stick you can now follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SOFTWARE_SETUP.md) or come back to this at a later stage.
+The Flight Controller is now built. With the USB memory stick you can now follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SETUP.md) or come back to this at a later stage.
 
 
 ### Screw frame together
