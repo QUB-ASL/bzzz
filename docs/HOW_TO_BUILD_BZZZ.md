@@ -123,13 +123,14 @@ The following outlines the order components should be soldered, as some componen
 
 #### Power disturbution board and ESCs
 * Solder ESCs power supply to each corner of the power distribution board
-* Solder XT90 connector and UBEC to the center of the power distribution board
-* Cut header off the three thin wires (Close to header)
+* Solder XT90 connector and UBEC power supply to the center of the power distribution board
+* Cut the header off the three thin wires (Close to header)
 * The black and red thin wires are the BEC outputs and aren't being used. Insulate them (cover any copper) and tape them to ESC
 
   (if you have a V2 ESC, the yellow wire isn't used either and can be insulate and taped to the ESC)
   
 * Solder Molex KK Terminal Contact to each of the white signal wires coming from each ESC
+* Cut of the connectors on the 3 voltage output wire from ESC
 * Place heat sinker on the 3 voltage output wire from ESC and temporally solder each of the motors to an ESC (wires might need swapped to change motor spin direction)
 * Solder Molex KK Terminal Contact to the wires on output 1 of the UBEC
 
@@ -194,6 +195,13 @@ All components are soldered on the top side of board
 <img width="400" src="images/Sensor_PCB.png"> 
 
 #### Receiver
+* Cut 3 wires approx 20cm long. (signal, power, ground)
+* Solder one end of each wire to a 3 x 1 PCB socket in the order: signal, power, ground
+* Solder Molex KK Terminal Contact to the other end of each wire
+* Place the terminal contacts from each wire in the correct position of the Molex KK 4 x 1 Connector Housing (Blank, ground, signal, power)
+* Push the 3 x 1 PCB socket into the bottom of the receiver (check orientation)
+
+${\color{red}PHOTO}$ 
 
 
 ### How to Build the Flight Controller
