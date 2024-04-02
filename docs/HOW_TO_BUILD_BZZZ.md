@@ -64,18 +64,18 @@ To order from JLCPCB download the .zip files below and upload them to the sectio
 We order extra screw and headers as we might need to replace them and it works out cheaper per an item (other options available).
 | Part | Quantity | approx. price £ |
 | --- | ---: | ---: |
-|[Hex Countersunk Screw M3 x 8mm](https://uk.rs-online.com/web/p/socket-screws/3044918)|box of 50|7|
-|[Hex Cap Screw M3 x 20mm](https://uk.rs-online.com/web/p/socket-screws/4733530)|box of 100|10|
-|[Pozidriv Pan Screws M3 x 30mm](https://uk.rs-online.com/web/p/machine-screws/0560647)|box of 100|5|
-|[Pozidriv Pan Screws M3 x 6mm](https://uk.rs-online.com/web/p/machine-screws/0560580)|box of 100|3|
-|[Hex Grub Screw M3 x 6mm](https://uk.rs-online.com/web/p/grub-screws/0137720)|box of 50|11.7|
-|[M3 Lock Nuts](https://uk.rs-online.com/web/p/hex-nuts/0524281)|box of 100|5.5|
+|[M3 x 8mm Socket Countersunk Screws](https://www.accu.co.uk/countersunk-socket-head-screws/5423-SSK-M3-8-A2)|24|2.2|
+|[M3 x 20mm Hex Cap Screws](https://www.accu.co.uk/metric-cap-head-screws/2802-SSC-M3-20-A2)|50|3|
+|[M3 x 30mm Pozi Pan Screws ](https://www.accu.co.uk/pozi-pan-head-screws/9278-SPP-M3-30-A2)|12|2|
+|[M3 x 6mm Slotted Pan Head Screws](https://www.accu.co.uk/metric-pan-head-screws/6965-SFP-M3-6-A2)|6|1.3|
+|[M3 x 6mm Hex Grub Screws](https://www.accu.co.uk/cup-point-set-screws/5011-SSU-M3-6-A2)|6|1.5|
+|[M3 Lock Nuts](https://www.accu.co.uk/hexagon-nylon-locking-nuts/7944-HNN-M3-A2)|50|2.5|
 |[M3 Washers](https://uk.rs-online.com/web/p/washers/4899488)|box of 200|3|
 |[M2.5, 15mm standoff](https://uk.rs-online.com/web/p/standoffs/2052955)|box of 10|6|
-|[Hex Cap Screw M2.5 x 15mm](https://uk.rs-online.com/web/p/socket-screws/4733445)|box of 50|7.7|
-|[Slot Pan Screws M2.5 x 10mm](https://uk.rs-online.com/web/p/machine-screws/9087582)|box of 100|3.3|
+|[M2.5 x 14mm Hex Cap Screws](https://www.accu.co.uk/metric-cap-head-screws/3808-SSCF-M2-5-14-A2)|12|1.8|
+|[M2.5 x 10mm Slotted Pan Screws](https://www.accu.co.uk/metric-pan-head-screws/6954-SFP-M2-5-10-A2)|12|1.7|
 |[M2.5 Washers](https://uk.rs-online.com/web/p/washers/0560322)|box of 250|3.4|
-|[M2.5 Nuts](https://uk.rs-online.com/web/p/hex-nuts/6934889)|box of 50|2.3|
+|[M2.5 Nuts](https://uk.rs-online.com/web/p/hex-nuts/6934889)|50|2.3|
 |[No.4 x 3/4 inch Pozi Self Tapping Screws](https://www.accu.co.uk/pozi-self-tapping-flanged-button-screws/403323-SPBFT-No-4-3-4-A2)|24|2.9|
 |[Molex KK Crimp Terminal Contact](https://uk.rs-online.com/web/p/crimp-contacts/0467598)|box of 100|15|
 |[Molex KK Pin Header, 2 x 1](https://uk.rs-online.com/web/p/pcb-headers/4838461)|box of 10|2.5|
@@ -92,7 +92,7 @@ We order extra screw and headers as we might need to replace them and it works o
 |[PCB Socket 32 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081707)|1|3.3|
 |[XT-90 Connectors with cable](https://www.amazon.co.uk/Female-Connector-Silicone-RC-Battery/dp/B084M1W4ZH/ref=sr_1_7?crid=3L8CEL774VH79&keywords=xt90%2Bconnectors&qid=1676905240&sprefix=xt90%2Caps%2C84&sr=8-7&th=1)|1|11|
 |[24AWG 10 colour wire kit](https://cpc.farnell.com/velleman-sa/k-mow/wire-kit-8x5m-2x10m-24awg-multicore/dp/MK00170)|1|11.3|
-|Total cost Approximation in GBP||???|
+|Total cost Approximation in GBP||115|
 
 ### Optional Anemometer and GNSS
 | Part | Quantity | approx. price £ |
