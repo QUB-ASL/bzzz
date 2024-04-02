@@ -263,12 +263,12 @@ ${\color{red}PHOTO}$
 ${\color{red}PHOTO}$ 
 
 * Use double sided tape to stick the receiver  to inside of the front of the controller case.
-* place the receivers antennas through one of the slots in the controller case and tape cablt tie them to the arms or legs approx 90° apart.
+* place the receivers antennas through one of the slots in the controller case and tape cable tie them to the arms or legs approx 90° apart.
 * Use double sided tape to stick the flight controller (Pi and ESP) to the anti-vibration plate.
-* Attach the reciver wires to the correct header on the Pi PCB.
+* Attach the reviver wires to the correct header on the Pi PCB.
 * Feed the ESC white signal wires through the holes in the controller case.
 * Place the terminal contacts from each ESC signal wires in the correct position of the Molex KK 5 x 1 Connector Housing.
-* Attach the ESC conector from the previous step to the correct header on the Pi PCB.
+* Attach the ESC connector from the previous step to the correct header on the Pi PCB.
 
 
 
