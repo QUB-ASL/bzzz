@@ -190,7 +190,7 @@ These components are soldered on the top side of board
 <img width="400" src="images/Top_Pi_PCB.png">
 
 #### Sensor PCB
-* Solder header on BMP180 Presure sensor as shown below
+* Solder header on BMP180 Pressure sensor as shown below
 
 <img width="150" src="images/BMP180.png">
 
@@ -309,9 +309,9 @@ ${\color{red}PHOTO}$
 * Push the carbon tube into the lid and secure it with M3 x 6mm Grub Screw.
 * Plug the cable into the anemometer.
 * Put the cable down the inside of the carbon tube and attach the anemometer With the North arrow facing forwards with respect to the quadcopter.
-* Attach the anemometer case to the carbon tube with **M4 and M6** nuts and bolts and the GNSS antenna cabe slot facing forwards with respect to the quadcopter.
+* Attach the anemometer case to the carbon tube with **M4 and M6** nuts and bolts and the GNSS antenna cable slot facing forwards with respect to the quadcopter.
 * Cut the cable approx 15cm past the lid.
-* Strip the black outside insulator of the cable back 15cm (This leaves the cable more flexable).
+* Strip the black outside insulator of the cable back 15cm (This leaves the cable more flexible).
 * Solder Molex KK Terminal Contact to the Brown/Burgundy, Light Green and Grey wires.
 * Solder one Molex KK Terminal Contact to the Red and Black wires together.
 * Place the terminal contacts from the anemometer in the correct position of a Molex KK 4 x 1 Connector Housing (Power(Brown/Burgundy), Ground(Black and Red), RX(Grey) TX(Light Green)).
@@ -343,7 +343,7 @@ ${\color{red}PHOTO}$
 #### Quadcopter GNSS 
 * Attach the GNSS module to the inside of the lid with the M3 x 20mm bolts and M3 nuts.
 * Attach the SMA connector of the cable to the GNSS module.
-* Check the length the antenna cable needs to be to go from the GNSS module to the top of the annemometer case (where the antenna will be) and cut it.
+* Check the length the antenna cable needs to be to go from the GNSS module to the top of the anemometer case (where the antenna will be) and cut it.
 * Solder the MMCX connector to the cable.
 * Push the MMCX connector into the GNSS antenna (Tallysman 33-SSL889XF).
 * Attach the GNSS antenna to the anemometer case with double sided tape, with the North marking facing forwards with respect to the quadcopter (the antenna cable will line up with the slot in the case).
