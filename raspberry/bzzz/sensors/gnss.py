@@ -74,7 +74,7 @@ class Gnss:
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
         Continuously reads GPS data from the serial port, parsing GNGLL
-        messages for latitude and longitude, and GPGSV messages for altitude,
+        messages for latitude and longitude, and GNGGA messages for altitude,
         updating the object's GPS attributes accordingly. 
 
         :param serial_path: Serial port path
