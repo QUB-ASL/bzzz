@@ -68,6 +68,7 @@ We order extra screw and headers as we might need to replace them and it works o
 |[Hex Cap Screw M3 x 20mm](https://uk.rs-online.com/web/p/socket-screws/4733530)|box of 100|10|
 |[Pozidriv Pan Screws M3 x 30mm](https://uk.rs-online.com/web/p/machine-screws/0560647)|box of 100|5|
 |[Pozidriv Pan Screws M3 x 6mm](https://uk.rs-online.com/web/p/machine-screws/0560580)|box of 100|3|
+|[Hex Grub Screw M3 x 6mm](https://uk.rs-online.com/web/p/grub-screws/0137720)|box of 50|11.7|
 |[M3 Lock Nuts](https://uk.rs-online.com/web/p/hex-nuts/0524281)|box of 100|5.5|
 |[M3 Washers](https://uk.rs-online.com/web/p/washers/4899488)|box of 200|3|
 |[M2.5, 15mm standoff](https://uk.rs-online.com/web/p/standoffs/2052955)|box of 10|6|
@@ -75,6 +76,7 @@ We order extra screw and headers as we might need to replace them and it works o
 |[Slot Pan Screws M2.5 x 10mm](https://uk.rs-online.com/web/p/machine-screws/9087582)|box of 100|3.3|
 |[M2.5 Washers](https://uk.rs-online.com/web/p/washers/0560322)|box of 250|3.4|
 |[M2.5 Nuts](https://uk.rs-online.com/web/p/hex-nuts/6934889)|box of 50|2.3|
+|[No.4 x 3/4 inch Pozi Self Tapping Screws](https://www.accu.co.uk/pozi-self-tapping-flanged-button-screws/403323-SPBFT-No-4-3-4-A2)|24|2.9|
 |[Molex KK Crimp Terminal Contact](https://uk.rs-online.com/web/p/crimp-contacts/0467598)|box of 100|15|
 |[Molex KK Pin Header, 2 x 1](https://uk.rs-online.com/web/p/pcb-headers/4838461)|box of 10|2.5|
 |[Molex KK Pin Header, 4 x 1](https://uk.rs-online.com/web/p/pcb-headers/4838483)|box of 10|3.7|
@@ -126,7 +128,7 @@ Order the relevant parts above.
 ### Header and connector housing labeling configuration
 When labeling headers and connector housing, we go from left to right. The figures below show the correct orientation for labeling the headers and connector housing.
 
-${\color{red}PHOTO}$ 
+<img width="400" src="images/Headers.png">
 
 ### Soldering 
 The following outlines the order components should be soldered, as some components might be covered by others.
@@ -208,7 +210,7 @@ All components are soldered on the top side of board
 * Cut 3 wires approx 20cm long. (signal, power, ground)
 * Solder one end of each wire to a 3 x 1 PCB socket in the order: signal, power, ground
 * Solder Molex KK Terminal Contact to the other end of each wire
-* Place the terminal contacts from each wire in the correct position of the Molex KK 4 x 1 Connector Housing (Blank, ground, signal, power)
+* Place the terminal contacts from each wire in the correct position of a Molex KK 4 x 1 Connector Housing (Blank, ground, signal, power)
 * Push the 3 x 1 PCB socket into the bottom of the receiver (check orientation)
 
 ${\color{red}PHOTO}$ 
@@ -293,12 +295,31 @@ ${\color{red}PHOTO}$
 
 * Attach the reviver wires to the correct header on the Pi PCB.
 * Feed the ESC white signal wires through the holes in the controller case.
-* Place the terminal contacts from each ESC signal wires in the correct position of the Molex KK 5 x 1 Connector Housing (back left, back right, front left, front right).
+* Place the terminal contacts from each ESC signal wires in the correct position of a Molex KK 5 x 1 Connector Housing (back left, back right, front left, front right).
 * Attach the ESC connector from the previous step to the correct header on the Pi PCB.
 * Feed the wires on output 1 of the UBEC through the holes in the controller case.
-* Place the terminal contacts from output 1 of the UBEC in the correct position of the Molex KK 6 x 1 Connector Housing (Ground, 4 blanks, Power).
+* Place the terminal contacts from output 1 of the UBEC in the correct position of a Molex KK 6 x 1 Connector Housing (Ground, 4 blanks, Power).
 * Attach the Power (UBEC) connector from the previous step to the correct header on the Pi PCB.
 
 ${\color{red}PHOTO}$ 
+
+
+### Anemometer and GNSS
+* Cut the carbon fibre tube (at least) 40cm long with a hacksaw (back strokes only).
+* Push the carbon tube into the lid and secure it with M3 x 6mm Grub Screw.
+* Plug the cable into the anemometer.
+* Put the cable down the inside of the carbon tube and attach the anemometer With the North arrow facing forwards with respect to the quadcopter.
+* Attach the anemometer case to the carbon tube with **M4 and M6** nuts and bolts and the GNSS antenna cabe slot facing forwards with respect to the quadcopter.
+* Cut the cable approx 15cm past the lid.
+* Strip the black outside insulator of the cable back 15cm (This leaves the cable more flexable).
+* Solder Molex KK Terminal Contact to the Brown/Burgundy, Light Green and Grey wires.
+* Solder one Molex KK Terminal Contact to the Red and Black wires together.
+* Place the terminal contacts from the anemometer in the correct position of a Molex KK 4 x 1 Connector Housing (Power(Brown/Burgundy), Ground(Black and Red), RX(Grey) TX(Light Green)).
+
+${\color{red}PHOTO}$ 
+
+
+
+
 
 
