@@ -304,7 +304,7 @@ ${\color{red}PHOTO}$
 ${\color{red}PHOTO}$ 
 
 
-### Anemometer and GNSS
+### Anemometer
 * Cut the carbon fibre tube (at least) 40cm long with a hacksaw (back strokes only).
 * Push the carbon tube into the lid and secure it with M3 x 6mm Grub Screw.
 * Plug the cable into the anemometer.
@@ -318,23 +318,45 @@ ${\color{red}PHOTO}$
 
 ${\color{red}PHOTO}$ 
 
-* Solder a Molex KK 2 x 1 header to the (**NEED TO CHECK**) on the quadcopter GNSS module (SparkFun ZED-F9R).
-* Solder a Molex KK 6 x 1 header to the (**NEED TO CHECK**) on the quadcopter GNSS module (SparkFun ZED-F9R).
+
+### GNSS
+#### Prepare the GNSS Modules and Telemetry Radio
+* Solder a Molex KK 2 x 1 header to the 5V and Ground on the quadcopter GNSS module (SparkFun ZED-F9R).
+* Solder a Molex KK 6 x 1 header to the top row that includes the RX2 and TX2 (beside the USB C port) on the quadcopter GNSS module (SparkFun ZED-F9R).
 
 ${\color{red}PHOTO}$ 
 
+* Solder a Molex KK ?? x 1 header to the (**NEED TO CHECK**) on the quadcopter GNSS module (SparkFun ZED-F9P).
+* Solder a Molex KK ?? x 1 header to the (**NEED TO CHECK**) on the quadcopter GNSS module (SparkFun ZED-F9P).
+
+${\color{red}PHOTO}$ 
+
+* Cut the header of the Holybro Telemetry Radio.
+* Solder Molex KK terminal contacts to the 5V, Ground TX and RX of the telemetry radio.
+* Put the 5V and Ground Terminal Contacts into the correct position of a Molex KK 2 x 1 Connector Housing.
+* Put the TX and RX Terminal Contacts into the correct position of a Molex KK 6 x 1 Connector Housing.
+* Place the Connector Housing onto the correct headers.
+
+${\color{red}PHOTO}$ 
+
+
+#### Quadcopter GNSS 
 * Attach the GNSS module to the inside of the lid with the M3 x 20mm bolts and M3 nuts.
 * Attach the SMA connector of the cable to the GNSS module.
 * Check the length the antenna cable needs to be to go from the GNSS module to the top of the annemometer case (where the antenna will be) and cut it.
 * Solder the MMCX connector to the cable.
 * Push the MMCX connector into the GNSS antenna (Tallysman 33-SSL889XF).
-* Attach the GNSS antenna to the anemometer case with double sided tape With the North marking facing forwards with respect to the quadcopter (the antenna cable will line up with the slot in the case).
+* Attach the GNSS antenna to the anemometer case with double sided tape, with the North marking facing forwards with respect to the quadcopter (the antenna cable will line up with the slot in the case).
 
 ${\color{red}PHOTO}$ 
 
-* Solder Molex KK Terminal Contacts to the 
+* Attach the Holybro Telemetry Radio on top of the lid with double sided tape.
+* Pass the header through on of the slots in the lid and push it into the telemetry radio.
+
+${\color{red}PHOTO}$ 
 
 
+#### Base station
 
 
 
