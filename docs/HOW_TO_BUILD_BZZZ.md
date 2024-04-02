@@ -124,7 +124,7 @@ You will need some of these products or an equivalent (e.g. you will need a batt
 Order the relevant parts above.
 
 ### Header and connector housing labeling configuration
-When lableing headers and connector housing, we go from left to right. The figures below show the correct orentation for labling the headers and connector housing.
+When labeling headers and connector housing, we go from left to right. The figures below show the correct orientation for labeling the headers and connector housing.
 
 ${\color{red}PHOTO}$ 
 
