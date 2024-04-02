@@ -318,6 +318,23 @@ ${\color{red}PHOTO}$
 
 ${\color{red}PHOTO}$ 
 
+* Solder a Molex KK 2 x 1 header to the (**NEED TO CHECK**) on the quadcopter GNSS module (SparkFun ZED-F9R).
+* Solder a Molex KK 6 x 1 header to the (**NEED TO CHECK**) on the quadcopter GNSS module (SparkFun ZED-F9R).
+
+${\color{red}PHOTO}$ 
+
+* Attach the GNSS module to the inside of the lid with the M3 x 20mm bolts and M3 nuts.
+* Attach the SMA connector of the cable to the GNSS module.
+* Check the length the antenna cable needs to be to go from the GNSS module to the top of the annemometer case (where the antenna will be) and cut it.
+* Solder the MMCX connector to the cable.
+* Push the MMCX connector into the GNSS antenna (Tallysman 33-SSL889XF).
+* Attach the GNSS antenna to the anemometer case with double sided tape With the North marking facing forwards with respect to the quadcopter (the antenna cable will line up with the slot in the case).
+
+${\color{red}PHOTO}$ 
+
+* Solder Molex KK Terminal Contacts to the 
+
+
 
 
 
