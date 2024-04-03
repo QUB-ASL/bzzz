@@ -375,51 +375,51 @@ The discretization of the altitude dynamics of the system \eqref{eq:4} with a sa
     \section{Kalman filter equations}
 The Kalman filter equations for the above system are:
 \begin{align}
-    \text{Measurement} &
-    \left[
-    \begin{array}{l}
-      \hat{x}_{t{}\mid{}t}
-      {}={}
-      \hat{x}_{t{}\mid{}t-1}
-      {}+{}
-      \Sigma_{t{}\mid{}t-1}C^\intercal
-      (C\Sigma_{t{}\mid{}t-1}C^\intercal + R)^{-1}(y_t - C\hat{x}_{t{}\mid{}t-1})
-      \\
-      \Sigma_{t{}\mid{}t}
-      {}={}
-      \Sigma_{t{}\mid{}t-1}
-      {}-{}
-      \Sigma_{t{}\mid{}t-1}C^\intercal
-      (C\Sigma_{t{}\mid{}t-1}C^\intercal + R)^{-1}
-      C\Sigma_{t{}\mid{}t-1}
-    \end{array}
-    \right.
+  \text{Measurement} &
+  \left[
+  \begin{array}{l}
+    \hat{x}_{t{}\mid{}t}
+    {}={}
+    \hat{x}_{t{}\mid{}t-1}
+    {}+{}
+    \Sigma_{t{}\mid{}t-1}C^\intercal T
+    (C\Sigma_{t{}\mid{}t-1}C^\intercal T+R)^{-1}(y_t - C\hat{x}_{t{}\mid{}t-1})
     \\
-    \text{Time update}        &
-    \left[
-    \begin{array}{l}
-      \hat{x}_{t+1{}\mid{}t}
-      {}={}
-      A_t \hat{x}_{t{}\mid{}t}
-      \\
-      \Sigma_{t+1{}\mid{}t}
-      {}={}
-      A_t \Sigma_{t{}\mid{}t} A_t^\intercal + Q
-    \end{array}
-    \right.
+    \Sigma_{t{}\mid{}t}
+    {}={}
+    \Sigma_{t{}\mid{}t-1}
+    {}-{}
+    \Sigma_{t{}\mid{}t-1}C^\intercal T
+    (C\Sigma_{t{}\mid{}t-1}C^\intercal T + R)^{-1}
+    C\Sigma_{t{}\mid{}t-1}
+  \end{array}
+  \right.
+  \\
+  \text{Time update}        &
+  \left[
+  \begin{array}{l}
+    \hat{x}_{t+1{}\mid{}t}
+    {}={}
+    A_t \hat{x}_{t{}\mid{}t}
     \\
-    \text{Initial conditions} &
-    \left[
-    \begin{array}{l}
-      \hat{x}_{0{}\mid{}-1}
-      {}={}
-      \tilde{x}_0
-      \\
-      \Sigma_{0{}\mid{}-1}
-      {}={}
-      P_0
-    \end{array}
-    \right.
+    \Sigma_{t+1{}\mid{}t}
+    {}={}
+    A_t \Sigma_{t{}\mid{}t} A_t^\intercal T+ Q
+  \end{array}
+  \right.
+  \\
+  \text{Initial conditions} &
+  \left[
+  \begin{array}{l}
+    \hat{x}_{0{}\mid{}-1}
+    {}={}
+    \tilde{x}_0
+    \\
+    \Sigma_{0{}\mid{}-1}
+    {}={}
+    P_0
+  \end{array}
+  \right.
   \end{align}
 
   \subsection*{Measurement Update (Correction Step):}
