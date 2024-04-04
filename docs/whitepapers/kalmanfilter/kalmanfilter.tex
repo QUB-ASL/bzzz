@@ -382,15 +382,15 @@ The Kalman filter equations for the above system are:
     {}={}
     \hat{x}_{t{}\mid{}t-1}
     {}+{}
-    \Sigma_{t{}\mid{}t-1}C^\intercal T
-    (C\Sigma_{t{}\mid{}t-1}C^\intercal T+R)^{-1}(y_t - C\hat{x}_{t{}\mid{}t-1})
+    \Sigma_{t{}\mid{}t-1}C^\intercal 
+    (C\Sigma_{t{}\mid{}t-1}C^\intercal +R)^{-1}(y_t - C\hat{x}_{t{}\mid{}t-1})
     \\
     \Sigma_{t{}\mid{}t}
     {}={}
     \Sigma_{t{}\mid{}t-1}
     {}-{}
-    \Sigma_{t{}\mid{}t-1}C^\intercal T
-    (C\Sigma_{t{}\mid{}t-1}C^\intercal T + R)^{-1}
+    \Sigma_{t{}\mid{}t-1}C^\intercal 
+    (C\Sigma_{t{}\mid{}t-1}C^\intercal + R)^{-1}
     C\Sigma_{t{}\mid{}t-1}
   \end{array}
   \right.
@@ -404,7 +404,7 @@ The Kalman filter equations for the above system are:
     \\
     \Sigma_{t+1{}\mid{}t}
     {}={}
-    A_t \Sigma_{t{}\mid{}t} A_t^\intercal T+ Q
+    A_t \Sigma_{t{}\mid{}t} A_t^\intercal + Q
   \end{array}
   \right.
   \\
