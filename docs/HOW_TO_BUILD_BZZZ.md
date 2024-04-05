@@ -1,6 +1,15 @@
 # How to Build bzzz
 This documentation includes the relevant information on how to build our quadcopter bzzz from scratch.
 
+## Tools
+You will need the following tolls to build bzzz.
+* Soldering iron with solder
+* 1.5, 2, 2.5 Allen/Hex keys
+* 4mm flat and Phillips 2 screwdricers
+* side cutting pliers
+* Pliers
+* X, Y, Z Spanners
+
 
 ## Parts  
 This section includes all the parts needed to build bzzz and where they can be ordered from (other options available).
