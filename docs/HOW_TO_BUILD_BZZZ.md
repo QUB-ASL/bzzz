@@ -283,25 +283,25 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 * Attach the motors to the motor stand using the M3 x 8mm countersunk Screws.
 * Cable tie the ESCs to the arms of the frame.
 
-<img width="600" src="images/Frame_with_guards.png">
+<img width="700" src="images/Frame_with_guards.png">
 
 * Attach a M3 x 30mm bolts with M3 washers and nuts in each slot at the back of the power distribution board. (These will stop the battery going back too far)
 * Place the UBEC flat against the screws mentioned above.
 * Add another M3 x 30mm bolts with M3 washers and nuts in each slot to help keep the UBEC in place.
 * Put electrical tape around all 4 screw and the UBEC to make sure it is securely attached to the quadcopter.
 
-<img width="600" src="images/UBEC.png">
+<img width="400" src="images/UBEC.png">
 
 * Use double sided tape to stick the receiver to inside of the back of the controller case.
 * place the receivers antennas through one of the slots in the controller case and tape cable tie them to the arms or legs approx 90° apart.
 
-<img width="600" src="images/Receiver_in_case.png">
+<img width="400" src="images/Receiver_in_case.png">
   
 * Attach the 14 Way FFC cable to the Pi PCB.
 * Use double sided tape to stick the flight controller (Pi and ESP) to the anti-vibration plate and place the FFC cable through the slot in the controller case.
 * Attach the 14 Way FFC cable to the Sensor PCB.
 
-<img width="600" src="images/FFC.png">
+<img width="400" src="images/FFC.png">
 
 * Attach the reviver wires to the correct header on the Pi PCB.
 * Feed the ESC white signal wires through the holes in the controller case.
@@ -311,7 +311,7 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 * Place the terminal contacts from output 1 of the UBEC in the correct position of a Molex KK 6 x 1 Connector Housing (Power, 4 blanks, Ground).
 * Attach the Power (UBEC) connector from the previous step to the correct header on the Pi PCB.
 
-<img width="600" src="images/FC_in_case.png">
+<img width="400" src="images/FC_in_case.png">
 
 * If you haven't already, using the USB memory stick follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SETUP.md)
 * Check it motors spin as expected
