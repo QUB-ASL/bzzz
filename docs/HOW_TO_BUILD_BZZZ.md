@@ -303,10 +303,10 @@ ${\color{red}PHOTO}$
 
 * Attach the reviver wires to the correct header on the Pi PCB.
 * Feed the ESC white signal wires through the holes in the controller case.
-* Place the terminal contacts from each ESC signal wires in the correct position of a Molex KK 5 x 1 Connector Housing (back left, back right, front left, front right).
+* Place the terminal contacts from each ESC signal wires in the correct position of a Molex KK 5 x 1 Connector Housing (Blank, front right, front left, back right back left).
 * Attach the ESC connector from the previous step to the correct header on the Pi PCB.
 * Feed the wires on output 1 of the UBEC through the holes in the controller case.
-* Place the terminal contacts from output 1 of the UBEC in the correct position of a Molex KK 6 x 1 Connector Housing (Ground, 4 blanks, Power).
+* Place the terminal contacts from output 1 of the UBEC in the correct position of a Molex KK 6 x 1 Connector Housing (Power, 4 blanks, Ground).
 * Attach the Power (UBEC) connector from the previous step to the correct header on the Pi PCB.
 
 ${\color{red}PHOTO}$ 
