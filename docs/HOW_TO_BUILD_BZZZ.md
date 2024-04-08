@@ -133,7 +133,9 @@ You will need some of these products or an equivalent (e.g. you will need a batt
 ## How to build bzzz
 Order the relevant parts above.
 
-### Header and connector housing labeling configuration
+### Quadcopter Orientation
+
+### Header and connector housing labeling orientation
 When labeling headers and connector housing, we go from left to right. The figures below show the correct orientation for labeling the headers and connector housing.
 
 <img width="400" src="images/Headers.png">
@@ -290,7 +292,7 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 
 <img width="600" src="images/UBEC.png">
 
-* Use double sided tape to stick the receiver to inside of the front of the controller case.
+* Use double sided tape to stick the receiver to inside of the back of the controller case.
 * place the receivers antennas through one of the slots in the controller case and tape cable tie them to the arms or legs approx 90° apart.
 
 <img width="600" src="images/Receiver_in_case.png">
@@ -310,6 +312,11 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 * Attach the Power (UBEC) connector from the previous step to the correct header on the Pi PCB.
 
 <img width="600" src="images/FC_in_case.png">
+
+* If you haven't already, using the USB memory stick follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SETUP.md)
+* Check it motors spin as expected
+* If needed callibrate the ESCs following [this](https://github.com/QUB-ASL/bzzz/tree/feature/187-docs_on_how_to_build_bzzz/hardware)
+* Attach the Propellers using the adapters that came with the motors and [fly safely](https://github.com/QUB-ASL/bzzz/blob/feature/187-docs_on_how_to_build_bzzz/README.md#how-to-fly)
 
 
 ### Anemometer
