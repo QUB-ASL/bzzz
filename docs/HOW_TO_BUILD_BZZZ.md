@@ -5,7 +5,7 @@ This documentation includes the relevant information on how to build our quadcop
 You will need the following tolls to build bzzz.
 * Soldering iron with solder
 * 1.5, 2, 2.5 Allen/Hex keys
-* 4mm flat and Phillips 2 screwdricers
+* 4mm flat and Phillips 2 screwdrivers
 * side cutting pliers
 * Pliers
 * X, Y, Z Spanners
