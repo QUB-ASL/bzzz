@@ -11,7 +11,7 @@ You will need the following tolls to build bzzz.
 * Pliers
 * X, Y, Z Spanners
 * Hacksaw
-* Drill with 3mm and 12 bit
+* Drill with 3mm, 9.5mm and 12mm bit
 
 
 ## Parts  
@@ -109,7 +109,7 @@ We order extra screw and headers as we might need to replace them and it works o
 | Part | Quantity | approx. price £ |
 | --- | ---: | ---: |
 |[Carbon Kevlar Tube](https://www.carbonwebshop.com/carbon-fiber-tubes/carbon-kevlar-tubes/carbon-kevlar-tube-22x20x1000mm/)|1|32|
-|[TriSonica Mini LI-550P Anemometer](https://www.licor.com/env/products/trisonica/LI-550-mini)|1|(Ask for Quote) 2065|
+|[TriSonica Mini LI-550P Anemometer](https://www.licor.com/env/products/trisonica/LI-550-mini)|1|(Ask for Quote) 2000+|
 |[SparkFun ZED-F9R GNSS Module (Quadcopter)](https://www.sparkfun.com/products/22660)|1|230|
 |[Tallysman 33-SSL889XF L1/L2 GNSS Antenna (Quadcopter)](https://www.mouser.co.uk/ProductDetail/Tallysman/33-SSL889XF-1?qs=HoCaDK9Nz5f3zWqM%252BoQQ1w%3D%3D)|1|150|
 |[SparkFun ZED-F9P GNSS Module (Base station)](https://www.sparkfun.com/products/16481)|1|220|
@@ -125,7 +125,9 @@ We order extra screw and headers as we might need to replace them and it works o
 |[M6 x 20mm Slotted Screws](https://www.accu.co.uk/metric-cheese-head-screws/6579-SFE-M6-20-A2)|2|1.8|
 |[M6 Lock Nuts](https://www.accu.co.uk/hexagon-nylon-locking-nuts/7948-HNN-M6-A2)|2|1.3|
 |[Toggle switch](https://uk.rs-online.com/web/p/toggle-switches/8610270)|1|4.6|
-|[Case]()|1||
+|[Rubber Grommet](https://uk.rs-online.com/web/p/cable-grommets/0543282)|box of 50|4.6|
+|[USB C Power cable](https://www.ebay.co.uk/itm/386091033702?chn=ps&_ul=GB&var=653642543854&_trkparms=ispr%3D1&amdata=enc%3A147TroJCjSXOyvK9tPK50Pg91&norover=1&mkevt=1&mkrid=710-134428-41853-0&mkcid=2&mkscid=101&itemid=653642543854_386091033702&targetid=1647205088320&device=c&mktype=pla&googleloc=9045206&poi=&campaignid=17206177401&mkgroupid=136851690655&rlsatarget=pla-1647205088320&abcId=9300866&merchantid=6995734&gad_source=1&gclid=Cj0KCQjwztOwBhD7ARIsAPDKnkAPtngR6Y7XBFASaQzovt954LrDSIRXm0NWyXWk2WeeTD94yLQFcBsaAiuOEALw_wcB)|1|1.6|
+|[Case](https://www.amazon.co.uk/gp/product/B0B2MJH7Q5?ref=ppx_pt2_dt_b_prod_image&th=1)|1|8.6|
 |Total cost Approximation in GBP||3000|
 
 ### Others
@@ -323,6 +325,7 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 <img width="400" src="images/FC_in_case.png">
 
 * If you haven't already, using the USB memory stick follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SETUP.md)
+* Slide the Battery into the gap between the Power disturbution board and controller case, strap it in with the velcro strap and connect it to the XT90 connector.
 * Check that the motors spin as expected
 * If needed callibrate the ESCs following [this](https://github.com/QUB-ASL/bzzz/tree/feature/187-docs_on_how_to_build_bzzz/hardware)
 * Attach the lid with 4 No.4 x 3/4 self tapping screws
@@ -353,15 +356,15 @@ ${\color{red}PHOTO}$
 
 ${\color{red}PHOTO}$ 
 
-* Solder a Molex KK 5 x 1 header to the righthand header with the 5V and Ground on the Base station GNSS module (SparkFun ZED-F9P).
-* Solder a Molex KK 6 x 1 header to the RTCM correction header (beside the USB C port) on the Base station GNSS module (SparkFun ZED-F9P).
+* Solder a Molex KK 5 x 1 header to the righthand header with the Ground, 5V, 3v3, TX2, and RX2 on the Base station GNSS module (SparkFun ZED-F9P).
+*In the photo below we have more headers from initial testing*
 
 ${\color{red}PHOTO}$ 
 
 * Cut the header of the Holybro Telemetry Radio.
 * Crimp or solder Molex KK terminal contacts to the 5V, Ground TX and RX of the telemetry radio.
 * Put the 5V and Ground Terminal Contacts into the correct position of a Molex KK 2 x 1, or 5 x 1 Connector Housing depending if it is for the quadcopter or base station.
-* Put the TX and RX Terminal Contacts into the correct position of a Molex KK 6 x 1 Connector Housing depending if it is for the quadcopter or base station.
+* Put the TX and RX Terminal Contacts into the correct position of a Molex KK 6 x 1, or 5 x 1 Connector Housing depending if it is for the quadcopter or base station.
 * Place the Connector Housing onto the correct headers.
 
 ${\color{red}PHOTO}$ 
@@ -378,14 +381,28 @@ ${\color{red}PHOTO}$
 ${\color{red}PHOTO}$ 
 
 * Attach the Holybro Telemetry Radio on top of the lid with double sided tape.
-* Pass the header through on of the slots in the lid and push it into the telemetry radio.
+* Pass the small header of the Telemetry Radio cable through on of the slots in the lid and push it into the telemetry radio.
+* Attach the Molex KK 2 x 1 and 6 x 1 connector to the GNSS module.
 
 ${\color{red}PHOTO}$ 
 
 
 #### Base station
 
-
+* Bore a 12mm hole in one of the short sides of the case and a 9.5mm in the other short side.
+* Solder the positive of the XT90 connector to one side of the toggle switch.
+* Solder the ground of the XT90 connector the ground DC input of the UBEC.
+* Solder the other side of the toggle switch to the positive DC input of the UBEC.
+* Screw the toggle switch into the 12mm hole.
+* Solder the USB C power cable to output 2 (5V) of the UBEC.
+* Attach the Base station GNSS module (SparkFun ZED-F9P) to the USB C power connector.
+* Pass the anntena cable through the rubber grommet and the 9.5mm hole and connect it to the GNSS Module.
+* Connect the 5 x 1 Connector of the Telemetry Radio cable to the GNSS module.
+* Pass the small header of the Telemetry Radio cable through the rubber grommet and the 9.5mm hole and connect it to the Holybro Telemetry Radio.
+* Attach the Holybro Telemetry Radio to the side of the case with double sided tape.
+* Attach the battery to the XT90 connector.
+* Use double sided tape to stick the UBEC and GNSS module to a suitable place inside the case.
+* Screw the Lid onto the case.
 
 
 
