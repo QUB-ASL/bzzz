@@ -18,24 +18,16 @@ from bzzz.sensors.data_logger import DataLogger
 from bzzz.sensors.filters import *
 
 
-
-
 if __name__ == '__main__':
-    # sampling frequency of KF and LQR
-    sampling_frequency = 50
-    # caching configuration
-    enable_caching = [True]
-    enable_printing_cache_to_screen = [False and enable_caching[0]]
-
-    feature_names = ("datetime", "z_ref", "z", "z_hat", "v_hat", "alpha_1", "alpha_0", "tau")
-    logger = DataLogger(num_features=7,
-                        feature_names=feature_names)
-
+    # Global variables
     params = constants.constants()
-
-    # objects declaration
+    min_altitude_hold_altitude = params["min_altitude_hold_altitude"]
+    feature_names = ("datetime", "z_ref", "z", "z_hat",
+                     "v_hat", "alpha_1", "alpha_0", "tau")
+    logger = DataLogger(num_features=7,
+                        feature_names=feature_names,
+                        max_samples=50000)
     sampling_time = params["sampling_time"]
-
     kf_params = params["ah_kf"]
     altitude_kf = AltitudeHoldKalmanFilter(
         initial_state=np.array([1, 0, 20, -10]),
@@ -43,25 +35,21 @@ if __name__ == '__main__':
         state_cov=np.diagflat(kf_params["state_cov"]),
         meas_cov=kf_params["meas_cov"])
     altitude_ctrl = AltitudeController()
-
-    rc = RC()    
-
+    rc = RC()
 
     class EmergencyMeasures(Enum):
         NO_PROBLEM = 0
         BELOW_HOVERING = 1
         ASSASSINATION = 2
 
-    def emergency_measure(connection_lost, 
-                           radio_data, 
-                           tof,
-                           min_critical_altitude = 0.6):
-        #TODO (important) radio_data could be None; the ESP deals with cases where no data is sent
-        distance_from_ground = tof.distance       
+    def emergency_measure(connection_lost,
+                          radio_data,
+                          tof):
+        distance_from_ground = tof.distance
         kill_switch = radio_data.switch_D()
         if kill_switch or connection_lost:
             if np.isnan(distance_from_ground) \
-                    or distance_from_ground < min_critical_altitude:
+                    or distance_from_ground < min_altitude_hold_altitude:
                 return EmergencyMeasures.ASSASSINATION
             else:
                 return EmergencyMeasures.BELOW_HOVERING
@@ -74,8 +62,6 @@ if __name__ == '__main__':
             case EmergencyMeasures.BELOW_HOVERING:
                 radio_data.set_throttle(800)
                 radio_data.set_switch_D(True)
-
-    MIN_ALTITUDE_HOLD_ALTITUDE = 0.6
 
     def trimmer_to_altitude_increment(val):
         if val >= 0.35 and val <= 0.65:
@@ -99,17 +85,19 @@ if __name__ == '__main__':
         cm_pre_sec_max_increment = 0.02
         cm_pre_tick_max_increment = cm_pre_sec_max_increment * sampling_time
         increment_action = sc_vre * cm_pre_tick_max_increment
-        altitude_ctrl.increment_reference(increment_action)     
+        altitude_ctrl.increment_reference(increment_action)
         altitude_ctrl.set_tau_eq(altitude_kf.tau_eq_estimate())
         altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 3)
         altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 0.05)
         state_est = altitude_kf.x_measured()
         tau = altitude_ctrl.control_action(state_est[0], state_est[1])
-        print(state_est[0], state_est[1], state_est[2], state_est[3], altitude_kf.tau_eq_estimate(), tau)
+        print(state_est[0], state_est[1], state_est[2],
+              state_est[3], altitude_kf.tau_eq_estimate(), tau)
         clip_throttle = percentage_to_throttle_radio(0.5)
-        throttle = int(min(percentage_to_throttle_radio(tau)[0], clip_throttle))
-        radio_data.set_throttle(throttle)        
-        
+        throttle = int(
+            min(percentage_to_throttle_radio(tau)[0], clip_throttle))
+        radio_data.set_throttle(throttle)
+
     def save_data():
         blackbox_fname = datetime.datetime.now().strftime("BB-%d-%m-%y--%H-%M.csv")
         logger.save_to_csv(blackbox_fname)
@@ -122,20 +110,19 @@ if __name__ == '__main__':
         data_to_log[0] = y
         data_to_log[1] = altitude_ctrl.altitude_reference()
         data_to_log[2:6] = state_est.reshape((4, ))
-        data_to_log[6] = radio_data.throttle_reference_percentage()        
+        data_to_log[6] = radio_data.throttle_reference_percentage()
         logger.record(current_timestamp, data_to_log)
-    
+
     def control_loop(tof, esp_bridge):
         connection_lost_flag, radio_data = rc.get_radio_data()
         radio_data = RadioData(radio_data)
-
         do_kill = radio_data.switch_D()
         do_save = radio_data.switch_A()
-        
+
         if do_kill and do_save:
             save_data()
             return False
-            
+
         measure = emergency_measure(connection_lost_flag,
                                     radio_data,
                                     tof)
@@ -143,26 +130,25 @@ if __name__ == '__main__':
 
         flight_mode = radio_data.switch_C()
         y = tof.distance
-        if y > 0.6:
+        if y > min_altitude_hold_altitude:
             altitude_estimator(radio_data, y)  # deals with nans
-        
+
         match flight_mode:
             case ThreeWaySwitch.MID.value:
-                if y > 0.6:
+                if y > min_altitude_hold_altitude:
                     altitude_control(radio_data)
             case _:
                 altitude_ctrl.set_altitude_reference(tof.distance)
 
         esp_bridge.send_to_esp(radio_data)
-        record_black_box_data(radio_data, y)       
+        record_black_box_data(radio_data, y)
         return True
 
     # ------------------------------------------------
     # MAIN LOOP!
     # ------------------------------------------------
     keep_running = True
-    evo_filename = datetime.datetime.now().strftime("Evo-%d-%m-%y--%H-%M.csv")
-    with (EvoSensor(log_file=evo_filename, data_processor=MedianFilter()) as tof,
+    with (EvoSensor(data_processor=MedianFilter()) as tof,
           EspBridge() as esp_bridge):
         starttime = time_ns()
         while keep_running:
