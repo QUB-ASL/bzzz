@@ -4,11 +4,14 @@ This documentation includes the relevant information on how to build our quadcop
 ## Tools
 You will need the following tolls to build bzzz.
 * Soldering iron with solder
+* Crimp tool
 * 1.5, 2, 2.5 Allen/Hex keys
 * 4mm flat and Phillips 2 screwdrivers
 * side cutting pliers
 * Pliers
 * X, Y, Z Spanners
+* Hacksaw
+* Drill with 3mm and 12 bit
 
 
 ## Parts  
@@ -117,6 +120,12 @@ We order extra screw and headers as we might need to replace them and it works o
 |[UBEC Voltage regulator](https://www.3dxr.co.uk/electronics-c78/power-management-c91/voltage-regulators-becs-c101/matek-systems-matek-ubec-duo-4a-5-12v-4a-5v-p2900)|1|20|
 |[LiPo Battery GNB 8500mAh 4S 70C (XT90)](https://www.hobbyrc.co.uk/gnb-8500mah-4s-150c-dr-1-lipo-battery-xt90)|1|100|
 |[HOLYBRO - Telemetry Radio Set](https://www.3dxr.co.uk/radio-gear-c33/telemetry-c31/433-mhz-telemetry-c32/holybro-sik-telemetry-radio-set-v3-100mw-433mhz-p3021)|1|65|
+|[M4 x 20mm Slotted Screws](https://www.accu.co.uk/metric-cheese-head-screws/6536-SFE-M4-20-A2)|6|1.6|
+|[M4 Lock Nuts](https://www.accu.co.uk/hexagon-nylon-locking-nuts/7946-HNN-M4-A2)|6|1.3|
+|[M6 x 20mm Slotted Screws](https://www.accu.co.uk/metric-cheese-head-screws/6579-SFE-M6-20-A2)|2|1.8|
+|[M6 Lock Nuts](https://www.accu.co.uk/hexagon-nylon-locking-nuts/7948-HNN-M6-A2)|2|1.3|
+|[Toggle switch](https://uk.rs-online.com/web/p/toggle-switches/8610270)|1|4.6|
+|[Case]()|1||
 |Total cost Approximation in GBP||3000|
 
 ### Others
@@ -151,10 +160,10 @@ The following outlines the order components should be soldered, as some componen
 
   (if you have a V2 ESC, the yellow wire isn't used either and can be insulate and taped to the ESC)
   
-* Solder Molex KK Terminal Contact to each of the white signal wires coming from each ESC
+* Crimp or solder Molex KK Terminal Contact to each of the white signal wires coming from each ESC
 * Cut of the connectors on the 3 voltage output wire from ESC
 * Place heat sinker on the 3 voltage output wire from ESC and temporally solder each of the motors to an ESC (wires might need swapped to change motor spin direction)
-* Solder Molex KK Terminal Contact to the wires on output 1 of the UBEC
+* Crimp or solder Molex KK Terminal Contact to the wires on output 1 of the UBEC
 
 <img width="700" src="images/Power_disturbution_board.png">
 
@@ -219,7 +228,7 @@ All components are soldered on the top side of board
 #### Receiver
 * Cut 3 wires approx 20cm long. (signal, power, ground)
 * Solder one end of each wire to a 3 x 1 PCB socket in the order: signal, power, ground
-* Solder Molex KK Terminal Contact to the other end of each wire
+* Crimp or solder Molex KK Terminal Contact to the other end of each wire
 * Place the terminal contacts from each wire in the correct position of a Molex KK 4 x 1 Connector Housing (Blank, ground, signal, power)
 * Push the 3 x 1 PCB socket into the bottom of the receiver (check orientation)
 
@@ -264,9 +273,9 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 
 <img width="400" src="images/LEGS.png">
 
-* Attach the sensor board to the power distribution board and support board using (**NEED TO CHECK SIZE**).
+* Attach the sensor board to the power distribution board and support board using 2 of the 15mm long M2.5 standoffs with M2.5 washers and nuts and M2.5 x 14mm screws.
 * Attach 8 of the 15mm long M2.5 standoffs to the bottom side of the 4 frame arms (this leaves space for battery).
-* Screw the power distribution board and support board to the standoffs on the the 4 frame arms using M2.5 x 15mm screws.
+* Screw the power distribution board and support board to the standoffs on the the 4 frame arms using M2.5 x 14mm screws.
 
 <img width="600" src="images/frame.png">
 
@@ -314,9 +323,12 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 <img width="400" src="images/FC_in_case.png">
 
 * If you haven't already, using the USB memory stick follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SETUP.md)
-* Check it motors spin as expected
+* Check that the motors spin as expected
 * If needed callibrate the ESCs following [this](https://github.com/QUB-ASL/bzzz/tree/feature/187-docs_on_how_to_build_bzzz/hardware)
+* Attach the lid with 4 No.4 x 3/4 self tapping screws
 * Attach the Propellers using the adapters that came with the motors and [fly safely](https://github.com/QUB-ASL/bzzz/blob/feature/187-docs_on_how_to_build_bzzz/README.md#how-to-fly)
+
+${\color{red}PHOTO}$ 
 
 
 ### Anemometer
@@ -324,11 +336,11 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 * Push the carbon tube into the lid and secure it with M3 x 6mm Grub Screw.
 * Plug the cable into the anemometer.
 * Put the cable down the inside of the carbon tube and attach the anemometer With the North arrow facing forwards with respect to the quadcopter.
-* Attach the anemometer case to the carbon tube with **M4 and M6** nuts and bolts and the GNSS antenna cable slot facing forwards with respect to the quadcopter.
+* Attach the anemometer case to the carbon tube with M4 and M6 nuts and M4 x 20mm and M6 x 20mm bolts and the GNSS antenna cable slot facing forwards with respect to the quadcopter.
 * Cut the cable approx 15cm past the lid.
 * Strip the black outside insulator of the cable back 15cm (This leaves the cable more flexible).
-* Solder Molex KK Terminal Contact to the Brown/Burgundy, Light Green and Grey wires.
-* Solder one Molex KK Terminal Contact to the Red and Black wires together.
+* Crimp or solder Molex KK Terminal Contact to the Brown/Burgundy, Light Green and Grey wires.
+* Crimp or solder one Molex KK Terminal Contact to the Red and Black wires together.
 * Place the terminal contacts from the anemometer in the correct position of a Molex KK 4 x 1 Connector Housing (Power(Brown/Burgundy), Ground(Black and Red), RX(Grey) TX(Light Green)).
 
 ${\color{red}PHOTO}$ 
@@ -341,15 +353,15 @@ ${\color{red}PHOTO}$
 
 ${\color{red}PHOTO}$ 
 
-* Solder a Molex KK ?? x 1 header to the (**NEED TO CHECK**) on the quadcopter GNSS module (SparkFun ZED-F9P).
-* Solder a Molex KK ?? x 1 header to the (**NEED TO CHECK**) on the quadcopter GNSS module (SparkFun ZED-F9P).
+* Solder a Molex KK 5 x 1 header to the righthand header with the 5V and Ground on the Base station GNSS module (SparkFun ZED-F9P).
+* Solder a Molex KK 6 x 1 header to the RTCM correction header (beside the USB C port) on the Base station GNSS module (SparkFun ZED-F9P).
 
 ${\color{red}PHOTO}$ 
 
 * Cut the header of the Holybro Telemetry Radio.
-* Solder Molex KK terminal contacts to the 5V, Ground TX and RX of the telemetry radio.
-* Put the 5V and Ground Terminal Contacts into the correct position of a Molex KK 2 x 1 Connector Housing.
-* Put the TX and RX Terminal Contacts into the correct position of a Molex KK 6 x 1 Connector Housing.
+* Crimp or solder Molex KK terminal contacts to the 5V, Ground TX and RX of the telemetry radio.
+* Put the 5V and Ground Terminal Contacts into the correct position of a Molex KK 2 x 1, or 5 x 1 Connector Housing depending if it is for the quadcopter or base station.
+* Put the TX and RX Terminal Contacts into the correct position of a Molex KK 6 x 1 Connector Housing depending if it is for the quadcopter or base station.
 * Place the Connector Housing onto the correct headers.
 
 ${\color{red}PHOTO}$ 
