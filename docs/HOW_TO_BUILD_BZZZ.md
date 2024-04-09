@@ -145,6 +145,9 @@ You will need some of these products or an equivalent (e.g. you will need a batt
 Order the relevant parts above.
 
 ### Quadcopter Orientation
+The photo below shows the orientation of the qaudcopter reletive to the user.
+
+<img width="700" src="images/quadcopter_orientation.png">
 
 ### Header and connector housing labeling orientation
 When labeling headers and connector housing, we go from left to right. The figures below show the correct orientation for labeling the headers and connector housing.
@@ -346,7 +349,7 @@ ${\color{red}PHOTO}$
 * Crimp or solder one Molex KK Terminal Contact to the Red and Black wires together.
 * Place the terminal contacts from the anemometer in the correct position of a Molex KK 4 x 1 Connector Housing (Power(Brown/Burgundy), Ground(Black and Red), RX(Grey) TX(Light Green)).
 
-${\color{red}PHOTO}$ 
+<img width="200" src="images/pole.png">
 
 
 ### GNSS
@@ -354,12 +357,12 @@ ${\color{red}PHOTO}$
 * Solder a Molex KK 2 x 1 header to the 5V and Ground on the quadcopter GNSS module (SparkFun ZED-F9R).
 * Solder a Molex KK 6 x 1 header to the top row that includes the RX2 and TX2 (beside the USB C port) on the quadcopter GNSS module (SparkFun ZED-F9R).
 
-${\color{red}PHOTO}$ 
+<img width="400" src="images/GNSS_quadcopter.png">
 
 * Solder a Molex KK 5 x 1 header to the righthand header with the Ground, 5V, 3v3, TX2, and RX2 on the Base station GNSS module (SparkFun ZED-F9P).
 *In the photo below we have more headers from initial testing*
 
-${\color{red}PHOTO}$ 
+<img width="400" src="images/GNSS_base_station.png">
 
 * Cut the header of the Holybro Telemetry Radio.
 * Crimp or solder Molex KK terminal contacts to the 5V, Ground TX and RX of the telemetry radio.
@@ -367,7 +370,7 @@ ${\color{red}PHOTO}$
 * Put the TX and RX Terminal Contacts into the correct position of a Molex KK 6 x 1, or 5 x 1 Connector Housing depending if it is for the quadcopter or base station.
 * Place the Connector Housing onto the correct headers.
 
-${\color{red}PHOTO}$ 
+<img width="400" src="images/radio.png">
 
 
 #### Quadcopter GNSS 
@@ -378,13 +381,13 @@ ${\color{red}PHOTO}$
 * Push the MMCX connector into the GNSS antenna (Tallysman 33-SSL889XF).
 * Attach the GNSS antenna to the anemometer case with double sided tape, with the North marking facing forwards with respect to the quadcopter (the antenna cable will line up with the slot in the case).
 
-${\color{red}PHOTO}$ 
+<img width="400" src="images/GNSS_lid.png">
 
 * Attach the Holybro Telemetry Radio on top of the lid with double sided tape.
 * Pass the small header of the Telemetry Radio cable through on of the slots in the lid and push it into the telemetry radio.
 * Attach the Molex KK 2 x 1 and 6 x 1 connector to the GNSS module.
 
-${\color{red}PHOTO}$ 
+<img width="400" src="images/radio_lid.png">
 
 
 #### Base station
@@ -404,5 +407,5 @@ ${\color{red}PHOTO}$
 * Use double sided tape to stick the UBEC and GNSS module to a suitable place inside the case.
 * Screw the Lid onto the case.
 
-
+<img width="600" src="images/base_station.png">
 
