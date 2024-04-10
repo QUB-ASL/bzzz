@@ -2,7 +2,7 @@
 This documentation includes the relevant information on how to build our quadcopter bzzz from scratch.
 
 ## Tools
-You will need the following tolls to build bzzz.
+You will need the following tools to build bzzz.
 * Soldering iron with solder
 * Crimp tool
 * 1.5, 2, 2.5 Allen/Hex keys
@@ -11,7 +11,7 @@ You will need the following tolls to build bzzz.
 * Pliers
 * X, Y, Z Spanners
 * Hacksaw
-* Drill with 3mm, 9.5mm and 12mm bit
+* Drill with 3mm, 9.5mm and 12mm bits
 
 
 ## Parts  
@@ -33,7 +33,7 @@ You might want to order some spares when initially buying in case of an accident
 |Total cost Approximation in GBP including 1 battery||370|
 
 ### 3D Printed and Laser cut parts
-The following files are the files we use for the machines at QUB. If you require a different type of file check [here](https://github.com/QUB-ASL/bzzz/tree/main/design/Parts_for_3D_printing_and_laser_cutting) or create an issue [here](https://github.com/QUB-ASL/bzzz/issues/new?assignees=&labels=question%2Chelp+wanted&projects=&template=questions.yml).
+The following files are what we use for the machines at QUB. If you require a different type of file check [here](https://github.com/QUB-ASL/bzzz/tree/main/design/Parts_for_3D_printing_and_laser_cutting) or create an issue [here](https://github.com/QUB-ASL/bzzz/issues/new?assignees=&labels=question%2Chelp+wanted&projects=&template=questions.yml).
 | Part | Quantity |
 | --- | ---: |
 |[Controller Case](https://github.com/QUB-ASL/bzzz/blob/main/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case%20v6.stl)|1|
@@ -72,7 +72,7 @@ To order from JLCPCB download the .zip files below and upload them to the sectio
 |Total cost Approximation including delivery and customs in GBP||20 - 30|
 
 ### General Parts (Screw and Headers etc)
-We order extra screw and headers as we might need to replace them and it works out cheaper per an item (other options available).
+You may want to order extra screws and headers in the case of needing to replace them due to damages or accidents and it works out cheaper per an item (other options available).
 | Part | Quantity | approx. price £ |
 | --- | ---: | ---: |
 |[M3 x 8mm Socket Countersunk Screws](https://www.accu.co.uk/countersunk-socket-head-screws/5423-SSK-M3-8-A2)|24|2.2|
@@ -80,13 +80,15 @@ We order extra screw and headers as we might need to replace them and it works o
 |[M3 x 30mm Pozi Pan Screws ](https://www.accu.co.uk/pozi-pan-head-screws/9278-SPP-M3-30-A2)|12|2|
 |[M3 x 6mm Slotted Pan Head Screws](https://www.accu.co.uk/metric-pan-head-screws/6965-SFP-M3-6-A2)|6|1.3|
 |[M3 x 6mm Hex Grub Screws](https://www.accu.co.uk/cup-point-set-screws/5011-SSU-M3-6-A2)|6|1.5|
-|[M3 Lock Nuts](https://www.accu.co.uk/hexagon-nylon-locking-nuts/7944-HNN-M3-A2)|50|2.5|
+|[M3 Lock Nuts](https://www.accu.co.uk/hexagon-nylon-locking-nuts/7944-HNN-M3-A2)|box of 50|2.5|
 |[M3 Washers](https://uk.rs-online.com/web/p/washers/4899488)|box of 200|3|
 |[M2.5, 15mm standoff](https://uk.rs-online.com/web/p/standoffs/2052955)|box of 10|6|
 |[M2.5 x 14mm Hex Cap Screws](https://www.accu.co.uk/metric-cap-head-screws/3808-SSCF-M2-5-14-A2)|12|1.8|
 |[M2.5 x 10mm Slotted Pan Screws](https://www.accu.co.uk/metric-pan-head-screws/6954-SFP-M2-5-10-A2)|12|1.7|
 |[M2.5 Washers](https://uk.rs-online.com/web/p/washers/0560322)|box of 250|3.4|
-|[M2.5 Nuts](https://uk.rs-online.com/web/p/hex-nuts/6934889)|50|2.3|
+|[M2.5 Nuts](https://uk.rs-online.com/web/p/hex-nuts/6934889)|box of 50|2.3|
+|[M2 x 10mm Pozi Pan Screws](https://www.accu.co.uk/pozi-pan-head-screws/9244-SPP-M2-10-A2)|2|1.3|
+|[M2 Nuts](https://uk.rs-online.com/web/p/hex-nuts/6934886)|box of 50|2.3|
 |[No.4 x 3/4 inch Pozi Self Tapping Screws](https://www.accu.co.uk/pozi-self-tapping-flanged-button-screws/403323-SPBFT-No-4-3-4-A2)|24|2.9|
 |[Molex KK Crimp Terminal Contact](https://uk.rs-online.com/web/p/crimp-contacts/0467598)|box of 100|15|
 |[Molex KK Pin Header, 2 x 1](https://uk.rs-online.com/web/p/pcb-headers/4838461)|box of 10|2.5|
@@ -103,7 +105,7 @@ We order extra screw and headers as we might need to replace them and it works o
 |[PCB Socket 32 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081707)|1|3.3|
 |[XT-90 Connectors with cable](https://www.amazon.co.uk/Female-Connector-Silicone-RC-Battery/dp/B084M1W4ZH/ref=sr_1_7?crid=3L8CEL774VH79&keywords=xt90%2Bconnectors&qid=1676905240&sprefix=xt90%2Caps%2C84&sr=8-7&th=1)|1|11|
 |[24AWG 10 colour wire kit](https://cpc.farnell.com/velleman-sa/k-mow/wire-kit-8x5m-2x10m-24awg-multicore/dp/MK00170)|1|11.3|
-|Total cost Approximation in GBP||115|
+|Total cost Approximation in GBP||120|
 
 ### Optional Anemometer and GNSS
 | Part | Quantity | approx. price £ |
@@ -131,7 +133,7 @@ We order extra screw and headers as we might need to replace them and it works o
 |Total cost Approximation in GBP||3000|
 
 ### Others
-You will need some of these products or an equivalent (e.g. you will need a battery charger of some sort), some or optional. 
+You will need some of these products or an equivalent (e.g. you will need a battery charger), some products are optional. 
 | Part | approx. price £ |
 | --- | ---: |
 |[Lipo Battery Charger](https://www.amazon.co.uk/HobbyInn-B6-Dis-Charge-Function-Charging-Blue/dp/B095HYPSDX/ref=sr_1_8?crid=6B1IZCR8DVAC&keywords=lipo+balance+battery+charger&qid=1684945492&sprefix=lipo+balance+battery+charger%2Caps%2C79&sr=8-8)|37|
@@ -150,82 +152,84 @@ The photo below shows the orientation of the qaudcopter reletive to the user.
 <img width="700" src="images/quadcopter_orientation.png">
 
 ### Header and connector housing labeling orientation
-When labeling headers and connector housing, we go from left to right. The figures below show the correct orientation for labeling the headers and connector housing.
+When labeling headers and connector housing, go from left to right. The figures below show the orientation for labeling the headers and connector housing.
 
 <img width="400" src="images/Headers.png">
 
 ### Soldering 
-The following outlines the order components should be soldered, as some components might be covered by others.
+* The following outlines the order components should be soldered, as some components might be covered by others.
+* Use heat shrink wrap where necessary.
+
 
 #### Power disturbution board and ESCs
-* Solder ESCs power supply to each corner of the power distribution board
-* Solder XT90 connector and UBEC power supply to the center of the power distribution board
-* Cut the header off the three thin wires (Close to header)
-* The black and red thin wires are the BEC outputs and aren't being used. Insulate them (cover any copper) and tape them to ESC
+* Solder ESCs power supply to each corner of the power distribution board.
+* Solder XT90 connector and UBEC power supply to the center of the power distribution board.
+* Cut the header off the three thin wires (Close to header).
+* The black and red thin wires are the BEC outputs and aren't being used. Insulate them (cover any copper) and tape them to ESC.
 
   (if you have a V2 ESC, the yellow wire isn't used either and can be insulate and taped to the ESC)
   
-* Crimp or solder Molex KK Terminal Contact to each of the white signal wires coming from each ESC
-* Cut of the connectors on the 3 voltage output wire from ESC
-* Place heat sinker on the 3 voltage output wire from ESC and temporally solder each of the motors to an ESC (wires might need swapped to change motor spin direction)
-* Crimp or solder Molex KK Terminal Contact to the wires on output 1 of the UBEC
+* Crimp or solder Molex KK Terminal Contact to each of the white signal wires coming from each ESC.
+* Cut of the connectors on the 3 voltage output wire from ESC.
+* Temporally solder the 3 voltage output wires from each ESC to any of the wires on each motor (wires might need swapped to change motor spin direction).
+* Crimp or solder Molex KK Terminal Contact to the wires on output 1 of the UBEC.
 
 <img width="700" src="images/Power_disturbution_board.png">
 
 #### ESP PCB 
-* Solder header pins on MPU9250 IMU as shown below
+* Solder header pins on MPU9250 IMU as shown below.
   
 <img width="200" src="images/MPU9250.png">
 
-All components are to be soldered on the top side of the board
-* Resistors (R1=100Ω, R2-R5=10kΩ)
-* Diode (1N4001, Check  polarity)
-* Capacitor (10uF, Check  polarity)
-* Buzzer (Check  polarity)
-* 10 x 1 PCB socket for MPU9250 IMU
-* Molex KK 5 x 1 header for ESCs
+All components are to be soldered on the top side of the board.
+* Resistors (R1=100Ω, R2-R5=10kΩ).
+* Diode (1N4001, Check  polarity).
+* Capacitor (10uF, Check  polarity).
+* Buzzer (Check  polarity).
+* 10 x 1 PCB socket for MPU9250 IMU.
+* Molex KK 5 x 1 header for ESCs.
 
 So far the PCB should look as follows
-* You can now cover the resistors and diode components with Kapton or electrical tape
+* Cover the resistors and diode components with Kapton or electrical tape.
   
 <img width="400" src="images/ESP_PCB_no_ESC.png">
 
-* Now solder on the ESP
-* You can now cover the bottom of the PCB with Kapton or electrical tape
-* Place IMU in socket with correct orientation as shown below
+* Solder on the ESP32.
+* Cover the bottom of the PCB with Kapton or electrical tape.
+* Place IMU in socket with correct orientation as shown below.
 
 <img width="400" src="images/ESP_PCB.png">
 
 #### Pi PCB
-These components are soldered on the bottom side of board
-* Resistor and diode (Check polarity of diode)
-* Pi GPIO Header (keep legs long)
-* 14 x 1 FFC connector
-* You can now cover the resistor and diode components with Kapton or electrical tape
+These components are soldered on the bottom side of board.
+* Resistor and diode (Check polarity of diode).
+* Pi GPIO Header (keep legs long).
+* 14 x 1 FFC connector.
+* Cover the resistor and diode components with Kapton or electrical tape.
 
 <img width="400" src="images/Bottom_Pi_PCB.png">
 
-These components are soldered on the top side of board
-* 4 x 1 Wind header
-* 4 x 1 Receiver header
-* 6 x 1 Power header
-* Buzzer (Check  polarity)
+These components are soldered on the top side of board.
+* 4 x 1 Wind header.
+* 4 x 1 Receiver header.
+* 6 x 1 Power header.
+* Buzzer (Check  polarity).
 
 <img width="400" src="images/Top_Pi_PCB.png">
 
 #### Sensor PCB
-* Solder header on BMP180 Pressure sensor as shown below
+* Solder header on BMP180 pressure sensor as shown below.
 
 <img width="150" src="images/BMP180.png">
 
-* Cut and strip the wires of the Evo ToF as shown below (red wire=1, strip 1,2,7,8, remove rest)
+* Cut and strip the wires of the Evo ToF as shown below (red wire=1, strip 1,2,7,8, remove rest).
 
 <img width="200" src="images/EvoToF.png">
 
-All components are soldered on the top side of board
-* 14 x 1 FFC connector
-* BMP180 Pressure sensor
-* Evo ToF
+All components are soldered on the top side of board.
+* 14 x 1 FFC connector.
+* BMP180 pressure sensor.
+* Evo ToF.
 * Attach Evo ToF to sensor PBC with M2 x 10mm bolts and M2 nuts.
 
 <img width="400" src="images/Sensor_PCB.png"> 
@@ -241,40 +245,40 @@ All components are soldered on the top side of board
 
 
 ### How to Build the Flight Controller
-Now that all the soldering is done, the Flight Controller can be put together.
+Soldering is complete, the Flight Controller can now be put together.
 
-(You might need to use a round file to make the holes in the PCB slightly bigger.)
+(You might need to use a round file to make the holes in the PCB slightly bigger).
 
-* Attach 4 M3 x 30mm bolts with M3 nuts onto the bottom of the Pi
-* Add M3 nuts for the Pi PCB to rest on
+* Attach 4 M3 x 30mm bolts with M3 nuts onto the bottom of the Pi.
+* Add M3 nuts for the Pi PCB to rest on.
 
 <img width="400" src="images/Pi_with_bolts.png">
 
-* Place the Pi PCB on top of the Pi (Make sure the GPIO header lines up with the pins)
-* Add M3 nuts to keep the Pi PCB in place and as a spacer for the ESP PCB
+* Place the Pi PCB on top of the Pi (Make sure the GPIO header lines up with the pins).
+* Add M3 nuts to keep the Pi PCB in place and as a spacer for the ESP PCB.
 
 <img width="400" src="images/Pi_with_Pi_PCB.png">
 
-* Place the ESP PCB on top of the Pi PCB
-* Add M3 nuts to keep the ESP PCB in place
-* Attach the USB A to Micro USB as shown below
+* Place the ESP PCB on top of the Pi PCB.
+* Add M3 nuts to keep the ESP PCB in place.
+* Attach the USB A to Micro USB as shown below.
 
 <img width="400" src="images/FC.png">
 
-The Flight Controller is now built. With the USB memory stick you can now follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SETUP.md) or come back to this at a later stage.
+The Flight Controller is now built. With the USB memory stick you can follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SETUP.md) or come back to this at a later stage.
 
 
 ### Screw frame together
-* Screw 4 M3 x 6mm screws into the underside of the controller case for anti-vibration board (you won't be able to access this later).
+* Screw 4 M3 x 6mm screws into the underside of the controller case for the anti-vibration board (you won't be able to access this later).
 
 <img width="400" src="images/Controller_case_with_bolts.png">
 
-* Screw controller case onto topside of 4 frame arms (16 M2.5 x 6mm  screws that come with frame).
-* Place anti-vibration board on 4 screw previously inserted and tighten nuts.
+* Screw the controller case onto the topside of the 4 frame arms (16 M2.5 x 6mm  screws that come with frame).
+* Place the anti-vibration board on the 4 screws previously inserted and tighten M3 nuts.
 
 <img width="600" src="images/Controller_case_and_arms.png">
 
-* Attach the 4 legs to the power distribution board support plate using 8 M2.5 x 12mm bolts, M2.5 washers and M2.5 nuts, to the inside countersunk holes only.
+* Attach the 4 legs to the inside countersunk holes of the power distribution board support plate using 8 M2.5 x 12mm bolts, M2.5 washers and M2.5 nuts.
 
 <img width="400" src="images/LEGS.png">
 
@@ -288,7 +292,7 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 * Bore out the hole with a 3mm drill bit.
 * Attach the leg stands for pool noddle to the bottom of the legs with epoxy resin (or super glue) and M3 x 20mm bolts and M3 nuts.
 * Cut pool noddle to length (at least 40cm) x 2.
-* Tape each Cut pool noddle to the leg stands.
+* Tape each cut pool noddle to the leg stands.
 
 <img width="600" src="images/Frame_with_feet.png">
 
@@ -307,7 +311,7 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 <img width="400" src="images/UBEC.png">
 
 * Use double sided tape to stick the receiver to inside of the back of the controller case.
-* place the receivers antennas through one of the slots in the controller case and tape cable tie them to the arms or legs approx 90° apart.
+* Place the receivers antennas through one of the slots in the controller case and tape cable tie them to the arms or legs approx 90° apart.
 
 <img width="400" src="images/Receiver_in_case.png">
   
@@ -327,12 +331,13 @@ The Flight Controller is now built. With the USB memory stick you can now follow
 
 <img width="400" src="images/FC_in_case.png">
 
-* If you haven't already, using the USB memory stick follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SETUP.md)
+* If you haven't already, using the USB memory stick follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/main/docs/SETUP.md).
 * Slide the Battery into the gap between the Power disturbution board and controller case, strap it in with the velcro strap and connect it to the XT90 connector.
-* Check that the motors spin as expected
-* If needed callibrate the ESCs following [this](https://github.com/QUB-ASL/bzzz/tree/feature/187-docs_on_how_to_build_bzzz/hardware)
-* Attach the lid with 4 No.4 x 3/4 self tapping screws
-* Attach the Propellers using the adapters that came with the motors and [fly safely](https://github.com/QUB-ASL/bzzz/blob/feature/187-docs_on_how_to_build_bzzz/README.md#how-to-fly)
+* Tilt the quadcopter and check that the motors spin as expected for the attitude controller.
+* Use the remote and check that the motors spin as expected (If not reverse the remote channel data).
+* If needed callibrate the ESCs following [this](https://github.com/QUB-ASL/bzzz/tree/feature/187-docs_on_how_to_build_bzzz/hardware).
+* Attach the lid with 4 No.4 x 3/4 self tapping screws.
+* Attach the Propellers using the adapters that came with the motors and [fly safely](https://github.com/QUB-ASL/bzzz/blob/feature/187-docs_on_how_to_build_bzzz/README.md#how-to-fly).
 
 ${\color{red}PHOTO}$ 
 
