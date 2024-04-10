@@ -135,12 +135,12 @@ class Gnss:
         ser.close()
         return
 
-    def __gnss_altitude_initialisation(self, num_samples=10):
-        sum_altitudes = 0    
+    def __gnss_altitude_initialisation(self, num_samples=10):  
         """
         Returns the calibrated GNSS altitude based on the average 
         altitude measured in the first minute of readings.
         """
+        sum_altitudes = 0  
         i = 0
         while True:            
             current_altitude = self.altitude

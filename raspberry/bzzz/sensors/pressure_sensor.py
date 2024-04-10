@@ -151,7 +151,7 @@ class BMP180Sensor:
         X1 = (UT - AC6) * AC5 / 32768.0
         X2 = (MC * 2048.0) / (X1 + MD)
         B5 = X1 + X2
-        Temperature = ((B5 + 8.0) / 16.0) / 10.0
+        temperature = ((B5 + 8.0) / 16.0) / 10.0
 
         # Calculating true pressure
         B6 = B5 - 4000
@@ -173,7 +173,7 @@ class BMP180Sensor:
         X1 = (X1 * 3038.0) / 65536.0
         X2 = ((-7357) * pressure) / 65536.0
         pressure = (pressure + (X1 + X2 + 3791) / 16.0)
-        return pressure, Temperature
+        return pressure, temperature
               
             
     def __initialise(self, num_initial_readings=30):
@@ -196,8 +196,6 @@ class BMP180Sensor:
                 break
             time.sleep(0.2)
             idx_attempts += 1
-            if idx_attempts >= max_attempts:
-                raise Exception("Barometer initialisation took too long (too many nan's)")
         av_pressure = sum_pressures / num_initial_readings
         return av_pressure
         
