@@ -9,7 +9,7 @@ You will need the following tools to build bzzz.
 * 4mm flat and Phillips 2 screwdrivers
 * side cutting pliers
 * Pliers
-* X, Y, Z Spanners
+* 4mm, 5mm, 5.5mm, 7mm and 10mm Spanners
 * Hacksaw
 * Drill with 3mm, 9.5mm and 12mm bits
 
@@ -30,7 +30,8 @@ You might want to order some spares when initially buying in case of an accident
 |[RadioLink AT10 II RC + R12DS Receiver](https://www.ebay.co.uk/itm/325829598039?chn=ps&_ul=GB&norover=1&mkevt=1&mkrid=710-134428-41853-0&mkcid=2&mkscid=101&itemid=325829598039&targetid=1403035015187&device=c&mktype=pla&googleloc=9045199&poi=&campaignid=19926858371&mkgroupid=155977582267&rlsatarget=pla-1403035015187&abcId=9311017&merchantid=6995734&gad_source=1&gclid=Cj0KCQjwqpSwBhClARIsADlZ_Tmj8YfiYkLlbhdla_tpo2vwVD3eA0HkCdlmdPkm9l2iNycQ_5g0XSIaAmryEALw_wcB)|1|120|
 |[LiPo Battery GNB 5500mAh 4S 70C (XT90)](https://www.hobbyrc.co.uk/gnb-5500mah-4s-70c-lipo-battery-xt90)|as req.|(each)50|
 |[LiPo Battery GNB 7000mAh 4S 70C (XT90)](https://www.hobbyrc.co.uk/gnb-7000mah-4s-70c-lipo-battery-xt90)|as req.|(each)60|
-|Total cost Approximation in GBP including 1 battery||370|
+|[Velcro battery strap](https://www.amazon.co.uk/VELCRO%C2%AE-Brand-ONE-WRAP%C2%AE-double-Strapping/dp/B0777JVG7X/ref=asc_df_B0777LN5VP/?tag=&linkCode=df0&hvadid=375434312298&hvpos=&hvnetw=g&hvrand=4780352683544246738&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9045201&hvtargid=pla-815104045675&mcid=7f7f9114cafe36a18ac65f903a162b08&ref=&adgrpid=77211061112&th=1)|1|5|
+|Total cost Approximation in GBP including 1 battery||375|
 
 ### 3D Printed and Laser cut parts
 The following files are what we use for the machines at QUB. If you require a different type of file check [here](https://github.com/QUB-ASL/bzzz/tree/main/design/Parts_for_3D_printing_and_laser_cutting) or create an issue [here](https://github.com/QUB-ASL/bzzz/issues/new?assignees=&labels=question%2Chelp+wanted&projects=&template=questions.yml).
