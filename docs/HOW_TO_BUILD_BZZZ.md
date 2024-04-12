@@ -76,6 +76,7 @@ To order from JLCPCB download the .zip files below and upload them to the sectio
 You may want to order extra screws and headers in the case of needing to replace them due to damages or accidents and it works out cheaper per an item (other options available).
 | Part | Quantity | approx. price £ |
 | --- | ---: | ---: |
+|[Double-sided tape](https://cpc.farnell.com/pro-power/adsft19x10/tape-double-sided-foam-19mm-x/dp/CB20010)|1|2.9|
 |[M3 x 8mm Socket Countersunk Screws](https://www.accu.co.uk/countersunk-socket-head-screws/5423-SSK-M3-8-A2)|24|2.2|
 |[M3 x 20mm Hex Cap Screws](https://www.accu.co.uk/metric-cap-head-screws/2802-SSC-M3-20-A2)|50|3|
 |[M3 x 30mm Pozi Pan Screws ](https://www.accu.co.uk/pozi-pan-head-screws/9278-SPP-M3-30-A2)|12|2|
@@ -106,7 +107,8 @@ You may want to order extra screws and headers in the case of needing to replace
 |[PCB Socket 32 x 1](https://uk.rs-online.com/web/p/pcb-sockets/2081707)|1|3.3|
 |[XT-90 Connectors with cable](https://www.amazon.co.uk/Female-Connector-Silicone-RC-Battery/dp/B084M1W4ZH/ref=sr_1_7?crid=3L8CEL774VH79&keywords=xt90%2Bconnectors&qid=1676905240&sprefix=xt90%2Caps%2C84&sr=8-7&th=1)|1|11|
 |[24AWG 10 colour wire kit](https://cpc.farnell.com/velleman-sa/k-mow/wire-kit-8x5m-2x10m-24awg-multicore/dp/MK00170)|1|11.3|
-|Total cost Approximation in GBP||120|
+|[Heat shrink kit](https://www.amazon.co.uk/Eventronic-Connectors-Heatshrink-Electrical-User-Friendly/dp/B071D7LJ31/ref=sr_1_1_sspa?crid=GOANSWH3J74I&dib=eyJ2IjoiMSJ9.nas3_52vcamFpgTE5DevT9iUU3cEFQcmVkukqXiAoq3Ty_OsEfNLe8Cl7laBo8E9pQYSloWvchRpVhwHWzE0G7ZbakXaNu-t3sJTmKCBAV8uXKBkwFb_8HOtTp_Rm-wm8p47laXPgwfSjRmuwqDpk9eAuKgODQp6970mNGYb7CzKEZwLe1z07TMkhWh6ccfm_kwdwFNpsv7KH2fSYckGwkj1ZDbzmnXEHyXBmBGtZR4RNAYgMcHneBsr3jA4SzpUdKH0AgzC_mCAbkPIFIGtQAZNuU_oVbuCgQtObIDewu0.-KrNP69tuSqZD1dFQW6oUuV0nvfcAJHR40ZMxSGj2GU&dib_tag=se&keywords=heat+shrink&qid=1712931516&sprefix=heat+shrink+%2Caps%2C76&sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1)|1|8.5|
+|Total cost Approximation in GBP||130|
 
 ### Optional Anemometer and GNSS
 | Part | Quantity | approx. price £ |
@@ -166,11 +168,12 @@ When labeling headers and connector housing, go from left to right. The figures 
 * Solder ESCs power supply to each corner of the power distribution board.
 * Solder XT90 connector and UBEC power supply to the center of the power distribution board.
 * Cut the header off the three thin wires (Close to header).
-* The black and red thin wires are the BEC outputs and aren't being used. Insulate them (cover any copper) and tape them to ESC.
+* The black and red thin wires are the BEC outputs and aren't being used excpet 1 black wire (This is needed for a common ground when calibrating the motors). Insulate (cover any copper) the rest and tape them to ESC.
 
   (if you have a V2 ESC, the yellow wire isn't used either and can be insulate and taped to the ESC)
   
 * Crimp or solder Molex KK Terminal Contact to each of the white signal wires coming from each ESC.
+* Crimp or solder a Molex KK Terminal Contact to the one black ground wire coming from an ESC (This is needed for a common ground when calibrating the motors).
 * Cut of the connectors on the 3 voltage output wire from ESC.
 * Temporally solder the 3 voltage output wires from each ESC to any of the wires on each motor (wires might need swapped to change motor spin direction).
 * Crimp or solder Molex KK Terminal Contact to the wires on output 1 of the UBEC.
@@ -323,8 +326,8 @@ The Flight Controller is now built. With the USB memory stick you can follow the
 <img width="400" src="images/FFC.png">
 
 * Attach the reviver wires to the correct header on the Pi PCB.
-* Feed the ESC white signal wires through the holes in the controller case.
-* Place the terminal contacts from each ESC signal wires in the correct position of a Molex KK 5 x 1 Connector Housing (Blank, front right, front left, back right back left).
+* Feed the ESC white signal wires and the single black ground wire through the holes in the controller case.
+* Place the terminal contacts from each ESC wires in the correct position of a Molex KK 5 x 1 Connector Housing (Ground, front right, front left, back right back left).
 * Attach the ESC connector from the previous step to the correct header on the Pi PCB.
 * Feed the wires on output 1 of the UBEC through the holes in the controller case.
 * Place the terminal contacts from output 1 of the UBEC in the correct position of a Molex KK 6 x 1 Connector Housing (Power, 4 blanks, Ground).
@@ -340,7 +343,7 @@ The Flight Controller is now built. With the USB memory stick you can follow the
 * Attach the lid with 4 No.4 x 3/4 self tapping screws.
 * Attach the Propellers using the adapters that came with the motors and [fly safely](https://github.com/QUB-ASL/bzzz/blob/feature/187-docs_on_how_to_build_bzzz/README.md#how-to-fly).
 
-${\color{red}PHOTO}$ 
+<img width="600" src="images/bzzz.png">
 
 
 ### Anemometer
