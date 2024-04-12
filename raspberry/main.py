@@ -30,7 +30,7 @@ if __name__ == '__main__':
     sampling_time = params["sampling_time"]
     kf_params = params["ah_kf"]
     altitude_kf = AltitudeHoldKalmanFilter(
-        initial_state=np.array([1, 0, 20, -10]),
+        initial_state=np.array(kf_params["initial_state"]),
         initial_sigma=np.diagflat(kf_params["initial_sigma"]),
         state_cov=np.diagflat(kf_params["state_cov"]),
         meas_cov=kf_params["meas_cov"])
@@ -87,8 +87,8 @@ if __name__ == '__main__':
         increment_action = sc_vre * cm_pre_tick_max_increment
         altitude_ctrl.increment_reference(increment_action)
         altitude_ctrl.set_tau_eq(altitude_kf.tau_eq_estimate())
-        altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 1)
-        altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 0.1)
+        altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 2)
+        altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 1)
         state_est = altitude_kf.x_measured()
         tau = altitude_ctrl.control_action(state_est[0], state_est[1])
         # print(state_est[0], state_est[1], state_est[2],

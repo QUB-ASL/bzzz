@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt 
 import pandas as pd
 
-filename = "BB-09-04-24--18-50"
+filename = "BB-12-04-24--16-15"
 
-file = pd.read_csv(f"raspberry/{filename}.csv")
+file = pd.read_csv(f"{filename}.csv")
 
 plt.figure(figsize = (10, 6))
 plt.plot(file.datetime, file.z)
@@ -22,4 +22,4 @@ plt.ylabel('Altitude')
 plt.grid(True)
 plt.legend()
 
-plt.savefig(f"raspberry/{filename}.png")
+plt.savefig(f"{filename}.png")
