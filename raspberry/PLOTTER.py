@@ -22,4 +22,20 @@ plt.ylabel('Altitude')
 plt.grid(True)
 plt.legend()
 
-plt.savefig(f"{filename}.png")
+plt.savefig(f"{filename}_1.png")
+
+
+
+plt.figure(figsize = (10, 6))
+plt.plot(file.datetime, file.alpha_1)
+plt.plot(file.datetime, file.alpha_0)
+
+plt.title('Alphas')
+#plt.xlabel('Date_time')
+
+
+plt.xticks([])
+plt.grid(True)
+plt.legend()
+
+plt.savefig(f"{filename}_2.png")
