@@ -91,8 +91,6 @@ if __name__ == '__main__':
         altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 1)
         state_est = altitude_kf.x_measured()
         tau = altitude_ctrl.control_action(state_est[0], state_est[1])
-        # print(state_est[0], state_est[1], state_est[2],
-            #   state_est[3], altitude_kf.tau_eq_estimate(), tau)
         clip_throttle = percentage_to_throttle_radio(0.5)
         throttle = int(
             min(percentage_to_throttle_radio(tau)[0], clip_throttle))
