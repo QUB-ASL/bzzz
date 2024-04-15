@@ -13,12 +13,18 @@ It also has a stand for attaching the GNSS Antenna.
 The controller case seen below, is used to house and protect the Raspberry Pi, ESP32 and the associated PCB's and electronics. It is designed to replace the 
 F450 quadcopter frames top plate, has holes and slots in the correct place for wires to pass through and has our logo and the universites initials on it.
 
-<img width="300" src="Controller_case/Quadrotor_controller_case.png">
+<img width="400" src="Controller_case/Quadrotor_controller_case.png">
 
-The controller case lid fits the case above and has a flange that a 22mm pipe can fit in. This is used to attach the anemometer above the quadcopter.
+There are 2 controller case lid options, depending if the Anemometer and GNSS module is needed.
+
+The controller case lid below is the plain one which is used if the anemometer and GNSS module is not needed.
+
+<img width="400" src="Controller_case/Quadrotor_controller_case_lid_plain.png">
+
+The controller case lid below has a flange that a 22mm pipe can fit in. This is used to attach the anemometer above the quadcopter.
 The lid also has holes to attach the appropriate GPS/GNSS modules to the inside of the lid. The photo below shows the controller case lid.
 
-<img width="300" src="Controller_case/Quadrotor_controller_case_lid.png">
+<img width="400" src="Controller_case/Quadrotor_controller_case_lid.png">
 
 ## Motor stands
 The 'Non-rotating' motor stand as seen in the photo below is for directly mounting a outrunner motor such as the 
