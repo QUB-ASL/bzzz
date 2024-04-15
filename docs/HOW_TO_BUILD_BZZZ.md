@@ -38,12 +38,13 @@ The following files are what we use for the machines at QUB. If you require a di
 | Part | Quantity |
 | --- | ---: |
 |[Controller Case](https://github.com/QUB-ASL/bzzz/blob/main/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case%20v6.stl)|1|
-|[Controller Case Lid](https://github.com/QUB-ASL/bzzz/blob/main/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case_lid%20v7.stl)|1|
+|[Controller Case Lid](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case_lid_plain%20Drawing.cdr)|1|
 |[Motor stand set](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Motor_stands/non_rotating_motor_stand_set%20v2.stl)|1|
 |[Propeller Guard top half](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Propeller_guards/symmetrical_propeller_guard_top_half.stl)|4|
 |[Propeller Guard bottom half](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Propeller_guards/symmetrical_propeller_guard_bottom_half.stl)|4|
 |[Leg stands for pool noddle](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Frame_parts/Leg_stand_for_pool_noddle%20v2.stl)|2|
 |[Power distribution board support](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Frame_parts/Quadcopter_base_suport%20Drawing%20v5.cdr)|1|
+|[Controller Case Lid for pole (optional)](https://github.com/QUB-ASL/bzzz/blob/main/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case_lid%20v7.stl)|1|
 |[Anemometer case (optional)](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Anemometer_parts/Amemometer_case%20v6.stl)|1|
 |[GNSS Base station antenna adapter (optional)](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/GPS_and_antenna_parts/Base_station_adapter%20v7.stl)|1|
 
