@@ -82,9 +82,9 @@ if __name__ == '__main__':
     def altitude_control(radio_data):
         vre = radio_data.trimmer_VRE_percentage()
         sc_vre = trimmer_to_altitude_increment(vre)
-        cm_pre_sec_max_increment = 0.02
-        cm_pre_tick_max_increment = cm_pre_sec_max_increment * sampling_time
-        increment_action = sc_vre * cm_pre_tick_max_increment
+        meters_pre_sec_max_increment = 0.02
+        meters_pre_tick_max_increment = meters_pre_sec_max_increment * sampling_time
+        increment_action = sc_vre * meters_pre_tick_max_increment
         altitude_ctrl.increment_reference(increment_action)
         altitude_ctrl.set_tau_eq(altitude_kf.tau_eq_estimate())
         altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 2)
