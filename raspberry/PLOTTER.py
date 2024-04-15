@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt 
 import pandas as pd
 
-filename = "BB-12-04-24--16-15"
+filename = "BB-12-04-24--19-35"
 
 file = pd.read_csv(f"{filename}.csv")
 
@@ -22,20 +22,20 @@ plt.ylabel('Altitude')
 plt.grid(True)
 plt.legend()
 
-plt.savefig(f"{filename}_1.png")
+plt.savefig(f"{filename}.png")
 
 
 
-plt.figure(figsize = (10, 6))
-plt.plot(file.datetime, file.alpha_1)
-plt.plot(file.datetime, file.alpha_0)
+# plt.figure(figsize = (10, 6))
+# plt.plot(file.datetime, file.alpha_1)
+# plt.plot(file.datetime, file.alpha_0)
 
-plt.title('Alphas')
-#plt.xlabel('Date_time')
+# plt.title('Alphas')
+# #plt.xlabel('Date_time')
 
 
-plt.xticks([])
-plt.grid(True)
-plt.legend()
+# plt.xticks([])
+# plt.grid(True)
+# plt.legend()
 
-plt.savefig(f"{filename}_2.png")
+# plt.savefig(f"{filename}_2.png")
