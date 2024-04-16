@@ -6,7 +6,7 @@ import datetime
 from .data_logger import DataLogger
 from .filters import MedianFilter
 
-def deg_min_sec_to_decimal(degrees, minutes, direction):
+def _deg_min_sec_to_decimal(degrees, minutes, direction):
     """
     Convert degrees-minutes-seconds from GNGLL to decimal
     :param degrees: degrees
@@ -62,17 +62,19 @@ class Gnss:
         self.__data_processor = data_processor
         self.__log_file = log_file
         self.__max_samples = max_samples
+        self.__average_altitude = None
         if log_file is not None:
             feature_names = ("Date_Time", "Latitude", "Longitude", "Altitude")
             self.__logger = DataLogger(num_features=3,
                                        max_samples=max_samples,
                                        feature_names=feature_names)    
         self.__thread.start()
-
+        self.__gnss_altitude_initialisation()
+    
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
         Continuously reads GPS data from the serial port, parsing GNGLL
-        messages for latitude and longitude, and GPGSV messages for altitude,
+        messages for latitude and longitude, and GNGGA messages for altitude,
         updating the object's GPS attributes accordingly. 
 
         :param serial_path: Serial port path
@@ -81,7 +83,7 @@ class Gnss:
         ser = serial.Serial(serial_path, baud, timeout=1)
         ser.reset_input_buffer()
 
-        # Initialize default values for latitude, longitude, and altitude
+        # Initialise default values for latitude, longitude, and altitude
         latitude = np.nan
         longitude = np.nan
         altitude = np.nan
@@ -92,18 +94,20 @@ class Gnss:
                 tokens = line.split(",")
                 msg_key = tokens[0]
 
+
                 if msg_key == "$GNGLL" and tokens[1] and tokens[3]:
                     lat_deg = int(float(tokens[1]) / 100)
                     lat_min = float(tokens[1]) % 100
-                    latitude = deg_min_sec_to_decimal(lat_deg, lat_min, 
+                    latitude = _deg_min_sec_to_decimal(lat_deg, lat_min, 
                                                       tokens[2])
 
                     lon_deg = int(float(tokens[3]) / 100)
                     lon_min = float(tokens[3]) % 100
-                    longitude = deg_min_sec_to_decimal(lon_deg, lon_min, 
+                    longitude = _deg_min_sec_to_decimal(lon_deg, lon_min, 
                                                        tokens[4])
-                elif msg_key == "$GPGSV" and len(tokens) > 5:
-                    altitude = float(tokens[5])
+                    
+                elif msg_key == "$GNGGA" and len(tokens) > 10:
+                    altitude = float(tokens[9])
 
                 # Check if any of the values are NaN before saving or
                 # processing
@@ -131,6 +135,23 @@ class Gnss:
         ser.close()
         return
 
+    def __gnss_altitude_initialisation(self, num_samples=10):  
+        """
+        Returns the calibrated GNSS altitude based on the average 
+        altitude measured in the first minute of readings.
+        """
+        sum_altitudes = 0  
+        i = 0
+        while True:            
+            current_altitude = self.altitude
+            if not np.isnan(current_altitude):
+                i += 1
+                sum_altitudes += current_altitude
+            if i == num_samples:
+                break
+        average_altitude = sum_altitudes / num_samples
+        self.__average_altitude = average_altitude
+
     def __enter__(self):
         return self
 
@@ -157,7 +178,7 @@ class Gnss:
                                                  cursor=self.__cursor)
 
     @property
-    def Latitude(self):
+    def latitude(self):
         """
         Returns Latitude position in decimal
         """
@@ -166,7 +187,7 @@ class Gnss:
                                                  cursor=self.__cursor)
 
     @property
-    def Longitude(self):
+    def longitude(self):
         """
         Returns Longitude position in decimal
         """
@@ -175,21 +196,25 @@ class Gnss:
                                                  cursor=self.__cursor)
 
     @property
-    def Altitude(self):
+    def altitude(self):
         """
         Returns the Altitude position
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 2], 
-                                                 cursor=self.__cursor)
-        
+            current_altitude = self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
+            # Check if __average_altitude is not None and subtract it from current altitude
+            if self.__average_altitude is not None:
+                return current_altitude - self.__average_altitude
+            else:
+                return current_altitude
+            
 if __name__ == '__main__':
 
     while True:
         filename = datetime.datetime.now().strftime("Gnss_%d-%m-%y--%H-%M.csv")
         processor = MedianFilter()
-        with Gnss(window_length=5,
-                  data_processor=processor,
-                  log_file=filename) as gnss_sensor:
-            time.sleep(600) # set time for how long you want to record data 
-                            # for in seconds
+        with Gnss(log_file=filename) as gnss_sensor:
+            for _ in range(1000):
+                print(gnss_sensor.altitude)    
+                time.sleep(1)
+                
