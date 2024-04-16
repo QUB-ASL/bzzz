@@ -147,6 +147,9 @@ if __name__ == '__main__':
     # ------------------------------------------------
     keep_running = True
     with (EvoSensor(data_processor=MedianFilter()) as tof,
+          Anemometer() as anemometer,
+          PressureSensor() as barometer,
+          Gnss() as gnss,
           EspBridge() as esp_bridge):
         starttime = time_ns()
         while keep_running:
