@@ -3,8 +3,8 @@ import numpy as np
 from threading import Thread, Lock
 import time
 import datetime
-from .data_logger import DataLogger
-from .filters import MedianFilter
+from data_logger import DataLogger
+from filters import MedianFilter
 
 
 class Gnss:
@@ -123,7 +123,7 @@ class Gnss:
             bytevalue  +=  ackPacket[byteoffset+i] 
         heading = int.from_bytes(bytevalue, byteorder='little',signed=True) 
         
-        return N, E, D, gnssFixOk, carrSoln
+        return N, E, D
 
     def __perseLLH(self, ackPacket):
         
@@ -204,7 +204,7 @@ class Gnss:
 
     def __init__(self, 
                  parse_nmea=False,
-                 serial_path="/dev/ttyACM0", 
+                 serial_path="COM12", 
                  baud=57600, 
                  window_length=3,
                  data_processor=MedianFilter(),
