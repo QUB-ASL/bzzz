@@ -21,7 +21,7 @@ class AltitudeHoldKalmanFilter:
                  initial_sigma,
                  state_cov,
                  meas_cov,
-                 sampling_time=0.1):
+                 sampling_time=0.02):
         """
         Initalise the altitude hold kalman filter.
 
@@ -102,13 +102,13 @@ class AltitudeHoldKalmanFilter:
          :param pitch_rad: current drone pitch in radians.
          :param roll_rad: current drone roll in radians.
          """
-         tau_corr = _tilt_correction(tau, pitch_rad, roll_rad)
+         y_t = _tilt_correction(y_t, pitch_rad, roll_rad)
          if not np.isnan(y_t):
               self.__measurement_update(y_t, pitch_rad, roll_rad)
          else: 
               self.__x_meas = self.__x_pred
               self.__sigma_meas = self.__sigma_pred
-         self.__time_update(tau_corr)
+         self.__time_update(tau)
     
     def x_measured(self):
          """
