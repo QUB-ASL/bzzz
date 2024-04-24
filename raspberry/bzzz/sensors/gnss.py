@@ -77,7 +77,7 @@ class Gnss:
         bytevalue =  ackPacket[byteoffset] 
         for i in range(1,4):
             bytevalue  +=  ackPacket[byteoffset+i] 
-        N = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+        N = int.from_bytes(bytevalue, byteorder='little',signed=True)/100
         NH = int.from_bytes(ackPacket[32 + 6], byteorder='little',signed=True) 
 
         #relPosE
@@ -85,7 +85,7 @@ class Gnss:
         bytevalue = ackPacket[byteoffset] 
         for i in range(1,4):
             bytevalue  +=  ackPacket[byteoffset+i] 
-        E = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+        E = int.from_bytes(bytevalue, byteorder='little',signed=True)/100
         EH = int.from_bytes(ackPacket[33 + 6], byteorder='little',signed=True) 
 
         #relPosD
@@ -93,7 +93,7 @@ class Gnss:
         bytevalue = ackPacket[byteoffset] 
         for i in range(1,4):
             bytevalue  +=  ackPacket[byteoffset+i] 
-        D = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+        D = -int.from_bytes(bytevalue, byteorder='little',signed=True)/100 
         DH = int.from_bytes(ackPacket[34 + 6], byteorder='little',signed=True)     #print("D:%0.2f cm" %posned["D"]  )
 
         #Carrier solution status
@@ -201,11 +201,12 @@ class Gnss:
         headMot = int.from_bytes(bytevalue, byteorder='little',signed=True) 
 
         return Lon, Lat, Height
+    
 
     def __init__(self, 
                  parse_nmea=False,
-                 serial_path="COM12", 
-                 baud=57600, 
+                 serial_path="/dev/ttyACM0", 
+                 baud=115200, 
                  window_length=3,
                  data_processor=MedianFilter(),
                  log_file=None,
@@ -240,12 +241,14 @@ class Gnss:
         self.__data_processor = data_processor
         self.__log_file = log_file
         self.__max_samples = max_samples
+        self.__average_altitude = None
         if log_file is not None:
             feature_names = ("Date_Time", "N", "E", "D", "Lon", "Lat", "Height", "hMSL", "PVT_Lon", "PVT_Lat", "PVT_Height")
             self.__logger = DataLogger(num_features=10,
                                        max_samples=max_samples,
                                        feature_names=feature_names)    
         self.__thread.start()
+        self.__gnss_altitude_initialisation()
 
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
@@ -269,26 +272,18 @@ class Gnss:
                 for i in range(buffsize):
                     readbytes.append(ser.read())
             ubxmsg = self.__readUBX(readbytes)
-            print(ubxmsg)
 
             with self.__lock:
                 self.__values_cache[self.__cursor, :] = ubxmsg
                 if (self.__log_file is not None 
                         and self.__cursor < self.__max_samples):
-                    data_to_log = self.__data_processor.process(
-                        self.__values_cache[:, :], 
-                        cursor=self.__cursor)
-                    # Process the data only if it doesn't contain NaN
-                    # values
-                    if not np.isnan(data_to_log).any():
-                            current_timestamp = datetime.datetime.now()
-                            self.__logger.record(current_timestamp, 
-                                                    data_to_log)
+                    current_timestamp = datetime.datetime.now()
+                    self.__logger.record(current_timestamp, ubxmsg)
                 self.__cursor = ((self.__cursor + 1) 
                 % self.__window_length)
-
-        ser.close()
-        return
+            if not self.__keep_going:
+                    ser.close()
+                    return
 
     def __enter__(self):
         return self
@@ -298,6 +293,23 @@ class Gnss:
         self.__thread.join()  # Wait for the thread to finish
         if self.__log_file is not None:
             self.__logger.save_to_csv(self.__log_file)
+
+    def __gnss_altitude_initialisation(self, num_samples=10):  
+        """
+        Returns the calibrated GNSS altitude based on the average 
+        altitude measured in the first minute of readings.
+        """
+        sum_altitudes = 0  
+        i = 0
+        while True:            
+            current_altitude = self.altitude
+            if not np.isnan(current_altitude):
+                i += 1
+                sum_altitudes += current_altitude
+            if i == num_samples:
+                break
+        average_altitude = sum_altitudes / num_samples
+        self.__average_altitude = average_altitude
 
     @property
     def all_gnss_data(self):
@@ -334,13 +346,17 @@ class Gnss:
                                                  cursor=self.__cursor)
 
     @property
-    def Altitude(self):
+    def altitude(self):
         """
         Returns the Altitude position
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 2], 
-                                                 cursor=self.__cursor)
+            current_altitude = self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
+            # Check if __average_altitude is not None and subtract it from current altitude
+            if self.__average_altitude is not None:
+                return current_altitude - self.__average_altitude
+            else:
+                return current_altitude
         
 if __name__ == '__main__':
 
@@ -350,5 +366,6 @@ if __name__ == '__main__':
         with Gnss(window_length=5,
                   data_processor=processor,
                   log_file=filename) as gnss_sensor:
-            time.sleep(600) # set time for how long you want to record data 
-                            # for in seconds
+            for i in range(10000):
+              time.sleep(0.5)
+              print(gnss_sensor.altitude)
