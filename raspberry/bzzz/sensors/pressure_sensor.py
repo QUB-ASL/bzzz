@@ -29,7 +29,7 @@ class BMP180Sensor:
     """
     def __init__(self, 
                  data_processor=MedianFilter(), 
-                 window_length=3, 
+                 window_length=5, 
                  DEVICE_ADDRESS=0x77, 
                  log_file=None):
         """

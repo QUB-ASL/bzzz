@@ -25,8 +25,8 @@ if __name__ == '__main__':
     min_altitude_hold_altitude = params["min_altitude_hold_altitude"]
     feature_names = ("datetime", "z_tof", "z_bar", "z_ref", "z_hat",
                      "v_hat", "alpha_1", "alpha_0", "tau", "z_hat_2",
-                     "v_hat_2", "alpha_1_2", "alpha_0_2", "d_bar")
-    logger = DataLogger(num_features=13,
+                     "v_hat_2", "alpha_1_2", "alpha_0_2", "d_bar", "d_gnss")
+    logger = DataLogger(num_features=14,
                         feature_names=feature_names,
                         max_samples=50000)
     sampling_time = params["sampling_time"]
@@ -98,10 +98,10 @@ if __name__ == '__main__':
         meters_pre_tick_max_increment = meters_pre_sec_max_increment * sampling_time
         increment_action = sc_vre * meters_pre_tick_max_increment
         altitude_ctrl.increment_reference(increment_action)
-        altitude_ctrl.set_tau_eq(altitude_kf.tau_eq_estimate())
+        altitude_ctrl.set_tau_eq(altitude_kf_est_2.tau_eq_estimate())
         altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 2)
         altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 1)
-        state_est = altitude_kf.x_measured()
+        state_est = altitude_kf_est_2.x_measured()
         tau = altitude_ctrl.control_action(state_est[0], state_est[1])
         clip_throttle = percentage_to_throttle_radio(0.5)
         throttle = int(
@@ -117,16 +117,16 @@ if __name__ == '__main__':
         current_timestamp = datetime.datetime.now()
         state_est = altitude_kf.x_measured()
         state_est_2 = altitude_kf_est_2.x_measured()
-        data_to_log = np.zeros((13, ))
+        data_to_log = np.zeros((14, ))
         data_to_log[0] = y[0]
         data_to_log[1] = y[1]
         data_to_log[2] = altitude_ctrl.altitude_reference()
         data_to_log[3:7] = state_est.reshape((4, ))
         data_to_log[7] = radio_data.throttle_reference_percentage()
-        data_to_log[8:13] = state_est_2.reshape((5, ))
+        data_to_log[8:14] = state_est_2.reshape((6, ))
         logger.record(current_timestamp, data_to_log)
 
-    def control_loop(tof, barometer, esp_bridge):
+    def control_loop(tof, barometer, gnss, esp_bridge):
         connection_lost_flag, radio_data = rc.get_radio_data()
         radio_data = RadioData(radio_data)
         do_kill = radio_data.switch_D()
@@ -144,7 +144,8 @@ if __name__ == '__main__':
         flight_mode = radio_data.switch_C()
         y_tof = tof.distance
         y_bar = barometer.altitude()
-        y = np.array([y_tof, y_bar])
+        y_gnss = gnss.altitude
+        y = np.array([y_tof, y_bar, y_gnss])
         if y_tof > min_altitude_hold_altitude:
             altitude_estimator(radio_data, y_tof)  # deals with nans
             altitude_estimator2(radio_data, y)
@@ -174,9 +175,9 @@ if __name__ == '__main__':
                     log_file=EVO_filename) as tof, 
           Anemometer(log_file=ANE_filename) as anemometer,
           BMP180Sensor(log_file=BAR_filename) as barometer,
-        #   Gnss(log_file=GNSS_filename) as gnss,
+          Gnss(log_file=GNSS_filename) as gnss,
           EspBridge() as esp_bridge):
         starttime = time_ns()
         while keep_running:
-            keep_running = control_loop(tof, barometer, esp_bridge)
+            keep_running = control_loop(tof, barometer, gnss, esp_bridge)
             time.sleep(0.018)

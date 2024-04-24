@@ -6,18 +6,6 @@ import datetime
 from .data_logger import DataLogger
 from .filters import MedianFilter
 
-def _deg_min_sec_to_decimal(degrees, minutes, direction):
-    """
-    Convert degrees-minutes-seconds from GNGLL to decimal
-    :param degrees: degrees
-    :param minutes: minutes
-    :param direction: direction (can be one of 'N', 'W', 'E', 'S')
-    :return: decimal representation of GPS coordinates
-    """
-    decimal_degrees = degrees + minutes / 60
-    if direction in ['S', 'W']:  # need to be denoted with a negative value
-        decimal_degrees *= -1
-    return decimal_degrees
 
 class Gnss:
     """
@@ -25,9 +13,200 @@ class Gnss:
 
     This class is used to interface the GNSS Module
     """
+
+    #RELPOSNED and PVT
+    # Taken from https://github.com/mnltake/readF9P_UBX
+    def __readUBX(self, readbytes):
+        RELPOSNED = b'\x3c'
+        PVT =b'\x07'
+        POSLLH = b'\x02'
+        
+        j=0   
+        while j < len(readbytes) : 
+            i = 0
+            payloadlength = 0
+            ackPacket=[b'\xB5',b'\x62',b'\x01',b'\x00',b'\x00',b'\x00']
+            while i < payloadlength +8:              
+                if j < len(readbytes) :
+                    incoming_byte = readbytes[j]   
+                    j += 1
+                else :
+                    break
+                if (i < 3) and (incoming_byte == ackPacket[i]):
+                    i += 1
+                elif i == 3:
+                    ackPacket[i]=incoming_byte
+                    i += 1              
+                elif i == 4 :
+                    ackPacket[i]=incoming_byte
+                    i += 1
+                elif i == 5 :
+                    ackPacket[i]=incoming_byte        
+                    payloadlength = int.from_bytes(ackPacket[4]+ackPacket[5], byteorder='little',signed=False) 
+                    i += 1
+                elif (i > 5) :
+                    ackPacket.append(incoming_byte)
+                    i += 1
+            if self.__checksum(ackPacket,payloadlength) :
+                if ackPacket[3] == RELPOSNED:
+                    N, E, D = self.__perseNED(ackPacket)
+                elif ackPacket[3] == POSLLH:
+                    Lon, Lat, Height, hMSL = self.__perseLLH(ackPacket)
+                elif ackPacket[3] == PVT:
+                    PVT_Lon, PVT_Lat, PVT_Height = self.__persePVT(ackPacket)
+        return N, E, D, Lon, Lat, Height, hMSL, PVT_Lon, PVT_Lat, PVT_Height
+
+    def __checksum(self, ackPacket, payloadlength):
+        CK_A =0
+        CK_B =0
+        for i in range(2, payloadlength+ 6):
+            CK_A = CK_A + int.from_bytes(ackPacket[i], byteorder='little',signed=False) 
+            CK_B = CK_B +CK_A
+        CK_A &=0xff
+        CK_B &=0xff
+        if (CK_A ==  int.from_bytes(ackPacket[-2], byteorder='little',signed=False)) and (CK_B ==  int.from_bytes(ackPacket[-1], byteorder='little',signed=False)):
+            #print("ACK Received")
+            return True
+        else :
+            print("ACK Checksum Failure:")  
+            return False
+
+    def __perseNED(self, ackPacket):
+        #relPosN
+        byteoffset =8 + 6
+        bytevalue =  ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        N = int.from_bytes(bytevalue, byteorder='little',signed=True)/100
+        NH = int.from_bytes(ackPacket[32 + 6], byteorder='little',signed=True) 
+
+        #relPosE
+        byteoffset =12 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        E = int.from_bytes(bytevalue, byteorder='little',signed=True)/100
+        EH = int.from_bytes(ackPacket[33 + 6], byteorder='little',signed=True) 
+
+        #relPosD
+        byteoffset =16 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        D = -int.from_bytes(bytevalue, byteorder='little',signed=True)/100 
+        DH = int.from_bytes(ackPacket[34 + 6], byteorder='little',signed=True)     #print("D:%0.2f cm" %posned["D"]  )
+
+        #Carrier solution status
+        flags = int.from_bytes(ackPacket[60 + 6], byteorder='little',signed=True) 
+        gnssFixOk =  flags  & (1 << 0) #gnssFixOK 
+        carrSoln =  (flags   & (0b11 <<3)) >> 3 #carrSoln0:no carrier 1:float 2:fix
+
+        #GPS time
+        byteoffset =4 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        iTow = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+        #relPosLength
+        byteoffset =20 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        length = int.from_bytes(bytevalue, byteorder='little',signed=False) 
+        lengthH = int.from_bytes(ackPacket[35 + 6], byteorder='little',signed=True) 
+
+        #relPosHeading
+        byteoffset =24 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        heading = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+        
+        return N, E, D
+
+    def __perseLLH(self, ackPacket):
+        
+        #PosLon
+        byteoffset = 4 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        Lon = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+        #PosLat
+        byteoffset =8 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        Lat = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+        #posHeight
+        byteoffset =12 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        Height = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+        #Height above mean sea level
+        byteoffset =16 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        hMSL = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+        return Lon, Lat, Height, hMSL
+
+    def __persePVT(self, ackPacket):
+        #PosLon
+        byteoffset = 24 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        Lon = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+    
+        #PosLat
+        byteoffset =28 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        Lat = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+        #posHeight
+        byteoffset =32 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        Height = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+        #Height above mean sea level
+        byteoffset =36 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        hMSL = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+        #Ground Speed
+        byteoffset =60 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        gSpeed = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+        #Heading of motion
+        byteoffset =64 + 6
+        bytevalue = ackPacket[byteoffset] 
+        for i in range(1,4):
+            bytevalue  +=  ackPacket[byteoffset+i] 
+        headMot = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+        return Lon, Lat, Height
+    
+
     def __init__(self, 
+                 parse_nmea=False,
                  serial_path="/dev/ttyACM0", 
-                 baud=57600, 
+                 baud=115200, 
                  window_length=3,
                  data_processor=MedianFilter(),
                  log_file=None,
@@ -57,83 +236,63 @@ class Gnss:
                                args=[serial_path, baud])
         self.__keep_going = True
         self.__window_length = window_length
-        self.__values_cache = np.tile(np.nan, (self.__window_length, 3))
+        self.__values_cache = np.tile(np.nan, (self.__window_length, 10))
         self.__cursor = 0
         self.__data_processor = data_processor
         self.__log_file = log_file
         self.__max_samples = max_samples
         self.__average_altitude = None
         if log_file is not None:
-            feature_names = ("Date_Time", "Latitude", "Longitude", "Altitude")
-            self.__logger = DataLogger(num_features=3,
+            feature_names = ("Date_Time", "N", "E", "D", "Lon", "Lat", "Height", "hMSL", "PVT_Lon", "PVT_Lat", "PVT_Height")
+            self.__logger = DataLogger(num_features=10,
                                        max_samples=max_samples,
                                        feature_names=feature_names)    
         self.__thread.start()
         self.__gnss_altitude_initialisation()
-    
+
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
         Continuously reads GPS data from the serial port, parsing GNGLL
-        messages for latitude and longitude, and GNGGA messages for altitude,
+        messages for latitude and longitude, and GPGSV messages for altitude,
         updating the object's GPS attributes accordingly. 
 
         :param serial_path: Serial port path
         :param baud: Baud rate for the serial connection
         """
-        ser = serial.Serial(serial_path, baud, timeout=1)
-        ser.reset_input_buffer()
 
-        # Initialise default values for latitude, longitude, and altitude
-        latitude = np.nan
-        longitude = np.nan
-        altitude = np.nan
+        lenRELPOSNED = 6 + 64 +2
+        lenPOSLLH = 6 + 28 + 2
+        lenPVT = 6 + 92 +2
+        buffsize = lenRELPOSNED + lenPVT + lenPOSLLH 
 
         while self.__keep_going:
-            if ser.in_waiting > 0:
-                line = ser.readline().decode('utf-8', 'ignore').strip()
-                tokens = line.split(",")
-                msg_key = tokens[0]
+       
+            with serial.Serial(serial_path, baud, timeout=1) as ser:
+                readbytes =[] 
+                for i in range(buffsize):
+                    readbytes.append(ser.read())
+            ubxmsg = self.__readUBX(readbytes)
 
+            with self.__lock:
+                self.__values_cache[self.__cursor, :] = ubxmsg
+                if (self.__log_file is not None 
+                        and self.__cursor < self.__max_samples):
+                    current_timestamp = datetime.datetime.now()
+                    self.__logger.record(current_timestamp, ubxmsg)
+                self.__cursor = ((self.__cursor + 1) 
+                % self.__window_length)
+            if not self.__keep_going:
+                    ser.close()
+                    return
 
-                if msg_key == "$GNGLL" and tokens[1] and tokens[3]:
-                    lat_deg = int(float(tokens[1]) / 100)
-                    lat_min = float(tokens[1]) % 100
-                    latitude = _deg_min_sec_to_decimal(lat_deg, lat_min, 
-                                                      tokens[2])
+    def __enter__(self):
+        return self
 
-                    lon_deg = int(float(tokens[3]) / 100)
-                    lon_min = float(tokens[3]) % 100
-                    longitude = _deg_min_sec_to_decimal(lon_deg, lon_min, 
-                                                       tokens[4])
-                    
-                elif msg_key == "$GNGGA" and len(tokens) > 10:
-                    altitude = float(tokens[9])
-
-                # Check if any of the values are NaN before saving or
-                # processing
-                if (not np.isnan(latitude) and not np.isnan(longitude) 
-                        and not np.isnan(altitude)):
-                    gnss_to_save = np.array([latitude, longitude, 
-                                              altitude])    
-                
-                    with self.__lock:
-                        self.__values_cache[self.__cursor, :] = gnss_to_save
-                        if (self.__log_file is not None 
-                                and self.__cursor < self.__max_samples):
-                            data_to_log = self.__data_processor.process(
-                                self.__values_cache[:, :], 
-                                cursor=self.__cursor)
-                            # Process the data only if it doesn't contain NaN
-                            # values
-                            if not np.isnan(data_to_log).any():
-                                    current_timestamp = datetime.datetime.now()
-                                    self.__logger.record(current_timestamp, 
-                                                         data_to_log)
-                        self.__cursor = ((self.__cursor + 1) 
-                        % self.__window_length)
-
-        ser.close()
-        return
+    def __exit__(self, *args):
+        self.__keep_going = False
+        self.__thread.join()  # Wait for the thread to finish
+        if self.__log_file is not None:
+            self.__logger.save_to_csv(self.__log_file)
 
     def __gnss_altitude_initialisation(self, num_samples=10):  
         """
@@ -152,15 +311,6 @@ class Gnss:
         average_altitude = sum_altitudes / num_samples
         self.__average_altitude = average_altitude
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        self.__keep_going = False
-        self.__thread.join()  # Wait for the thread to finish
-        if self.__log_file is not None:
-            self.__logger.save_to_csv(self.__log_file)
-
     @property
     def all_gnss_data(self):
         """
@@ -178,7 +328,7 @@ class Gnss:
                                                  cursor=self.__cursor)
 
     @property
-    def latitude(self):
+    def Latitude(self):
         """
         Returns Latitude position in decimal
         """
@@ -187,7 +337,7 @@ class Gnss:
                                                  cursor=self.__cursor)
 
     @property
-    def longitude(self):
+    def Longitude(self):
         """
         Returns Longitude position in decimal
         """
@@ -207,14 +357,15 @@ class Gnss:
                 return current_altitude - self.__average_altitude
             else:
                 return current_altitude
-            
+        
 if __name__ == '__main__':
 
     while True:
         filename = datetime.datetime.now().strftime("Gnss_%d-%m-%y--%H-%M.csv")
         processor = MedianFilter()
-        with Gnss(log_file=filename) as gnss_sensor:
-            for _ in range(1000):
-                print(gnss_sensor.altitude)    
-                time.sleep(1)
-                
+        with Gnss(window_length=5,
+                  data_processor=processor,
+                  log_file=filename) as gnss_sensor:
+            for i in range(10000):
+              time.sleep(0.5)
+              print(gnss_sensor.altitude)
