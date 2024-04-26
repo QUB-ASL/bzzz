@@ -270,7 +270,7 @@ Soldering is complete, the Flight Controller can now be put together.
 
 <img width="400" src="images/FC.png">
 
-The Flight Controller is now built. With the USB memory stick you can follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/feature/187-docs_on_how_to_build_bzzz/docs/SOFTWARE_SETUP.md) or come back to this at a later stage.
+The Flight Controller is now built. With the USB memory stick you can follow the [software setup](/docs/SOFTWARE_SETUP.md) or come back to this at a later stage.
 
 
 ### Screw frame together
@@ -336,13 +336,13 @@ The Flight Controller is now built. With the USB memory stick you can follow the
 
 <img width="400" src="images/FC_in_case.png">
 
-* If you haven't already, using the USB memory stick follow the [software setup](https://github.com/QUB-ASL/bzzz/blob/feature/187-docs_on_how_to_build_bzzz/docs/SOFTWARE_SETUP.md).
+* If you haven't already, using the USB memory stick follow the [software setup](/docs/SOFTWARE_SETUP.md).
 * Slide the Battery into the gap between the Power disturbution board and controller case, strap it in with the velcro strap and connect it to the XT90 connector.
 * Tilt the quadcopter and check that the motors spin as expected for the attitude controller.
 * Use the remote and check that the motors spin as expected (If not reverse the remote channel data).
-* If needed callibrate the ESCs following [this](https://github.com/QUB-ASL/bzzz/tree/feature/187-docs_on_how_to_build_bzzz/hardware).
+* If needed callibrate the ESCs following [this](/hardware).
 * Attach the lid with 4 No.4 x 3/4 self tapping screws.
-* Attach the Propellers using the adapters that came with the motors and [fly safely](https://github.com/QUB-ASL/bzzz/blob/feature/187-docs_on_how_to_build_bzzz/README.md#how-to-fly).
+* Attach the Propellers using the adapters that came with the motors and [fly safely](/README.md#how-to-fly).
 
 <img width="600" src="images/bzzz.png">
 
