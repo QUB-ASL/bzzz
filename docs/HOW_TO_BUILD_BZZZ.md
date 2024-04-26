@@ -34,19 +34,19 @@ You might want to order some spares when initially buying in case of an accident
 |Total cost Approximation in GBP including 1 battery||375|
 
 ### 3D Printed and Laser cut parts
-The following files are what we use for the machines at QUB. If you require a different type of file check [here](https://github.com/QUB-ASL/bzzz/tree/main/design/Parts_for_3D_printing_and_laser_cutting) or create an issue [here](https://github.com/QUB-ASL/bzzz/issues/new?assignees=&labels=question%2Chelp+wanted&projects=&template=questions.yml).
+The following files are what we use for the machines at QUB. If you require a different type of file check [here](/design/Parts_for_3D_printing_and_laser_cutting) or create an issue [here](https://github.com/QUB-ASL/bzzz/issues/new?assignees=&labels=question%2Chelp+wanted&projects=&template=questions.yml).
 | Part | Quantity |
 | --- | ---: |
-|[Controller Case](https://github.com/QUB-ASL/bzzz/blob/main/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case%20v6.stl)|1|
-|[Controller Case Lid](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case_lid_plain%20Drawing.cdr)|1|
-|[Motor stand set](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Motor_stands/non_rotating_motor_stand_set%20v2.stl)|1|
-|[Propeller Guard top half](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Propeller_guards/symmetrical_propeller_guard_top_half.stl)|4|
-|[Propeller Guard bottom half](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Propeller_guards/symmetrical_propeller_guard_bottom_half.stl)|4|
-|[Leg stands for pool noddle](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Frame_parts/Leg_stand_for_pool_noddle%20v2.stl)|2|
-|[Power distribution board support](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Frame_parts/Quadcopter_base_suport%20Drawing%20v5.cdr)|1|
-|[Controller Case Lid for pole (optional)](https://github.com/QUB-ASL/bzzz/blob/main/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case_lid%20v7.stl)|1|
-|[Anemometer case (optional)](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/Anemometer_parts/Amemometer_case%20v6.stl)|1|
-|[GNSS Base station antenna adapter (optional)](https://github.com/QUB-ASL/bzzz/blob/dev/design/Parts_for_3D_printing_and_laser_cutting/GPS_and_antenna_parts/Base_station_adapter%20v7.stl)|1|
+|[Controller Case](/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case%20v6.stl)|1|
+|[Controller Case Lid](/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case_lid_plain%20Drawing.cdr)|1|
+|[Motor stand set](/design/Parts_for_3D_printing_and_laser_cutting/Motor_stands/non_rotating_motor_stand_set%20v2.stl)|1|
+|[Propeller Guard top half](/design/Parts_for_3D_printing_and_laser_cutting/Propeller_guards/symmetrical_propeller_guard_top_half.stl)|4|
+|[Propeller Guard bottom half](/design/Parts_for_3D_printing_and_laser_cutting/Propeller_guards/symmetrical_propeller_guard_bottom_half.stl)|4|
+|[Leg stands for pool noddle](/design/Parts_for_3D_printing_and_laser_cutting/Frame_parts/Leg_stand_for_pool_noddle%20v2.stl)|2|
+|[Power distribution board support](/design/Parts_for_3D_printing_and_laser_cutting/Frame_parts/Quadcopter_base_suport%20Drawing%20v5.cdr)|1|
+|[Controller Case Lid for pole (optional)](/design/Parts_for_3D_printing_and_laser_cutting/Controller_case/Quadrotor_controller_case_lid%20v7.stl)|1|
+|[Anemometer case (optional)](/design/Parts_for_3D_printing_and_laser_cutting/Anemometer_parts/Amemometer_case%20v6.stl)|1|
+|[GNSS Base station antenna adapter (optional)](/design/Parts_for_3D_printing_and_laser_cutting/GPS_and_antenna_parts/Base_station_adapter%20v7.stl)|1|
 
 ### Electronics 
 | Part | Quantity | approx.. price £ |
@@ -68,9 +68,9 @@ They can have additional offers for first orders etc.
 To order from JLCPCB download the .zip files below and upload them to the section "Add gerber file" [here](https://jlcpcb.com/).
 | Part | Quantity | approx. price £ |
 | --- | ---: | ---: |
-|[ESP PCB](https://github.com/QUB-ASL/bzzz/blob/main/design/PCBs/ESP_PCB/ESP_PCB_1_IMU/Gerber_PCB_DRONE_ESP_SHIELD.zip)|5|2|
-|[Pi PCB](https://github.com/QUB-ASL/bzzz/blob/main/design/PCBs/PI_PCB/PI_PCB_FPC/Gerber_PCB_DRONE_PI_SHIELD_FPC.zip)|5|3|
-|[Sensor PCB](https://github.com/QUB-ASL/bzzz/blob/main/design/PCBs/SENSOR_PCB/SENSOR_PCB_FPC/Gerber_PCB_DRONE_SENSOR_BOARD_FPC.zip)|5|3|
+|[ESP PCB](/design/PCBs/ESP_PCB/ESP_PCB_1_IMU/Gerber_PCB_DRONE_ESP_SHIELD.zip)|5|2|
+|[Pi PCB](/design/PCBs/PI_PCB/PI_PCB_FPC/Gerber_PCB_DRONE_PI_SHIELD_FPC.zip)|5|3|
+|[Sensor PCB](/design/PCBs/SENSOR_PCB/SENSOR_PCB_FPC/Gerber_PCB_DRONE_SENSOR_BOARD_FPC.zip)|5|3|
 |Total cost Approximation including delivery and customs in GBP||20 - 30|
 
 ### General Parts (Screw and Headers etc)
