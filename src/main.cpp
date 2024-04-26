@@ -10,6 +10,8 @@
 
 using namespace bzzz;
 
+hw_timer_t *timer = NULL;
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 MotorDriver motorDriver;
 RaspberryEsp32Interface raspberryEsp32Interface(true);
 AHRS ahrs;
@@ -24,6 +26,41 @@ bool wasKill=0;
 bool isKill=0;
 unsigned long timestampLastKill = 0;
 bool isThrottleStickDown = 0;
+
+/**
+ * Here the timer state is declared as a global variable
+ * so that it can be accessed by the loop function (and possibly
+ * by other interrupts). When accessing `timerState` we should
+ * be first acquiring its lock (i.e., the `timerMux`).
+ */
+volatile bool timerState = true;
+
+/**
+ * Callback, attached to the timer interrupt
+ * It is generally advisable to keep the implementation of this
+ * function as lean as possible (it should just toggle a flag).
+ * This function is executed only ONCE every period.
+ */
+void IRAM_ATTR onTimer()
+{
+  taskENTER_CRITICAL_ISR(&timerMux);
+  timerState = !timerState;
+  taskEXIT_CRITICAL_ISR(&timerMux);
+}
+
+/**
+ * Setup the timer for running the main loop at a fixed rate.
+ * timerAlarmWrite is simply a counter; we count a number of
+ * timer periods before calling the callback function (onTimer).
+ * The second argument is the sampling period in micros.
+ */
+void setupTimer()
+{
+  timer = timerBegin(TIMER_ID, TIMER_PRESCALER, true);
+  timerAttachInterrupt(timer, &onTimer, true);
+  timerAlarmWrite(timer, TIMER_INTERVAL_uS, true);
+  timerAlarmEnable(timer);
+}
 
 /**
  * Setup the AHRS
@@ -41,6 +78,7 @@ void setupAHRS()
  */
 void setup()
 {
+  setupTimer();                                          // setup the main loop timer
   setupBuzzer();                                         // setup the buzzer
   Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
   setupAHRS();                                           // setup the IMU and AHRS
@@ -80,11 +118,16 @@ void setGainsFromRcTrimmers()
  */
 void loop()
 {  
-  
+  taskENTER_CRITICAL_ISR(&timerMux);
+  timerState = !timerState;
+  taskEXIT_CRITICAL_ISR(&timerMux);
+
   float quaternionImuData[4];
   float measuredAngularVelocity[3];
   float angularVelocityCorrected[3];
 
+  if (!timerState) return;
+  
   // if raspberryEsp32Interface data received update the last data read time.
   if (raspberryEsp32Interface.readPiData())
   {
@@ -99,7 +142,6 @@ void loop()
     logSerial(LogVerbosityLevel::Debug, ">> [%d, %d] >> %lu\n",
             isKill, wasKill, timestampLastKill);
   }
-
   
   // If you're attempting to resurrect it...
   // K --> U
@@ -115,8 +157,6 @@ void loop()
     }
   } 
 
-  
-
   // one function to run all fail safe checks
   if (isKill || failSafes.isSerialTimeout())
   {
@@ -127,9 +167,6 @@ void loop()
     motorDriver.disarm();
     return; // exit the loop
   }
-
-  
-  
 
   ahrs.update();
   setGainsFromRcTrimmers();
@@ -176,15 +213,14 @@ void loop()
   // Compute control actions and send them to the motors
 
   controller.motorPwmSignals(attitudeError,
-                             angularVelocityCorrected,
-                             yawRateReference,
-                             throttleRef,
-                             motorFL, motorFR, motorBL, motorBR);
+                            angularVelocityCorrected,
+                            yawRateReference,
+                            throttleRef,
+                            motorFL, motorFR, motorBL, motorBR);
   
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
 
 
   logSerial(LogVerbosityLevel::Debug, "PR: %f %f\n",
             IMUData[1], IMUData[2]);
-
 }

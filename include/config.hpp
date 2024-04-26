@@ -3,6 +3,13 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+/**
+ * Timer config
+ */
+#define TIMER_ID 0
+#define TIMER_PRESCALER 80
+#define TIMER_INTERVAL_uS 4000
+
 // Various defines such as PIN numbers and global constants
 
 /**
@@ -69,20 +76,20 @@
 /** Trimmer A on RC - maximum quaternion XY gain */
 #define RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN 100.
 /** Tested attitude Quaternion roll-pitch axis control gain*/
-#define QUATERNION_XY_GAIN 0.470
+#define QUATERNION_XY_GAIN 0.5
 
 /** Trimmer B on RC - maximum quaternion Z gain */
 #define RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN 100.
 
 /** Trimmer C on RC - maximum omega xy gain */
-#define RADIO_TRIMMER_MAX_OMEGA_XY_GAIN 0.5
+#define RADIO_TRIMMER_MAX_OMEGA_XY_GAIN 0.3
 /** Tested attitude angular velocity roll-pitch axis control gain*/
-#define OMEGA_XY_GAIN 0.266
+#define OMEGA_XY_GAIN 0.30
 
 /** Trimmer E on RC - maximum omega z gain */
-#define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 10
+#define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 4
 /** Tested attitude angular velocity yaw axis control gain*/
-#define OMEGA_Z_GAIN 0.145
+#define OMEGA_Z_GAIN 0.125
 
 /**
  * Control action to PWM scaling factor

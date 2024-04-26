@@ -1,7 +1,3 @@
-# NOTE: It is encouraged to write all the functions that are need to be scheduled in this document,
-# that way all the shared variables can be accessed by the functions without needing to explicitly pass them
-# and it will make handling shared resources easy.
-
 import numpy as np  # for matrix based calculations
 import pandas as pd  # pandas for storing cached data into csv files
 
@@ -14,6 +10,17 @@ from bzzz.estimators.altitude_Kalman_filter import KalmanFilter
 from bzzz.scheduler import Scheduler
 from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
 from bzzz.read_sbus import RC  # for radio data receiving, encoding and sending to ESP
+
+from bzzz.sensors.evo_time_of_flight import EvoSensor
+from bzzz.sensors.pressure_sensor import PressureSensor
+from bzzz.sensors.anemometer import Anemometer
+from bzzz.sensors.gnss import Gnss
+from bzzz.sensors.data_logger import DataLogger
+from bzzz.sensors.filters import NoFilter
+from bzzz.sensors.filters import MedianFilter
+from bzzz.sensors.filters import AverageFilter
+import datetime
+
 
 
 # NOTE: The scheduler supports both multi-threading and time-based function calling
@@ -36,13 +43,7 @@ if __name__ == '__main__':
     lqr = LQR(sampling_frequency=sampling_frequency,
               initial_alpha_t=10,
               initial_beta_t=-9.81)
-    # update_measurement_at_fixed_rate: if True then use time difference between current time and last measurement time to take a measurement
-    #            if false then take a measurement instantly
-    tof = TimeOfFlightSensor(update_measurement_at_fixed_rate=False,
-                             median_filter_length=1,
-                             cache_altitude=True,
-                             use_outlier_detection=True,
-                             abs_outlier_diff_thres=500)
+
     rc = RC()
     scheduler = Scheduler(use_threading=False)
 
@@ -284,8 +285,7 @@ if __name__ == '__main__':
         """Read ToF sensor, and run the Kalman filter and LQR control algorithms
         """
 
-        # NOTE: DO NOT DIVIDE temp BY 1000 here to get altitude measurements in m.
-        # There are checks if temp == -1 in the code for outlier detection.
+        # NOTE: Altitude measurements in m.
         # you can run LQR even when the drone is close to ground but you cannot run KF.
         # So, to compensate use the previous estimates of alpha and beta
         # and the current ToF sensor readings. In this case if the ToF returns outliers
@@ -293,14 +293,14 @@ if __name__ == '__main__':
 
         # Reading the tof altitude invokes the automatic update from the sensor,
         # no need to read the sensor explicitly
-        temp = tof.altitude
+        distance__from_tof_sensor = tof.distance
 
-        if temp == -1:
+        if distance__from_tof_sensor == -1:
             print("ToF outlier or -ve distance detected, discarded the measurement.")
             num_consecutive_altitude_outliers_count_thus_far[0] += 1
         else:
             num_consecutive_altitude_outliers_count_thus_far[0] = 0
-            last_valid_altitude_measurement_mts[0] = temp/1000
+            last_valid_altitude_measurement_mts[0] = distance__from_tof_sensor 
 
         if num_consecutive_altitude_outliers_count_thus_far[0] == max_consecutive_altitude_outliers_count[0]:
             print(f"Something wrong with the ToF, maximum number of consecutive altitude outliers recorded: {num_consecutive_altitude_outliers_count_thus_far[0]}."
@@ -309,15 +309,15 @@ if __name__ == '__main__':
         is_drone_flying_close_to_ground[0] = last_valid_altitude_measurement_mts[0] < min_altitude_to_activate_AltiHold_mts[0]
 
         if is_drone_flying_close_to_ground[0]:
-            z_hat[0] = current_altitude_snap_shot_mts[0] if temp == - \
-                1 else temp/1000
+            z_hat[0] = current_altitude_snap_shot_mts[0] if distance__from_tof_sensor  == - \
+                1 else distance__from_tof_sensor 
             print_debug(
-                f"Cannot activate altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]/1000} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
+                f"Cannot activate altitude hold. Drone is flying close to the ground at {last_valid_altitude_measurement_mts[0]} mts < {min_altitude_to_activate_AltiHold_mts[0]} mts.")
             if is_KF_ran_atleast_once[0]:
                 kf.reset()
         else:
             x_est = kf.update(Tref_t[0], euler[1], euler[2],
-                              np.nan if temp == -1 else temp/1000)
+                              np.nan if distance__from_tof_sensor  == -1 else distance__from_tof_sensor )
             is_KF_ran_atleast_once[0] = True
             z_hat[0] = x_est[0][0]
             v_hat[0] = x_est[1][0]
@@ -331,7 +331,7 @@ if __name__ == '__main__':
 
             if use_altitude_hold[0]:
                 if not is_current_altitude_snap_shot_taken[0]:
-                    current_altitude_snap_shot_mts[0] = temp/1000
+                    current_altitude_snap_shot_mts[0] = distance__from_tof_sensor 
                     var_e_RC_mid_percentage[0] = rc.trimmer_VRE_percentage()
                     is_current_altitude_snap_shot_taken[0] = True
             else:
@@ -369,48 +369,30 @@ if __name__ == '__main__':
                        function_call_count=0)
 
     # THE MAIN LOOP
-    while True:
-        scheduler.run()  # run the scheduled functions
+    EVO_filename = datetime.datetime.now().strftime("Evo-ToF-%d-%m-%y--%H-%M.csv")
+    BAR_filename = datetime.datetime.now().strftime("PressureSensor-%d-%m-%y--%H-%M.csv")
+    ANE_filename = datetime.datetime.now().strftime("Anemometer-%d-%m-%y--%H-%M.csv")
+    GNSS_filename = datetime.datetime.now().strftime("GNSS-%d-%m-%y--%H-%M.csv")
+    processor = AverageFilter()  # You need to define this class based on your requirements
+    with (EvoSensor(window_length=3,  
+                    data_processor=processor,  
+                    log_file=EVO_filename) as tof, 
+          PressureSensor(window_length=100,  
+                         data_processor=processor,  
+                         reference_pressure_at_sea_level=102500, 
+                         log_file=BAR_filename) as PSensor, 
+          Anemometer(window_length=5,  
+                     data_processor=processor,  
+                     log_file=ANE_filename) as ASensor,
+          Gnss(window_length=3,  
+                     data_processor=processor,  
+                     log_file=GNSS_filename) as GnssSensor):
+        
+        while True:
+            scheduler.run()  # run the scheduled functions
 
-        # Cache saving
-        if is_kill[0] and switch_a_status[0] and allow_data_logging[0]:
-            print("[LOGGER] saving data")
-            accelerometer_cache_ = np.array(accelerometer_cache)
-            motor_PWM_cache_ = np.array(motor_PWM_cache)
-            KF_data_cache_ = np.array(KF_data_cache)
-
-            date_time_now = datetime.now()
-            data_cache_df = pd.DataFrame([[t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta]
-                                          for t, Tr, y, p, r, alt, ax, ay, az, alt_ref, rc_data, mot_pwm_FL, mot_pwm_FR, mot_pwm_BL, mot_pwm_BR, KF_alt, KF_vel, KF_alpha, KF_beta
-                                          in zip(time_cache, throttle_ref_cache, yaw_cache, pitch_cache, roll_cache,
-                                                 tof.altitude_cache(),
-                                                 accelerometer_cache_[:, 0],
-                                                 accelerometer_cache_[:, 1],
-                                                 accelerometer_cache_[:, 2],
-                                                 altitude_reference_cache_mts,
-                                                 radio_data_cache,
-                                                 motor_PWM_cache_[:, 0],
-                                                 motor_PWM_cache_[:, 1],
-                                                 motor_PWM_cache_[:, 2],
-                                                 motor_PWM_cache_[:, 3],
-                                                 KF_data_cache_[:, 0],
-                                                 KF_data_cache_[:, 1],
-                                                 KF_data_cache_[:, 2],
-                                                 KF_data_cache_[:, 3])],
-                                         columns=['timestamp', 'throttle_ref', 'yaw', 'pitch', 'roll',
-                                                  'tof_measurement', 'accX', 'accY', 'accZ',
-                                                  'altitude_ref', 'RC_data', 'mot_FL', 'mot_FR', 'mot_BL', 'mot_BR',
-                                                  'KF_altitude_est', 'KF_velocity_z_est', 'KF_alpha_est', 'KF_beta_est'])
-            data_cache_df.to_csv(
-                f"/home/bzzz/Desktop/logs/data_log_{date_time_now.year}_{date_time_now.month}_{date_time_now.day}_at_{date_time_now.hour}h{date_time_now.minute}m{date_time_now.second}s.csv",
-                index=False,
-                header=True)
-            print("[LOGGER] saving complete")
-            clear_caches()
-            allow_data_logging[0] = False
-
-            # TODO change this to print the dataframe (all rows and columns)
-            if enable_printing_cache_to_screen[0]:
-                print(f"time: {time_cache} \naltitude: {tof.altitude_cache()} \nTref: {throttle_ref_cache} \nyaw: {yaw_cache} \npitch: {pitch_cache} \nroll:{roll_cache} \nacc: {accelerometer_cache_} \nalti_ref_mts{altitude_reference_cache_mts}")
-
-        allow_data_logging[0] = not switch_a_status[0]
+            if is_kill[0] and switch_a_status[0]:
+                print("All sensors are saving data")
+                break
+    
+    
