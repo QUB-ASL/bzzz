@@ -1,10 +1,10 @@
-# How to Build bzzz
+# How to build bzzz
 This documentation includes the relevant information on how to build our quadcopter bzzz from scratch.
 
 ## Tools
 You will need the following tools to build bzzz.
 * Soldering iron with solder
-* Crimp tool
+* Crimping tool
 * 1.5, 2, 2.5 Allen/Hex keys
 * 4mm flat and Phillips 2 screwdrivers
 * side cutting pliers
@@ -326,7 +326,7 @@ The Flight Controller is now built. With the USB memory stick you can follow the
 
 <img width="400" src="images/FFC.png">
 
-* Attach the reviver wires to the correct header on the Pi PCB.
+* Attach the receiver wires to the correct header on the Pi PCB.
 * Feed the ESC white signal wires and the single black ground wire through the holes in the controller case.
 * Place the terminal contacts from each ESC wires in the correct position of a Molex KK 5 x 1 Connector Housing (Ground, front right, front left, back right back left).
 * Attach the ESC connector from the previous step to the correct header on the Pi PCB.
