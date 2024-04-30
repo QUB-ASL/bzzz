@@ -30,7 +30,7 @@ body:
       2. Step 2.
       3. See error
   validations:
-    required: true
+    required: false
 - type: textarea
   attributes:
     label: Minimum reproducible example
@@ -42,7 +42,7 @@ body:
 
       ```
   validations:
-    required: true
+    required: false
 - type: textarea
   attributes:
     label: Additional context

@@ -17,6 +17,7 @@ The following files are included
 | `fail_safe.hpp`   | checks whether the serial is connected |
 | `motors.hpp`      | interface for the four motors |
 | `quaternion.hpp`  | quaternion algebra |
+| `radioEsp32Interface.hpp` | serial interface between Raspberry Pi and ESP32 |
 | `util.hpp`        | logging, buzzing, and other utils |
 
 The implementations are in [`../src`](../src)

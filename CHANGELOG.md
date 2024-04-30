@@ -11,6 +11,45 @@ The following subsections are used:
 - **Fixed**: bug fixes
 - **Changed**: other code changes
 
+
+<!-- ---------------------
+      v1.0.0
+     --------------------- -->
+
+## [v1.0.0] - 11 March 2024
+
+### Added
+
+- Timer interrupt ISR 
+- New 3D printed parts 
+- New Python interface for the barometer 
+- Refuse to arm unless throttle stick is down and switches are at the correct positions
+- Motors protocol when receiver gets disconnected 
+- Create `ESC_calibration.cpp`
+- Read data from Terabee TOF sensor
+- Read anemometer data in background; Read and save anemometer data on Pi
+- Update logo
+- Discord bots and documentation ; run the DiscordBot client and Raspberry Pi main script on start-up
+- Parser of NMEA messages from GNSS module
+
+### Fixed
+
+- Correct import names
+- Documentation issues and typos
+- Update `setup.py` and `platformio.ini`
+- Update `README.md`
+- Fix typos in `ahrs.hpp`
+
+### Changed
+
+- Update SETUP.md for remote access
+- Update maximum attitude gains from trimmers and attitude gains
+- Improve docs in `read_sbus_from_GPIO_receiver.py`
+- Update ESC and buzzer pins 
+- Update issue bug_report
+- Update PCB's
+
+
 <!-- ---------------------
       v0.2.0
      --------------------- -->
@@ -66,5 +105,6 @@ The following subsections are used:
 - `logSerial`, `setupBuzzer`, `buzz` and `waitForPiSerial` go to `util`
 - Update hardware tests
 
+[v1.0.0]: https://github.com/QUB-ASL/bzzz/releases/tag/v1.0.0
 [v0.1.0]: https://github.com/QUB-ASL/bzzz/releases/tag/v0.1.1
 [v0.2.0]: https://github.com/QUB-ASL/bzzz/releases/tag/v0.2.0

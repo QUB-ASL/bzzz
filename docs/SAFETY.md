@@ -13,7 +13,8 @@ Last updated: 24 August 2023
 7. [Fire safety](#7-fire-safety)
 8. [Emergency numbers](#8-emergency-numbers)
 9. [First aid](#9-first-aid-kit)
-10. [Endnotes](#9-endnotes)
+10. [Pre-flight tests](#10-pre-flight-tests)
+11. [Endnotes](#11-endnotes)
 
 
 
@@ -207,7 +208,31 @@ A first aid kit is available in the lab. Make sure you know where it is and fami
 - 2 HypaClens eye wash bottles (500ml)
 
 
-## 10. Endnotes
+# 10. Pre-flight tests
+
+Basic pre-flight tests (without propellers):
+
+- the arming sequence works properly (it shouldn’t arm unless the arm switch is ON)
+- it should not be possible to arm when the throttle stick is not at zero
+- the quadcopter reacts properly when tilted and rotated around the z-axis
+- it responds well to commands from the RC
+- the motors are killed immediately when the kill switch is flipped
+- 3 seconds after killing, it is not possible to un-kill unless the throttle switch is down
+- it should get killed if the RC is turned off   
+- once the script is killed, the motors are killed too (a kill hook is necessary)  
+
+Testing the sensors (again with propellers):
+
+- The sensors (time-of-flight, anemometer, GNSS, barometer) work, are responsive, and the logging works
+
+With the propellers on (inside the netted area):
+
+- simple attitude control (make sure yaw control works)
+- altitude hold works
+
+
+
+## 11. Endnotes
 
 - No equipment leaves the lab
 - Before you leave the lab:

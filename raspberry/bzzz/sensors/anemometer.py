@@ -3,8 +3,8 @@ import numpy as np
 from threading import Thread, Lock
 import time
 import datetime
-from data_logger import DataLogger
-from filters import MedianFilter
+from .data_logger import DataLogger
+from .filters import *
 
 
 class Anemometer:
@@ -67,7 +67,7 @@ class Anemometer:
         """
         ser = serial.Serial(serial_path, baud, timeout=1)
         ser.reset_input_buffer()
-        while True:
+        while self.__keep_going:
             if ser.in_waiting > 0:
                 sensor_data = ser.readline().decode('utf-8').strip()
                 split_data = sensor_data.split()
@@ -79,10 +79,8 @@ class Anemometer:
                     # If the caller wants to log (log_file specified) there is still space
                     # in the log file, record data
                     if self.__log_file is not None and self.__cursor < self.__max_samples:
-                        data_to_log = self.__data_processor.process(
-                            self.__values_cache[:, :], cursor=self.__cursor)
                         current_timestamp = datetime.datetime.now()
-                        self.__logger.record(current_timestamp, data_to_log)
+                        self.__logger.record(current_timestamp, split_data_float)
                     self.__cursor = (self.__cursor + 1) % self.__window_length
                 if not self.__keep_going:
                     ser.close()
@@ -159,10 +157,12 @@ class Anemometer:
 
 if __name__ == '__main__':
 
-    while True:
-        filename = datetime.datetime.now().strftime("%d-%m-%y--%H-%M.csv")
-        processor = MedianFilter()
-        with Anemometer(window_length=5,
-                        data_processor=processor,
-                        log_file=filename) as sensor:
-            time.sleep(600) # set time for how long you want to record data for in seconds
+    filename = datetime.datetime.now().strftime("ANM-%d-%m-%y--%H-%M.csv")
+    processor = MedianFilter()
+    with Anemometer(window_length=5,
+                    data_processor=processor,
+                    log_file=filename) as sensor:
+        for i in range(10000):
+            # time.sleep(0.05)
+            print(sensor.all_sensor_data)
+            
