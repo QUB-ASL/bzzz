@@ -460,11 +460,11 @@ def fix_params_and_forecast(file_name,
                 model_fit_2 = model_fit_2.append(updated_data, refit=False)
                 rolling_predictions_2[df_wind.index[x+prediction_horizon]] = model_fit_2.predict(x+prediction_horizon)
             
-            # with open('rolling_predictions.csv', "a+", newline="") as f:
-            #     # creating the writer
-            #     writer = csv.writer(f)
-            #     # using writerow to write individual record one by one
-            #     writer.writerow([rolling_predictions_1[df_wind.index[x+prediction_horizon_1]]])
+            with open('rolling_predictions.csv', "a+", newline="") as f:
+                # creating the writer
+                writer = csv.writer(f)
+                # using writerow to write individual record one by one
+                writer.writerow([rolling_predictions_1[df_wind.index[x+prediction_horizon]]])
         
         end = time()
         print('Model Fitting Time:', end - start)
@@ -791,9 +791,9 @@ def fix_params_and_forecast(file_name,
 #                  W = False)
 
 fix_params_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv',
-                        train_end = 20,
+                        train_end = 8,
                         test_end = 1020,
-                        prediction_horizon = 1,
+                        prediction_horizon = 10,
                         ARIMA_p_1 = 5,
                         ARIMA_d_1 = 0,
                         ARIMA_q_1 = 8,
