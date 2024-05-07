@@ -3,8 +3,8 @@ import numpy as np
 from threading import Thread, Lock
 import time
 import datetime
-from data_logger import DataLogger
-from filters import MedianFilter
+from .data_logger import DataLogger
+from .filters import *
 
 
 class Gnss:
@@ -93,7 +93,7 @@ class Gnss:
         bytevalue = ackPacket[byteoffset] 
         for i in range(1,4):
             bytevalue  +=  ackPacket[byteoffset+i] 
-        D = -int.from_bytes(bytevalue, byteorder='little',signed=True)/100 
+        D = int.from_bytes(bytevalue, byteorder='little',signed=True)/100 
         DH = int.from_bytes(ackPacket[34 + 6], byteorder='little',signed=True)     #print("D:%0.2f cm" %posned["D"]  )
 
         #Carrier solution status
@@ -101,7 +101,7 @@ class Gnss:
         gnssFixOk =  flags  & (1 << 0) #gnssFixOK 
         carrSoln =  (flags   & (0b11 <<3)) >> 3 #carrSoln0:no carrier 1:float 2:fix
 
-        #GPS time
+        #GNSS time
         byteoffset =4 + 6
         bytevalue = ackPacket[byteoffset] 
         for i in range(1,4):
@@ -212,11 +212,13 @@ class Gnss:
                  log_file=None,
                  max_samples=100000):
         """
-        Initialises the GPS data handler with the default serial path and baud
-        rate, sets up storage for latitude, longitude, and altitude, and starts
-        a background thread to continuously read and parse GPS data.
+        Initialises the GNSS data handler with the default serial path and baud
+        rate, sets up storage for the relative North East Down position (in
+        meters) of the rover (quadcopter) to the base station, as well as
+        latitude, longitude, and altitude, and starts a background thread to
+        continuously read and parse GNSS data.
 
-        :param serial_path: Path to the serial port where the GPS is connected;
+        :param serial_path: Path to the serial port where the GNSS is connected;
                             default: "/dev/ttyACM0"
         :param baud: baud rate of serial communication; defaults to 57600
         :param window_length: length of window of measurements; default: 3
@@ -228,8 +230,6 @@ class Gnss:
 
         If `log_file` is None, the data is not logged; otherwise, on exit, 
         the data are stored in a CSV file
-
-        Note: We assume that we receive 3 measurements from the anemometer
         """
         self.__lock = Lock()
         self.__thread = Thread(target=self.__get_measurements_in_background_t,
@@ -243,7 +243,8 @@ class Gnss:
         self.__max_samples = max_samples
         self.__average_altitude = None
         if log_file is not None:
-            feature_names = ("Date_Time", "N", "E", "D", "Lon", "Lat", "Height", "hMSL", "PVT_Lon", "PVT_Lat", "PVT_Height")
+            feature_names = ("Date_Time", "N", "E", "D", "Lon", "Lat", "Height", 
+                             "hMSL", "PVT_Lon", "PVT_Lat", "PVT_Height")
             self.__logger = DataLogger(num_features=10,
                                        max_samples=max_samples,
                                        feature_names=feature_names)    
@@ -252,9 +253,8 @@ class Gnss:
 
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
-        Continuously reads GPS data from the serial port, parsing GNGLL
-        messages for latitude and longitude, and GPGSV messages for altitude,
-        updating the object's GPS attributes accordingly. 
+        Continuously reads GNSS data from the serial port, parsing UBX message,
+        updating the object's GNSS attributes accordingly. 
 
         :param serial_path: Serial port path
         :param baud: Baud rate for the serial connection
@@ -319,16 +319,23 @@ class Gnss:
         This method returns all sensor data after the application of the data
         preprocessor specified in the constructor. The data is returned as a
         numpy array with the following data (in this order):
+          - Relative North position of quadcopter to base station in meters.
+          - Relative East position of quadcopter to base station in meters.
+          - Relative Down position of quadcopter to base station in meters.
           - Latitude in decimal 
           - Longitude in decimal 
-          - Altitude
+          - Altitude/Height
+          - Height above mean sea level
+          - PVT Latitude in decimal 
+          - PVT Longitude in decimal 
+          - PVT Altitude/Height
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, :], 
                                                  cursor=self.__cursor)
 
     @property
-    def Latitude(self):
+    def relative_north(self):
         """
         Returns Latitude position in decimal
         """
@@ -337,26 +344,64 @@ class Gnss:
                                                  cursor=self.__cursor)
 
     @property
-    def Longitude(self):
+    def relative_east(self):
         """
         Returns Longitude position in decimal
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 1], 
                                                  cursor=self.__cursor)
+        
+    @property
+    def relative_down(self):
+        """
+        Returns Longitude position in decimal
+        """
+        with self.__lock:
+            return self.__data_processor.process(self.__values_cache[:, 2], 
+                                                 cursor=self.__cursor)
 
     @property
     def altitude(self):
         """
-        Returns the Altitude position
+        Returns the Altitude of the quadcopter in meters based of the relative 
+        Down position of the quadcopter compared to the base station.
         """
         with self.__lock:
-            current_altitude = self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
+            current_altitude = - self.__data_processor.process(self.__values_cache[:, 2], 
+                                                             cursor=self.__cursor)
             # Check if __average_altitude is not None and subtract it from current altitude
             if self.__average_altitude is not None:
                 return current_altitude - self.__average_altitude
             else:
                 return current_altitude
+            
+    @property
+    def position_latitude(self):
+        """
+        Returns Latitude position in decimal
+        """
+        with self.__lock:
+            return self.__data_processor.process(self.__values_cache[:, 3], 
+                                                 cursor=self.__cursor)
+
+    @property
+    def position_longitude(self):
+        """
+        Returns Longitude position in decimal
+        """
+        with self.__lock:
+            return self.__data_processor.process(self.__values_cache[:, 4], 
+                                                 cursor=self.__cursor)
+        
+    @property
+    def position_altitude(self):
+        """
+        Returns the Altitude position
+        """
+        with self.__lock:
+            return self.__data_processor.process(self.__values_cache[:, 5], 
+                                                             cursor=self.__cursor)
         
 if __name__ == '__main__':
 
