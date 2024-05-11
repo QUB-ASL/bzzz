@@ -8,6 +8,15 @@ bzzz::MotorDriver motorDriver;
 #define HIGH_SGN 2000.
 // Defining the signal low parameter
 #define LOW_SGN 1000.
+
+
+// -----------------------------
+// !!!!  REMOVE PROPELLERS  !!!!
+// -----------------------------
+
+
+// Read instructions in README
+
 void setup()
 {
     motorDriver.attachEscToPwmPin();
