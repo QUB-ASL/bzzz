@@ -49,11 +49,11 @@ class Gnss:
                     i += 1
             if self.__checksum(ackPacket,payloadlength) :
                 if ackPacket[3] == RELPOSNED:
-                    N, E, D = self.__perseNED(ackPacket)
+                    N, E, D = self.__parseNED(ackPacket)
                 elif ackPacket[3] == POSLLH:
-                    Lon, Lat, Height, hMSL = self.__perseLLH(ackPacket)
+                    Lon, Lat, Height, hMSL = self.__parseLLH(ackPacket)
                 elif ackPacket[3] == PVT:
-                    PVT_Lon, PVT_Lat, PVT_Height = self.__persePVT(ackPacket)
+                    PVT_Lon, PVT_Lat, PVT_Height = self.__parsePVT(ackPacket)
         return N, E, D, Lon, Lat, Height, hMSL, PVT_Lon, PVT_Lat, PVT_Height
 
     def __checksum(self, ackPacket, payloadlength):
@@ -71,7 +71,7 @@ class Gnss:
             print("ACK Checksum Failure:")  
             return False
 
-    def __perseNED(self, ackPacket):
+    def __parseNED(self, ackPacket):
         #relPosN
         byteoffset =8 + 6
         bytevalue =  ackPacket[byteoffset] 
@@ -125,7 +125,7 @@ class Gnss:
         
         return N, E, D
 
-    def __perseLLH(self, ackPacket):
+    def __parseLLH(self, ackPacket):
         
         #PosLon
         byteoffset = 4 + 6
@@ -157,7 +157,7 @@ class Gnss:
 
         return Lon, Lat, Height, hMSL
 
-    def __persePVT(self, ackPacket):
+    def __parsePVT(self, ackPacket):
         #PosLon
         byteoffset = 24 + 6
         bytevalue = ackPacket[byteoffset] 
@@ -203,8 +203,7 @@ class Gnss:
         return Lon, Lat, Height
     
 
-    def __init__(self, 
-                 parse_nmea=False,
+    def __init__(self,
                  serial_path="/dev/ttyACM0", 
                  baud=115200, 
                  window_length=3,
@@ -337,7 +336,8 @@ class Gnss:
     @property
     def relative_north(self):
         """
-        Returns Latitude position in decimal
+        The distance of the quadcopter in meters in the north direction relative
+        to the base station
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 0], 
@@ -346,7 +346,8 @@ class Gnss:
     @property
     def relative_east(self):
         """
-        Returns Longitude position in decimal
+        The distance of the quadcopter in meters in the east direction relative
+        to the base station
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 1], 
@@ -355,7 +356,8 @@ class Gnss:
     @property
     def relative_down(self):
         """
-        Returns Longitude position in decimal
+        The distance of the quadcopter in meters in the down direction relative
+        to the base station
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 2], 
@@ -379,7 +381,7 @@ class Gnss:
     @property
     def position_latitude(self):
         """
-        Returns Latitude position in decimal
+        Returns Latitude position in decimal degrees
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 3], 
@@ -388,7 +390,7 @@ class Gnss:
     @property
     def position_longitude(self):
         """
-        Returns Longitude position in decimal
+        Returns Longitude position in decimal degrees
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 4], 
