@@ -16,12 +16,13 @@ class DataLogger:
         """
         self.__data_vault = np.zeros(
             (max_samples, num_features), dtype=np.float64)
+        # Allocate an array based on how many timestamps there will be
         self.__timestamps_vault = np.array(
-            [datetime.datetime.now()] * max_samples)
+            [datetime.datetime.min] * max_samples)
         self.__feature_names = feature_names
         self.__cursor = 0
 
-    def record(self, timespamp, datum):
+    def record(self, timestamp, datum):
         """
         Record/log data in memory
 
@@ -29,7 +30,7 @@ class DataLogger:
         :param datum: measurement (float or numpy array)
         """
         self.__data_vault[self.__cursor, :] = datum
-        self.__timestamps_vault[self.__cursor:] = timespamp
+        self.__timestamps_vault[self.__cursor] = timestamp
         self.__cursor = self.__cursor + 1
 
     def save_to_csv(self, filename):
