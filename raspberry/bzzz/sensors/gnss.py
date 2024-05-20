@@ -6,202 +6,200 @@ import datetime
 from .data_logger import DataLogger
 from .filters import *
 
+#RELPOSNED and PVT
+# Taken from https://github.com/mnltake/readF9P_UBX
+def readUBX(readbytes):
+    RELPOSNED = b'\x3c'
+    PVT =b'\x07'
+    POSLLH = b'\x02'
+    
+    j=0   
+    while j < len(readbytes) : 
+        i = 0
+        payloadlength = 0
+        ackPacket=[b'\xB5',b'\x62',b'\x01',b'\x00',b'\x00',b'\x00']
+        while i < payloadlength +8:              
+            if j < len(readbytes) :
+                incoming_byte = readbytes[j]   
+                j += 1
+            else :
+                break
+            if (i < 3) and (incoming_byte == ackPacket[i]):
+                i += 1
+            elif i == 3:
+                ackPacket[i]=incoming_byte
+                i += 1              
+            elif i == 4 :
+                ackPacket[i]=incoming_byte
+                i += 1
+            elif i == 5 :
+                ackPacket[i]=incoming_byte        
+                payloadlength = int.from_bytes(ackPacket[4]+ackPacket[5], byteorder='little',signed=False) 
+                i += 1
+            elif (i > 5) :
+                ackPacket.append(incoming_byte)
+                i += 1
+        if checksum(ackPacket,payloadlength) :
+            if ackPacket[3] == RELPOSNED:
+                N, E, D = parseNED(ackPacket)
+            elif ackPacket[3] == POSLLH:
+                Lon, Lat, Height, hMSL = parseLLH(ackPacket)
+            elif ackPacket[3] == PVT:
+                PVT_Lon, PVT_Lat, PVT_Height = parsePVT(ackPacket)
+    return N, E, D, Lon, Lat, Height, hMSL, PVT_Lon, PVT_Lat, PVT_Height
+
+def checksum(ackPacket, payloadlength):
+    CK_A =0
+    CK_B =0
+    for i in range(2, payloadlength+ 6):
+        CK_A = CK_A + int.from_bytes(ackPacket[i], byteorder='little',signed=False) 
+        CK_B = CK_B +CK_A
+    CK_A &=0xff
+    CK_B &=0xff
+    if (CK_A ==  int.from_bytes(ackPacket[-2], byteorder='little',signed=False)) and (CK_B ==  int.from_bytes(ackPacket[-1], byteorder='little',signed=False)):
+        #print("ACK Received")
+        return True
+    else :
+        print("ACK Checksum Failure:")  
+        return False
+
+def parseNED(ackPacket):
+    #relPosN
+    byteoffset =8 + 6
+    bytevalue =  ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    N = int.from_bytes(bytevalue, byteorder='little',signed=True)/100
+    NH = int.from_bytes(ackPacket[32 + 6], byteorder='little',signed=True) 
+
+    #relPosE
+    byteoffset =12 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    E = int.from_bytes(bytevalue, byteorder='little',signed=True)/100
+    EH = int.from_bytes(ackPacket[33 + 6], byteorder='little',signed=True) 
+
+    #relPosD
+    byteoffset =16 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    D = int.from_bytes(bytevalue, byteorder='little',signed=True)/100 
+    DH = int.from_bytes(ackPacket[34 + 6], byteorder='little',signed=True)     #print("D:%0.2f cm" %posned["D"]  )
+
+    #Carrier solution status
+    flags = int.from_bytes(ackPacket[60 + 6], byteorder='little',signed=True) 
+    gnssFixOk =  flags  & (1 << 0) #gnssFixOK 
+    carrSoln =  (flags   & (0b11 <<3)) >> 3 #carrSoln0:no carrier 1:float 2:fix
+
+    #GNSS time
+    byteoffset =4 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    iTow = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    #relPosLength
+    byteoffset =20 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    length = int.from_bytes(bytevalue, byteorder='little',signed=False) 
+    lengthH = int.from_bytes(ackPacket[35 + 6], byteorder='little',signed=True) 
+
+    #relPosHeading
+    byteoffset =24 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    heading = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+    
+    return N, E, D
+
+def parseLLH(ackPacket):
+    
+    #PosLon
+    byteoffset = 4 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    Lon = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    #PosLat
+    byteoffset =8 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    Lat = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    #posHeight
+    byteoffset =12 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    Height = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    #Height above mean sea level
+    byteoffset =16 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    hMSL = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    return Lon, Lat, Height, hMSL
+
+def parsePVT(self, ackPacket):
+    #PosLon
+    byteoffset = 24 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    Lon = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    #PosLat
+    byteoffset =28 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    Lat = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    #posHeight
+    byteoffset =32 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    Height = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    #Height above mean sea level
+    byteoffset =36 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    hMSL = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    #Ground Speed
+    byteoffset =60 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    gSpeed = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    #Heading of motion
+    byteoffset =64 + 6
+    bytevalue = ackPacket[byteoffset] 
+    for i in range(1,4):
+        bytevalue  +=  ackPacket[byteoffset+i] 
+    headMot = int.from_bytes(bytevalue, byteorder='little',signed=True) 
+
+    return Lon, Lat, Height
 
 class Gnss:
     """
     GNSS Module
 
     This class is used to interface the GNSS Module
-    """
-
-    #RELPOSNED and PVT
-    # Taken from https://github.com/mnltake/readF9P_UBX
-    def __readUBX(self, readbytes):
-        RELPOSNED = b'\x3c'
-        PVT =b'\x07'
-        POSLLH = b'\x02'
-        
-        j=0   
-        while j < len(readbytes) : 
-            i = 0
-            payloadlength = 0
-            ackPacket=[b'\xB5',b'\x62',b'\x01',b'\x00',b'\x00',b'\x00']
-            while i < payloadlength +8:              
-                if j < len(readbytes) :
-                    incoming_byte = readbytes[j]   
-                    j += 1
-                else :
-                    break
-                if (i < 3) and (incoming_byte == ackPacket[i]):
-                    i += 1
-                elif i == 3:
-                    ackPacket[i]=incoming_byte
-                    i += 1              
-                elif i == 4 :
-                    ackPacket[i]=incoming_byte
-                    i += 1
-                elif i == 5 :
-                    ackPacket[i]=incoming_byte        
-                    payloadlength = int.from_bytes(ackPacket[4]+ackPacket[5], byteorder='little',signed=False) 
-                    i += 1
-                elif (i > 5) :
-                    ackPacket.append(incoming_byte)
-                    i += 1
-            if self.__checksum(ackPacket,payloadlength) :
-                if ackPacket[3] == RELPOSNED:
-                    N, E, D = self.__parseNED(ackPacket)
-                elif ackPacket[3] == POSLLH:
-                    Lon, Lat, Height, hMSL = self.__parseLLH(ackPacket)
-                elif ackPacket[3] == PVT:
-                    PVT_Lon, PVT_Lat, PVT_Height = self.__parsePVT(ackPacket)
-        return N, E, D, Lon, Lat, Height, hMSL, PVT_Lon, PVT_Lat, PVT_Height
-
-    def __checksum(self, ackPacket, payloadlength):
-        CK_A =0
-        CK_B =0
-        for i in range(2, payloadlength+ 6):
-            CK_A = CK_A + int.from_bytes(ackPacket[i], byteorder='little',signed=False) 
-            CK_B = CK_B +CK_A
-        CK_A &=0xff
-        CK_B &=0xff
-        if (CK_A ==  int.from_bytes(ackPacket[-2], byteorder='little',signed=False)) and (CK_B ==  int.from_bytes(ackPacket[-1], byteorder='little',signed=False)):
-            #print("ACK Received")
-            return True
-        else :
-            print("ACK Checksum Failure:")  
-            return False
-
-    def __parseNED(self, ackPacket):
-        #relPosN
-        byteoffset =8 + 6
-        bytevalue =  ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        N = int.from_bytes(bytevalue, byteorder='little',signed=True)/100
-        NH = int.from_bytes(ackPacket[32 + 6], byteorder='little',signed=True) 
-
-        #relPosE
-        byteoffset =12 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        E = int.from_bytes(bytevalue, byteorder='little',signed=True)/100
-        EH = int.from_bytes(ackPacket[33 + 6], byteorder='little',signed=True) 
-
-        #relPosD
-        byteoffset =16 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        D = int.from_bytes(bytevalue, byteorder='little',signed=True)/100 
-        DH = int.from_bytes(ackPacket[34 + 6], byteorder='little',signed=True)     #print("D:%0.2f cm" %posned["D"]  )
-
-        #Carrier solution status
-        flags = int.from_bytes(ackPacket[60 + 6], byteorder='little',signed=True) 
-        gnssFixOk =  flags  & (1 << 0) #gnssFixOK 
-        carrSoln =  (flags   & (0b11 <<3)) >> 3 #carrSoln0:no carrier 1:float 2:fix
-
-        #GNSS time
-        byteoffset =4 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        iTow = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-        #relPosLength
-        byteoffset =20 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        length = int.from_bytes(bytevalue, byteorder='little',signed=False) 
-        lengthH = int.from_bytes(ackPacket[35 + 6], byteorder='little',signed=True) 
-
-        #relPosHeading
-        byteoffset =24 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        heading = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-        
-        return N, E, D
-
-    def __parseLLH(self, ackPacket):
-        
-        #PosLon
-        byteoffset = 4 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        Lon = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-        #PosLat
-        byteoffset =8 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        Lat = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-        #posHeight
-        byteoffset =12 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        Height = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-        #Height above mean sea level
-        byteoffset =16 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        hMSL = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-        return Lon, Lat, Height, hMSL
-
-    def __parsePVT(self, ackPacket):
-        #PosLon
-        byteoffset = 24 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        Lon = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-    
-        #PosLat
-        byteoffset =28 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        Lat = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-        #posHeight
-        byteoffset =32 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        Height = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-        #Height above mean sea level
-        byteoffset =36 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        hMSL = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-        #Ground Speed
-        byteoffset =60 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        gSpeed = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-        #Heading of motion
-        byteoffset =64 + 6
-        bytevalue = ackPacket[byteoffset] 
-        for i in range(1,4):
-            bytevalue  +=  ackPacket[byteoffset+i] 
-        headMot = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-        return Lon, Lat, Height
-    
+    """ 
 
     def __init__(self,
                  serial_path="/dev/ttyACM0", 
