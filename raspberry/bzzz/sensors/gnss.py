@@ -34,7 +34,9 @@ def readUBX(readbytes):
                 i += 1
             elif i == 5 :
                 ackPacket[i]=incoming_byte        
-                payloadlength = int.from_bytes(ackPacket[4]+ackPacket[5], byteorder='little',signed=False) 
+                payloadlength = int.from_bytes(ackPacket[4]+ackPacket[5], 
+                                               byteorder='little',
+                                               signed=False) 
                 i += 1
             elif (i > 5) :
                 ackPacket.append(incoming_byte)
@@ -52,11 +54,15 @@ def checksum(ackPacket, payloadlength):
     CK_A =0
     CK_B =0
     for i in range(2, payloadlength+ 6):
-        CK_A = CK_A + int.from_bytes(ackPacket[i], byteorder='little',signed=False) 
+        CK_A = CK_A + int.from_bytes(ackPacket[i], byteorder='little',
+                                     signed=False) 
         CK_B = CK_B +CK_A
     CK_A &=0xff
     CK_B &=0xff
-    if (CK_A ==  int.from_bytes(ackPacket[-2], byteorder='little',signed=False)) and (CK_B ==  int.from_bytes(ackPacket[-1], byteorder='little',signed=False)):
+    if ((CK_A ==  int.from_bytes(ackPacket[-2], byteorder='little',
+                                 signed=False)) 
+    and (CK_B ==  int.from_bytes(ackPacket[-1], byteorder='little',
+                                 signed=False))):
         #print("ACK Received")
         return True
     else :
@@ -86,7 +92,7 @@ def parseNED(ackPacket):
     for i in range(1,4):
         bytevalue  +=  ackPacket[byteoffset+i] 
     D = int.from_bytes(bytevalue, byteorder='little',signed=True)/100 
-    DH = int.from_bytes(ackPacket[34 + 6], byteorder='little',signed=True)     #print("D:%0.2f cm" %posned["D"]  )
+    DH = int.from_bytes(ackPacket[34 + 6], byteorder='little',signed=True)
 
     #Carrier solution status
     flags = int.from_bytes(ackPacket[60 + 6], byteorder='little',signed=True) 
@@ -106,7 +112,8 @@ def parseNED(ackPacket):
     for i in range(1,4):
         bytevalue  +=  ackPacket[byteoffset+i] 
     length = int.from_bytes(bytevalue, byteorder='little',signed=False) 
-    lengthH = int.from_bytes(ackPacket[35 + 6], byteorder='little',signed=True) 
+    lengthH = int.from_bytes(ackPacket[35 + 6], byteorder='little',
+                             signed=True) 
 
     #relPosHeading
     byteoffset =24 + 6
@@ -215,18 +222,18 @@ class Gnss:
         latitude, longitude, and altitude, and starts a background thread to
         continuously read and parse GNSS data.
 
-        :param serial_path: Path to the serial port where the GNSS is connected;
-                            default: "/dev/ttyACM0"
+        :param serial_path: Path to the serial port where the GNSS is
+                            connected; default: "/dev/ttyACM0"
         :param baud: baud rate of serial communication; defaults to 57600
         :param window_length: length of window of measurements; default: 3
-        :param data_processor: data processor on buffer of measurements; 
+        :param data_processor: data processor on buffer of measurements;
                                default: MedianFilter()
         :param log_file: file name to log data; default: None 
-        :param max_samples: maximum number of samples to record; 
-                            default: 100000
+        :param max_samples: maximum number of samples to record; default:
+            100000
 
-        If `log_file` is None, the data is not logged; otherwise, on exit, 
-        the data are stored in a CSV file
+        If `log_file` is None, the data is not logged; otherwise, on exit, the
+        data are stored in a CSV file
         """
         self.__lock = Lock()
         self.__thread = Thread(target=self.__get_measurements_in_background_t,
@@ -240,8 +247,9 @@ class Gnss:
         self.__max_samples = max_samples
         self.__average_altitude = None
         if log_file is not None:
-            feature_names = ("Date_Time", "N", "E", "D", "Lon", "Lat", "Height", 
-                             "hMSL", "PVT_Lon", "PVT_Lat", "PVT_Height")
+            feature_names = ("Date_Time", "N", "E", "D", "Lon", "Lat", 
+                             "Height", "hMSL", "PVT_Lon", "PVT_Lat", 
+                             "PVT_Height")
             self.__logger = DataLogger(num_features=10,
                                        max_samples=max_samples,
                                        feature_names=feature_names)    
@@ -293,8 +301,8 @@ class Gnss:
 
     def __gnss_altitude_initialisation(self, num_samples=10):  
         """
-        Returns the calibrated GNSS altitude based on the average 
-        altitude measured in the first minute of readings.
+        Returns the calibrated GNSS altitude based on the average altitude
+        measured in the first minute of readings.
         """
         sum_altitudes = 0  
         i = 0
@@ -334,8 +342,8 @@ class Gnss:
     @property
     def relative_north(self):
         """
-        The distance of the quadcopter in meters in the north direction relative
-        to the base station
+        The distance of the quadcopter in meters in the north direction
+        relative to the base station
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 0], 
@@ -364,13 +372,14 @@ class Gnss:
     @property
     def altitude(self):
         """
-        Returns the Altitude of the quadcopter in meters based of the relative 
+        Returns the Altitude of the quadcopter in meters based of the relative
         Down position of the quadcopter compared to the base station.
         """
         with self.__lock:
-            current_altitude = - self.__data_processor.process(self.__values_cache[:, 2], 
-                                                             cursor=self.__cursor)
-            # Check if __average_altitude is not None and subtract it from current altitude
+            current_altitude = - self.__data_processor.process(
+                self.__values_cache[:, 2], cursor=self.__cursor)
+            # Check if __average_altitude is not None and subtract it from
+            # current altitude
             if self.__average_altitude is not None:
                 return current_altitude - self.__average_altitude
             else:
@@ -401,7 +410,7 @@ class Gnss:
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 5], 
-                                                             cursor=self.__cursor)
+                                                 cursor=self.__cursor)
         
 if __name__ == '__main__':
 
