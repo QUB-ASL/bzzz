@@ -10,7 +10,6 @@ from .filters import *
 # Taken from https://github.com/mnltake/readF9P_UBX
 def readUBX(readbytes):
     RELPOSNED = b'\x3c'
-    PVT =b'\x07'
     POSLLH = b'\x02'
     
     j=0   
@@ -46,9 +45,7 @@ def readUBX(readbytes):
                 N, E, D = parseNED(ackPacket)
             elif ackPacket[3] == POSLLH:
                 Lon, Lat, Height, hMSL = parseLLH(ackPacket)
-            elif ackPacket[3] == PVT:
-                PVT_Lon, PVT_Lat, PVT_Height = parsePVT(ackPacket)
-    return N, E, D, Lon, Lat, Height, hMSL, PVT_Lon, PVT_Lat, PVT_Height
+    return N, E, D, Lon, Lat, Height, hMSL
 
 def checksum(ackPacket, payloadlength):
     CK_A =0
@@ -156,51 +153,6 @@ def parseLLH(ackPacket):
 
     return Lon, Lat, Height, hMSL
 
-def parsePVT(self, ackPacket):
-    #PosLon
-    byteoffset = 24 + 6
-    bytevalue = ackPacket[byteoffset] 
-    for i in range(1,4):
-        bytevalue  +=  ackPacket[byteoffset+i] 
-    Lon = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-    #PosLat
-    byteoffset =28 + 6
-    bytevalue = ackPacket[byteoffset] 
-    for i in range(1,4):
-        bytevalue  +=  ackPacket[byteoffset+i] 
-    Lat = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-    #posHeight
-    byteoffset =32 + 6
-    bytevalue = ackPacket[byteoffset] 
-    for i in range(1,4):
-        bytevalue  +=  ackPacket[byteoffset+i] 
-    Height = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-    #Height above mean sea level
-    byteoffset =36 + 6
-    bytevalue = ackPacket[byteoffset] 
-    for i in range(1,4):
-        bytevalue  +=  ackPacket[byteoffset+i] 
-    hMSL = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-    #Ground Speed
-    byteoffset =60 + 6
-    bytevalue = ackPacket[byteoffset] 
-    for i in range(1,4):
-        bytevalue  +=  ackPacket[byteoffset+i] 
-    gSpeed = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-    #Heading of motion
-    byteoffset =64 + 6
-    bytevalue = ackPacket[byteoffset] 
-    for i in range(1,4):
-        bytevalue  +=  ackPacket[byteoffset+i] 
-    headMot = int.from_bytes(bytevalue, byteorder='little',signed=True) 
-
-    return Lon, Lat, Height
-
 class Gnss:
     """
     GNSS Module
@@ -248,9 +200,8 @@ class Gnss:
         self.__average_altitude = None
         if log_file is not None:
             feature_names = ("Date_Time", "N", "E", "D", "Lon", "Lat", 
-                             "Height", "hMSL", "PVT_Lon", "PVT_Lat", 
-                             "PVT_Height")
-            self.__logger = DataLogger(num_features=10,
+                             "Height", "hMSL")
+            self.__logger = DataLogger(num_features=7,
                                        max_samples=max_samples,
                                        feature_names=feature_names)    
         self.__thread.start()
@@ -267,8 +218,7 @@ class Gnss:
 
         lenRELPOSNED = 6 + 64 +2
         lenPOSLLH = 6 + 28 + 2
-        lenPVT = 6 + 92 +2
-        buffsize = lenRELPOSNED + lenPVT + lenPOSLLH 
+        buffsize = lenRELPOSNED + lenPOSLLH 
 
         while self.__keep_going:
        
@@ -331,9 +281,6 @@ class Gnss:
           - Longitude in decimal 
           - Altitude/Height
           - Height above mean sea level
-          - PVT Latitude in decimal 
-          - PVT Longitude in decimal 
-          - PVT Altitude/Height
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, :], 
