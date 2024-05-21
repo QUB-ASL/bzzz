@@ -42,10 +42,10 @@ def readUBX(readbytes):
                 i += 1
         if checksum(ackPacket,payloadlength) :
             if ackPacket[3] == RELPOSNED:
-                N, E, D = parseNED(ackPacket)
+                N, E, D, gnss_status, rtk_status= parseNED(ackPacket)
             elif ackPacket[3] == POSLLH:
                 Lon, Lat, Height, hMSL = parseLLH(ackPacket)
-    return N, E, D, Lon, Lat, Height, hMSL
+    return N, E, D, gnss_status, rtk_status, Lon, Lat, Height, hMSL
 
 def checksum(ackPacket, payloadlength):
     CK_A =0
@@ -119,7 +119,7 @@ def parseNED(ackPacket):
         bytevalue  +=  ackPacket[byteoffset+i] 
     heading = int.from_bytes(bytevalue, byteorder='little',signed=True) 
     
-    return N, E, D
+    return N, E, D, gnssFixOk, carrSoln
 
 def parseLLH(ackPacket):
     
@@ -199,9 +199,9 @@ class Gnss:
         self.__max_samples = max_samples
         self.__average_altitude = None
         if log_file is not None:
-            feature_names = ("Date_Time", "N", "E", "D", "Lon", "Lat", 
-                             "Height", "hMSL")
-            self.__logger = DataLogger(num_features=7,
+            feature_names = ("Date_Time", "N", "E", "D", "gnss status", 
+                             "rtk status", "Lon", "Lat", "Height", "hMSL")
+            self.__logger = DataLogger(num_features=9,
                                        max_samples=max_samples,
                                        feature_names=feature_names)    
         self.__thread.start()
