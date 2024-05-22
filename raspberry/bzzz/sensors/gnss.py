@@ -192,7 +192,7 @@ class Gnss:
                                args=[serial_path, baud])
         self.__keep_going = True
         self.__window_length = window_length
-        self.__values_cache = np.tile(np.nan, (self.__window_length, 10))
+        self.__values_cache = np.tile(np.nan, (self.__window_length, 9))
         self.__cursor = 0
         self.__data_processor = data_processor
         self.__log_file = log_file
@@ -226,7 +226,7 @@ class Gnss:
                 readbytes =[] 
                 for i in range(buffsize):
                     readbytes.append(ser.read())
-            ubxmsg = self.__readUBX(readbytes)
+            ubxmsg = readUBX(readbytes)
 
             with self.__lock:
                 self.__values_cache[self.__cursor, :] = ubxmsg
