@@ -138,62 +138,62 @@ def NN(file_name,
 
     trainPredict_U = get_last_prediction(trainPredict_U, prediction_size)
     trainPredict_U = np.reshape(trainPredict_U, (-1, 1))
-    trainY_U = get_last_prediction(trainY_U, prediction_size)
+    # trainY_U = get_last_prediction(trainY_U, prediction_size)
     testPredict_U = get_last_prediction(testPredict_U, prediction_size)
     testPredict_U = np.reshape(testPredict_U, (-1, 1))
-    testY_U = get_last_prediction(testY_U, prediction_size)
+    # testY_U = get_last_prediction(testY_U, prediction_size)
 
     trainPredict_V = get_last_prediction(trainPredict_V, prediction_size)
     trainPredict_V = np.reshape(trainPredict_V, (-1, 1))
-    trainY_V = get_last_prediction(trainY_V, prediction_size)
+    # trainY_V = get_last_prediction(trainY_V, prediction_size)
     testPredict_V = get_last_prediction(testPredict_V, prediction_size)
     testPredict_V = np.reshape(testPredict_V, (-1, 1))
-    testY_V = get_last_prediction(testY_V, prediction_size)
+    # testY_V = get_last_prediction(testY_V, prediction_size)
 
     trainPredict_W = get_last_prediction(trainPredict_W, prediction_size)
     trainPredict_W = np.reshape(trainPredict_W, (-1, 1))
-    trainY_W = get_last_prediction(trainY_W, prediction_size)
+    # trainY_W = get_last_prediction(trainY_W, prediction_size)
     testPredict_W = get_last_prediction(testPredict_W, prediction_size)
     testPredict_W = np.reshape(testPredict_W, (-1, 1))
-    testY_W = get_last_prediction(testY_W, prediction_size)
+    # testY_W = get_last_prediction(testY_W, prediction_size)
 
     # Estimate model performance
     #SInce we used minmaxscaler we can now use scaler.inverse_transform
     #to invert the transformation.
 
     trainPredict_U = scaler_U.inverse_transform(trainPredict_U)
-    trainY_U_inverse = scaler_U.inverse_transform([trainY_U])
+    # trainY_U_inverse = scaler_U.inverse_transform([trainY_U])
     testPredict_U = scaler_U.inverse_transform(testPredict_U)
-    testY_U_inverse = scaler_U.inverse_transform([testY_U])
+    # testY_U_inverse = scaler_U.inverse_transform([testY_U])
 
     trainPredict_V = scaler_V.inverse_transform(trainPredict_V)
-    trainY_V_inverse = scaler_V.inverse_transform([trainY_V])
+    # trainY_V_inverse = scaler_V.inverse_transform([trainY_V])
     testPredict_V = scaler_V.inverse_transform(testPredict_V)
-    testY_V_inverse = scaler_V.inverse_transform([testY_V])
+    # testY_V_inverse = scaler_V.inverse_transform([testY_V])
 
     trainPredict_W = scaler_W.inverse_transform(trainPredict_W)
-    trainY_W_inverse = scaler_W.inverse_transform([trainY_W])
+    # trainY_W_inverse = scaler_W.inverse_transform([trainY_W])
     testPredict_W = scaler_W.inverse_transform(testPredict_W)
-    testY_W_inverse = scaler_W.inverse_transform([testY_W])
+    # testY_W_inverse = scaler_W.inverse_transform([testY_W])
 
     # calculate root mean squared error
-    trainScore_U = math.sqrt(mean_squared_error(trainY_U_inverse[0], trainPredict_U[:,0]))
-    print('Train_U Score: %.2f RMSE' % (trainScore_U))
+    # trainScore_U = math.sqrt(mean_squared_error(trainY_U_inverse[0], trainPredict_U[:,0]))
+    # print('Train_U Score: %.2f RMSE' % (trainScore_U))
 
-    testScore_U = math.sqrt(mean_squared_error(testY_U_inverse[0], testPredict_U[:,0]))
-    print('Test_U Score: %.2f RMSE' % (testScore_U))
+    # testScore_U = math.sqrt(mean_squared_error(testY_U_inverse[0], testPredict_U[:,0]))
+    # print('Test_U Score: %.2f RMSE' % (testScore_U))
 
-    trainScore_V = math.sqrt(mean_squared_error(trainY_V_inverse[0], trainPredict_V[:,0]))
-    print('Train_V Score: %.2f RMSE' % (trainScore_V))
+    # trainScore_V = math.sqrt(mean_squared_error(trainY_V_inverse[0], trainPredict_V[:,0]))
+    # print('Train_V Score: %.2f RMSE' % (trainScore_V))
 
-    testScore_V = math.sqrt(mean_squared_error(testY_V_inverse[0], testPredict_V[:,0]))
-    print('Test_V Score: %.2f RMSE' % (testScore_V))
+    # testScore_V = math.sqrt(mean_squared_error(testY_V_inverse[0], testPredict_V[:,0]))
+    # print('Test_V Score: %.2f RMSE' % (testScore_V))
 
-    trainScore_W = math.sqrt(mean_squared_error(trainY_W_inverse[0], trainPredict_W[:,0]))
-    print('Train_W Score: %.2f RMSE' % (trainScore_W))
+    # trainScore_W = math.sqrt(mean_squared_error(trainY_W_inverse[0], trainPredict_W[:,0]))
+    # print('Train_W Score: %.2f RMSE' % (trainScore_W))
 
-    testScore_W = math.sqrt(mean_squared_error(testY_W_inverse[0], testPredict_W[:,0]))
-    print('Test_W Score: %.2f RMSE' % (testScore_W))
+    # testScore_W = math.sqrt(mean_squared_error(testY_W_inverse[0], testPredict_W[:,0]))
+    # print('Test_W Score: %.2f RMSE' % (testScore_W))
 
     # shift train predictions for plotting
     #we must shift the predictions so that they align on the x-axis with the original dataset. 
