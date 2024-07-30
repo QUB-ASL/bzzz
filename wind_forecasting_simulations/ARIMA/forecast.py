@@ -34,6 +34,7 @@ def fit_and_forecast(file_name,
     
     ## Set index
     df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="25L")
+    # df_wind.Wind_Speed = df_wind.Wind_Speed.diff().diff()
     
     if combined_wind_speed is True:
         ## Plot Wind Speed against time
@@ -101,9 +102,9 @@ def fit_and_forecast(file_name,
         ## Plot rolling predictions and test data against time
         plt.figure(figsize=(10,4))
         plt.plot(test_data, label='Data')
-        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(t_minus_x, label=f't_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -112,9 +113,9 @@ def fit_and_forecast(file_name,
         
         ## Plot Residuals against time for rolling prediction
         plt.figure(figsize=(10,4))
-        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(residuals_t_minus_x, label = f'residuals_t_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -189,9 +190,9 @@ def fit_and_forecast(file_name,
         ## Plot rolling predictions and test data against time
         plt.figure(figsize=(10,4))
         plt.plot(test_data, label='Data')
-        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(t_minus_x, label=f't_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -200,9 +201,9 @@ def fit_and_forecast(file_name,
         
         ## Plot Residuals against time for rolling prediction
         plt.figure(figsize=(10,4))
-        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(residuals_t_minus_x, label = f'residuals_t_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -277,9 +278,9 @@ def fit_and_forecast(file_name,
         ## Plot rolling predictions and test data against time
         plt.figure(figsize=(10,4))
         plt.plot(test_data, label='Data')
-        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(t_minus_x, label=f't_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -288,9 +289,9 @@ def fit_and_forecast(file_name,
         
         ## Plot Residuals against time for rolling prediction
         plt.figure(figsize=(10,4))
-        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(residuals_t_minus_x, label = f'residuals_t_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -365,9 +366,9 @@ def fit_and_forecast(file_name,
         ## Plot rolling predictions and test data against time
         plt.figure(figsize=(10,4))
         plt.plot(test_data, label='Data')
-        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(t_minus_x, label=f't_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -376,9 +377,9 @@ def fit_and_forecast(file_name,
         
         ## Plot Residuals against time for rolling prediction
         plt.figure(figsize=(10,4))
-        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(residuals_t_minus_x, label = f'residuals_t_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -479,9 +480,9 @@ def fix_params_and_forecast(file_name,
         ## Plot rolling predictions and test data against time
         plt.figure(figsize=(10,4))
         plt.plot(test_data, label='Data')
-        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(t_minus_x, label=f't_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -490,9 +491,9 @@ def fix_params_and_forecast(file_name,
         
         ## Plot Residuals against time for rolling prediction
         plt.figure(figsize=(10,4))
-        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(residuals_t_minus_x, label = f'residuals_t_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -569,9 +570,9 @@ def fix_params_and_forecast(file_name,
         ## Plot rolling predictions and test data against time
         plt.figure(figsize=(10,4))
         plt.plot(test_data, label='Data')
-        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(t_minus_x, label=f't_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -580,9 +581,9 @@ def fix_params_and_forecast(file_name,
         
         ## Plot Residuals against time for rolling prediction
         plt.figure(figsize=(10,4))
-        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(residuals_t_minus_x, label = f'residuals_t_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -659,9 +660,9 @@ def fix_params_and_forecast(file_name,
         ## Plot rolling predictions and test data against time
         plt.figure(figsize=(10,4))
         plt.plot(test_data, label='Data')
-        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(t_minus_x, label=f't_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -670,9 +671,9 @@ def fix_params_and_forecast(file_name,
         
         ## Plot Residuals against time for rolling prediction
         plt.figure(figsize=(10,4))
-        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(residuals_t_minus_x, label = f'residuals_t_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -749,9 +750,9 @@ def fix_params_and_forecast(file_name,
         ## Plot rolling predictions and test data against time
         plt.figure(figsize=(10,4))
         plt.plot(test_data, label='Data')
-        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(rolling_predictions_1, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(rolling_predictions_2, label = f'{prediction_horizon} step Prediction for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(t_minus_x, label=f't_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -760,9 +761,9 @@ def fix_params_and_forecast(file_name,
         
         ## Plot Residuals against time for rolling prediction
         plt.figure(figsize=(10,4))
-        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},0,{str(ARIMA_q_1)})')
+        plt.plot(residuals_rolling_predictions_1, label = f'residuals for ({str(ARIMA_p_1)},{str(ARIMA_d_1)},{str(ARIMA_q_1)})')
         if ARIMA_p_2 is not None and ARIMA_d_2 is not None and ARIMA_q_2 is not None:
-            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},0,{str(ARIMA_q_2)})')
+            plt.plot(residuals_rolling_predictions_2, label = f'residuals for ({str(ARIMA_p_2)},{str(ARIMA_d_2)},{str(ARIMA_q_2)})')
         if wind_velocity_at_T_minus_prediction_horizon is True:
             plt.plot(residuals_t_minus_x, label = f'residuals_t_minus_{prediction_horizon}')
         plt.legend(fontsize=12)
@@ -774,51 +775,53 @@ def fix_params_and_forecast(file_name,
 
 
 
-# fit_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv',
-#                  train_end = 35000,
-#                  test_end = 35100,
-#                  prediction_horizon = 5,
-#                  ARIMA_p_1 = 6,
-#                  ARIMA_d_1 = 0,
-#                  ARIMA_q_1 = 6,
-#                  ARIMA_p_2 = None,
-#                  ARIMA_d_2 = None,
-#                  ARIMA_q_2 = None,
-#                  wind_velocity_at_T_minus_prediction_horizon = True,
-#                  combined_wind_speed = True,
-#                  U = False,
-#                  V = False,
-#                  W = False)
+fit_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_20.csv',
+                 train_end = 4000,
+                 test_end = 6000,
+                 prediction_horizon = 5,
+                 ARIMA_p_1 = 5,
+                 ARIMA_d_1 = 0,
+                 ARIMA_q_1 = 12,
+                 ARIMA_p_2 = None,
+                 ARIMA_d_2 = None,
+                 ARIMA_q_2 = None,
+                 wind_velocity_at_T_minus_prediction_horizon = True,
+                 combined_wind_speed = True,
+                 U = False,
+                 V = False,
+                 W = False)
 
-fix_params_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv',
-                        train_end = 8,
-                        test_end = 1020,
-                        prediction_horizon = 10,
-                        ARIMA_p_1 = 5,
-                        ARIMA_d_1 = 0,
-                        ARIMA_q_1 = 8,
-                        fix_params_1 = {'ar.L1' : 1.572654,
-                                        'ar.L2' : -1.193433,
-                                        'ar.L3' : 0.9085445,
-                                        'ar.L4' : -0.5089323,
-                                        'ar.L5' : 0.2081693,
-                                        'ma.L1' : -0.0713252,
-                                        'ma.L2' : 0.9297537,
-                                        'ma.L3' : 0.0202807,
-                                        'ma.L4' : 0.8987153,
-                                        'ma.L5' : -0.0014764,
-                                        'ma.L6' : 0.9206075,
-                                        'ma.L7' : 0.0372892,
-                                        'ma.L8' : 0.8512221},
-                        ARIMA_p_2 = None,
-                        ARIMA_d_2 = None,
-                        ARIMA_q_2 = None,
-                        fix_params_2 = None,
-                        wind_velocity_at_T_minus_prediction_horizon = True,
-                        combined_wind_speed = True,
-                        U = False,
-                        V = False,
-                        W = False)
+
+
+# fix_params_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv',
+#                         train_end = 8,
+#                         test_end = 1020,
+#                         prediction_horizon = 10,
+#                         ARIMA_p_1 = 5,
+#                         ARIMA_d_1 = 0,
+#                         ARIMA_q_1 = 8,
+#                         fix_params_1 = {'ar.L1' : 1.572654,
+#                                         'ar.L2' : -1.193433,
+#                                         'ar.L3' : 0.9085445,
+#                                         'ar.L4' : -0.5089323,
+#                                         'ar.L5' : 0.2081693,
+#                                         'ma.L1' : -0.0713252,
+#                                         'ma.L2' : 0.9297537,
+#                                         'ma.L3' : 0.0202807,
+#                                         'ma.L4' : 0.8987153,
+#                                         'ma.L5' : -0.0014764,
+#                                         'ma.L6' : 0.9206075,
+#                                         'ma.L7' : 0.0372892,
+#                                         'ma.L8' : 0.8512221},
+#                         ARIMA_p_2 = None,
+#                         ARIMA_d_2 = None,
+#                         ARIMA_q_2 = None,
+#                         fix_params_2 = None,
+#                         wind_velocity_at_T_minus_prediction_horizon = True,
+#                         combined_wind_speed = True,
+#                         U = False,
+#                         V = False,
+#                         W = False)
 
 
 plt.show()
