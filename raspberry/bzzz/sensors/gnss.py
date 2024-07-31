@@ -277,6 +277,8 @@ class Gnss:
           - Relative North position of quadcopter to base station in meters.
           - Relative East position of quadcopter to base station in meters.
           - Relative Down position of quadcopter to base station in meters.
+          - GNSS status 0:bad 1:ok
+          - RTK status 0:no carrier 1:float 2:fix
           - Latitude in decimal 
           - Longitude in decimal 
           - Altitude/Height
@@ -331,15 +333,6 @@ class Gnss:
                 return current_altitude - self.__average_altitude
             else:
                 return current_altitude
-            
-    @property
-    def position_latitude(self):
-        """
-        Returns Latitude position in decimal degrees
-        """
-        with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 3], 
-                                                 cursor=self.__cursor)
 
     @property
     def position_longitude(self):
@@ -347,7 +340,16 @@ class Gnss:
         Returns Longitude position in decimal degrees
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 4], 
+            return self.__data_processor.process(self.__values_cache[:, 5], 
+                                                 cursor=self.__cursor)
+        
+    @property
+    def position_latitude(self):
+        """
+        Returns Latitude position in decimal degrees
+        """
+        with self.__lock:
+            return self.__data_processor.process(self.__values_cache[:, 6], 
                                                  cursor=self.__cursor)
         
     @property
@@ -356,8 +358,23 @@ class Gnss:
         Returns the Altitude position
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 5], 
+            return self.__data_processor.process(self.__values_cache[:, 7], 
                                                  cursor=self.__cursor)
+        
+    @property
+    def rtk_status(self):
+        """
+        Returns the RTK status
+        """
+        with self.__lock:
+            rtk = False
+            check_rtk = self.__data_processor.process(self.__values_cache[:, 4], 
+                                                      cursor=self.__cursor)
+            if check_rtk == 2:
+                rtk = True
+            else:
+                rtk = False
+            return rtk 
         
 if __name__ == '__main__':
 
