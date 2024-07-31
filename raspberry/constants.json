@@ -1,6 +1,6 @@
 {
     "sampling_time": 0.02,
-    "min_altitude_hold_altitude": 0.6,
+    "min_altitude_hold_altitude": 0.5,
     "ah_kf": {
         "state_cov": [
             0.001,
@@ -16,7 +16,7 @@
             0.0004
         ],
         "initial_state": [
-            1,
+            0.5,
             0,
             20,
             -10,
@@ -24,10 +24,10 @@
             0
         ],
         "initial_sigma": [
-            100,
-            100,
-            100,
-            100
+            1000,
+            1000,
+            1000,
+            1000
         ]
     },
     "ah_control": {

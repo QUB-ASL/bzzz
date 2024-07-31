@@ -22,7 +22,7 @@ if __name__ == '__main__':
     # Global variables
     params = constants.constants()
     min_altitude_hold_altitude = params["min_altitude_hold_altitude"]
-    feature_names = ("datetime", "z_ref", "z", "z_hat",
+    feature_names = ("datetime", "z", "z_ref", "z_hat",
                      "v_hat", "alpha_1", "alpha_0", "tau")
     logger = DataLogger(num_features=7,
                         feature_names=feature_names,
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     sampling_time = params["sampling_time"]
     kf_params = params["ah_kf"]
     altitude_kf = AltitudeHoldKalmanFilter(
-        initial_state=np.array([1, 0, 20, -10, 0, 0]),
+        initial_state=np.array(kf_params["initial_state"]),
         initial_sigma=np.diagflat(kf_params["initial_sigma"]),
         state_cov=np.diagflat(kf_params["state_cov"]),
         meas_cov=kf_params["meas_cov"])
@@ -82,17 +82,15 @@ if __name__ == '__main__':
     def altitude_control(radio_data):
         vre = radio_data.trimmer_VRE_percentage()
         sc_vre = trimmer_to_altitude_increment(vre)
-        cm_pre_sec_max_increment = 0.02
-        cm_pre_tick_max_increment = cm_pre_sec_max_increment * sampling_time
-        increment_action = sc_vre * cm_pre_tick_max_increment
+        meters_pre_sec_max_increment = 0.04
+        meters_pre_tick_max_increment = meters_pre_sec_max_increment * sampling_time
+        increment_action = sc_vre * meters_pre_tick_max_increment
         altitude_ctrl.increment_reference(increment_action)
         altitude_ctrl.set_tau_eq(altitude_kf.tau_eq_estimate())
-        altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 3)
-        altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 0.05)
+        altitude_ctrl.set_p_gain(-radio_data.trimmer_VRA_percentage() * 2)
+        altitude_ctrl.set_d_gain(-radio_data.trimmer_VRB_percentage() * 1)
         state_est = altitude_kf.x_measured()
         tau = altitude_ctrl.control_action(state_est[0], state_est[1])
-        print(state_est[0], state_est[1], state_est[2],
-              state_est[3], altitude_kf.tau_eq_estimate(), tau)
         clip_throttle = percentage_to_throttle_radio(0.5)
         throttle = int(
             min(percentage_to_throttle_radio(tau)[0], clip_throttle))
@@ -153,8 +151,9 @@ if __name__ == '__main__':
     # ------------------------------------------------
     keep_running = True
     with (EvoSensor(data_processor=MedianFilter()) as tof,
-          BMP180Sensor as bar,
-          Gnss(data_processor=MedianFilter()) as gps,
+          Anemometer() as anemometer,
+          PressureSensor() as barometer,
+          Gnss() as gnss,
           EspBridge() as esp_bridge):
         starttime = time_ns()
         while keep_running:

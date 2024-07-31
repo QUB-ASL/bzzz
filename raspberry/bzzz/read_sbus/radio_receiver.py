@@ -46,10 +46,7 @@ class RC:
         connection_lost = packet_age > max_packet_age_in_ms \
             or not is_connected
 
-        channel_data = None
-        # returns list of length 16, so -1 from channel num to get index
-        if not connection_lost:
-            channel_data = str(self.__reader.translate_latest_packet())[1:-1]
+        channel_data = str(self.__reader.translate_latest_packet())[1:-1]
 
         return connection_lost, channel_data
 
