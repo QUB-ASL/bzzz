@@ -16,6 +16,7 @@ The autonomous systems lab at the school of EEECS of Queens Univeristy Belfast (
 
 - [Safety first](docs/SAFETY.md): read the safety guidelines
 - [Contributing to this project](CONTRIBUTING.md)
+- [How to build bzzz from scratch](docs/HOW_TO_BUILD_BZZZ.md)
 - [Setting up software from scratch](docs/SETUP.md)
 - [PCB design](design/README.md)
 - [ESP32 documentation](include/README.md), [headers](./include) and [sources](./src)
