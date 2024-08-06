@@ -195,6 +195,7 @@ class Gnss:
         self.__values_cache = np.tile(np.nan, (self.__window_length, 9))
         self.__cursor = 0
         self.__data_processor = data_processor
+        self.__rtk_status_processor = MedianFilter()
         self.__log_file = log_file
         self.__max_samples = max_samples
         self.__average_altitude = None
@@ -368,13 +369,11 @@ class Gnss:
         """
         with self.__lock:
             rtk = False
-            check_rtk = self.__data_processor.process(self.__values_cache[:, 4], 
-                                                      cursor=self.__cursor)
-            if check_rtk == 2:
-                rtk = True
-            else:
-                rtk = False
-            return rtk 
+            check_rtk = self.__rtk_status_processor.process(self.__values_cache[:, 4], 
+                                                            cursor=self.__cursor)
+            if check_rtk > 1.5:
+                return True            
+            return False
         
 if __name__ == '__main__':
 
