@@ -322,8 +322,8 @@ class Gnss:
     @property
     def altitude(self):
         """
-        Returns the Altitude of the quadcopter in meters of the quadcopter
-        compared to the quadcopters initial starting position. 
+        Returns the Altitude of the quadcopter in meters relative to the 
+        ground (compared to the quadcopters initial starting position). 
         If the quadcopters initial starting position was not able to be 
         calculated it will return the distance of the quadcopter in meters 
         relative to the base station.
@@ -331,8 +331,9 @@ class Gnss:
         with self.__lock:
             current_altitude = - self.__data_processor.process(
                 self.__values_cache[:, 2], cursor=self.__cursor)
-            # Check if __average_altitude is not None and subtract it from
-            # current altitude
+            # Check if the initial altitude of the quadcopter has been 
+            # determined and  if so subtract it from the current altitude to 
+            # get the quadcopters correct altitude relative to the ground.
             if self.__initial_altitude is not None:
                 return current_altitude - self.__initial_altitude
             else:
