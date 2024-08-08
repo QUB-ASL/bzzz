@@ -198,7 +198,7 @@ class Gnss:
         self.__rtk_status_processor = MedianFilter()
         self.__log_file = log_file
         self.__max_samples = max_samples
-        self.__average_altitude = None
+        self.__initial_altitude = None
         if log_file is not None:
             feature_names = ("Date_Time", "N", "E", "D", "gnss status", 
                              "rtk status", "Lon", "Lat", "Height", "hMSL")
@@ -265,7 +265,7 @@ class Gnss:
             if i == num_samples:
                 break
         average_altitude = sum_altitudes / num_samples
-        self.__average_altitude = average_altitude
+        self.__initial_altitude = average_altitude
 
     @property
     def all_gnss_data(self):
@@ -313,7 +313,7 @@ class Gnss:
     def relative_down(self):
         """
         The distance of the quadcopter in meters in the down direction relative
-        to the base station
+        to the base station.
         """
         with self.__lock:
             return self.__data_processor.process(self.__values_cache[:, 2], 
@@ -322,16 +322,19 @@ class Gnss:
     @property
     def altitude(self):
         """
-        Returns the Altitude of the quadcopter in meters based of the relative
-        Down position of the quadcopter compared to the base station.
+        Returns the Altitude of the quadcopter in meters of the quadcopter
+        compared to the quadcopters initial starting position. 
+        If the quadcopters initial starting position was not able to be 
+        calculated it will return the distance of the quadcopter in meters 
+        relative to the base station.
         """
         with self.__lock:
             current_altitude = - self.__data_processor.process(
                 self.__values_cache[:, 2], cursor=self.__cursor)
             # Check if __average_altitude is not None and subtract it from
             # current altitude
-            if self.__average_altitude is not None:
-                return current_altitude - self.__average_altitude
+            if self.__initial_altitude is not None:
+                return current_altitude - self.__initial_altitude
             else:
                 return current_altitude
 
@@ -365,7 +368,8 @@ class Gnss:
     @property
     def rtk_status(self):
         """
-        Returns the RTK status
+        Returns the RTK status: True - If RTK is being used
+                                False - If RTK is not being used
         """
         with self.__lock:
             rtk = False
