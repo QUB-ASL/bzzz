@@ -21,11 +21,7 @@ from bzzz.sensors.filters import MedianFilter
 from bzzz.sensors.filters import AverageFilter
 import datetime
 
-
-
-# NOTE: The scheduler supports both multi-threading and time-based function calling
-# Although threading guarantees consistent function call rates, the actual process handling is not done
-# within the python environment which could cause unwanted behaviour.
+from nav_mpc import NAV_MPC  # Import the NAV_MPC class
 
 if __name__ == '__main__':
     # sampling frequency of KF and LQR
@@ -43,6 +39,11 @@ if __name__ == '__main__':
     lqr = LQR(sampling_frequency=sampling_frequency,
               initial_alpha_t=10,
               initial_beta_t=-9.81)
+
+    # Initialize NAV_MPC
+    nav_mpc = NAV_MPC(sampling_frequency=sampling_frequency,
+                      prediction_horizon=25,
+                      max_velocity=5)
 
     rc = RC()
     scheduler = Scheduler(use_threading=False)
@@ -71,19 +72,8 @@ if __name__ == '__main__':
     KF_data = [0., 0., 0., 0.]
 
     # These variables are used to keep track of data logging process
-    # indicates the position of switch A on the Remote.
-    # This switch is used to save the logged data. Value is updated in `process_radio_data`
     switch_a_status = [True]
-    # indicates the position of switch D. This is the kill switch on the Remote.
-    # Value is updated in `process_radio_data`.
-    # NOTE: you will have to kill the drone first before saving data.
     is_kill = [False]
-    # indicates if data logging is allowed. Value is updated in the `main` loop.
-    # Value update logic:
-    # 1. Allow data logging for the first time by flipping switch A to on position.
-    # 2. After saving the data for the first time, disable data logging.
-    # 3. Now set the value to `not switch_A_status`, this disables the logging as long as
-    #       switch A stays on. You will have to flip switch A off to re-enable data logging.
     allow_data_logging = [True]
 
     # Altitude hold vars
@@ -110,51 +100,38 @@ if __name__ == '__main__':
     KP_GAIN_MAX = 0.1  # 100
     KD_GAIN_MAX = 0.2  # 100
 
+    # New variables for navigation control
+    nav_control_enabled = [False]
+    current_lat = [0.0]
+    current_lon = [0.0]
+    current_vx = [0.0]
+    current_vy = [0.0]
+    target_distance = [0.0]
+    target_angle = [0.0]
+
     DEBUG_MODE = False
 
     def print_debug(stuff):
         if DEBUG_MODE:
             print(stuff)
 
-    # function to convert radians to degrees
-
     def rad2deg(lst):
-        """Converts a list of angles in radians to a list of angles in degrees
-
-        :param lst: list of angles in radians
-        :return: list of angles in degrees
-        """
         return [i*180/pi for i in lst]
 
-    # function to compute quaternions to euler angles
     def euler_angles(q: list):
-        """Computes euler angles from given quaternion
-
-        :param q: Quaternion list [q0, q1, q2, q3]
-        :return: list of euler angles [yaw, pitch, roll]
-        """
         euler_ = [0., 0., 0.]
-
         sinr_cosp = 2 * (q[0] * q[1] + q[2] * q[3])
         cosr_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2])
         euler_[2] = atan2(sinr_cosp, cosr_cosp)
-
-        # pitch (y-axis rotation)
         sinp = sqrt(1 + 2 * (q[0] * q[2] - q[1] * q[3]))
         cosp = sqrt(1 - 2 * (q[0] * q[2] - q[1] * q[3]))
         euler_[1] = 2 * atan2(sinp, cosp) - pi / 2
-
-        # yaw (z-axis rotation)
         siny_cosp = 2 * (q[0] * q[3] + q[1] * q[2])
         cosy_cosp = 1 - 2 * (q[2] * q[2] + q[3] * q[3])
         euler_[0] = atan2(siny_cosp, cosy_cosp)
-
         return euler_
 
-    # function to cache all values at a time
     def cache_values():
-        """Caches values if enable caching[0] is true
-        """
         if enable_caching[0]:
             throttle_ref_cache.append(Tref_t[0])
             quat_cache.append(quaternion_vector[:])
@@ -170,62 +147,40 @@ if __name__ == '__main__':
             KF_data_cache.append(KF_data[:])
             radio_data_cache.append(channel_data[0])
 
-    # function to process radio data
     def process_radio_data():
-        """This function does three jobs:
-        1. Reads the radio data from the receiver, parses it and sends the 
-           encoded data to ESP using a function from RC class.
-        2. Updates shared variable values using radio data.
-        3. Calls cache_values function.
-        """
-        # if altitude hold is enabled and drone is not close to the ground update the altitude_ref_mts
         if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0]:
             altitude_ref_mts[0] = current_altitude_snap_shot_mts[0] + (
                 var_e_RC_mid_percentage[0] - rc.trimmer_VRE_percentage())*altitude_shifter_range_mts[0]
-            # the altitude_ref_mts should not be less than minimum flight altitude
             altitude_ref_mts[0] = max(
                 min_altitude_to_activate_AltiHold_mts[0], altitude_ref_mts[0])
 
-        # read, encode, and send the radio data to ESP.
-        # if altitude hold is on the throttle value from the RC will be overwritten
-        # by the throttle reference from the LQR.
-        # NOTE: There is this weird conversion for LQR throttle reference below,
-        # this is because the PI needs to send throttle reference in the range [300, 1400],
-        # which is the actual range of the RC throttle stick.
         shift = int((throttle_ref_from_LQR[0] - 1000) * 1400/900 +
                    300) if use_altitude_hold[0] and not is_drone_flying_close_to_ground[0] else -1
         channel_data[0] = rc.get_radio_data_parse_and_send_to_ESP(return_channel_data=True,
                                                                   force_send_fake_data=False,
                                                                   fake_data="S,0,0,0,0,0,0,0,0,0",
                                                                   over_write_throttle_ref_to=shift)
-        # update shared variables using RC data
-        # is data logging killed and data saving requested?
-        # is altitude hold enabled?
         switch_a_status[0] = rc.switch_A()
         use_altitude_hold[0] = rc.switch_C()
         is_kill[0] = rc.switch_D()
-        # Kappa11 gain from RC
         gain_kp_from_rc[0] = rc.trimmer_VRA_percentage()*KP_GAIN_MAX
-        # kappa22 gain from RC
         gain_kd_from_rc[0] = rc.trimmer_VRB_percentage()*KD_GAIN_MAX
-        # normalised throttle reference from RC, max is 1900
         Tref_t[0] = (rc.throttle_reference_percentage() - 1000)/900
-        cache_values()  # call to cache values
+        
+        # Add navigation control switch
+        nav_control_enabled[0] = rc.switch_E()  # Assuming switch E is used for navigation control
+        
+        # Update target distance and angle from RC
+        target_distance[0] = rc.trimmer_VRF_percentage() * 1000  # Assume max distance is 1000 meters
+        target_angle[0] = rc.trimmer_VRG_percentage() * 360  # Full rotation
+        
+        cache_values()
 
     def process_ESP_data():
-        """Process ESP data, this function does two jobs:
-        1. Receives flight data as a string of space separated values formatted as "FD: q1 q2 q3 ax ay az".
-        2. Checks the received flight data for corruption. 
-           If string is not None and starts with "FD:", and if there are 7 space separated values
-           then convert the 7 values to floats and update shared variables.
-        """
-        # process ESP data
         flight_data_string = rc.receive_data_from_ESP()
         if flight_data_string is not None and "FD:" in flight_data_string:
             flight_data = flight_data_string.strip().split()
-            if len(flight_data) == 11:
-
-                # See if ALL the quaternion values are correct ...
+            if len(flight_data) == 15:  # Updated to include GPS data
                 try:
                     q1 = float(flight_data[1])
                     q2 = float(flight_data[2])
@@ -235,12 +190,10 @@ if __name__ == '__main__':
                         f"Invalid quaternion data from ESP32 - flight data: {flight_data_string}\n {e}")
                     return
 
-                # ... if they are, then update
                 quaternion_vector[0] = q1
                 quaternion_vector[1] = q2
                 quaternion_vector[2] = q3
 
-                # additional check: if ESP is not armed, it sends [-1, -1, -1] for quaternions, which is invalid.
                 if quaternion_vector == [-1., -1., -1.]:
                     print_debug(
                         f"Received quat = {quaternion_vector}; defaulting to quat = [0, 0, 0].")
@@ -248,15 +201,12 @@ if __name__ == '__main__':
                     quaternion_vector[1] = 0.
                     quaternion_vector[2] = 0.
 
-                # compute the scalar part of the quaternion
                 q0 = sqrt(
                     1 - quaternion_vector[0]**2 - quaternion_vector[1]**2 - quaternion_vector[2]**2)
                 quaternion_full = [q0] + quaternion_vector
-                # compute euler angles from quaternion
                 euler[0], euler[1], euler[2] = euler_angles(quaternion_full)
 
                 try:
-                    # convert flight data from string to floats
                     acc[0] = float(flight_data[4])
                     acc[1] = float(flight_data[5])
                     acc[2] = float(flight_data[6])
@@ -264,6 +214,10 @@ if __name__ == '__main__':
                     motor_PWM[1] = float(flight_data[8])
                     motor_PWM[2] = float(flight_data[9])
                     motor_PWM[3] = float(flight_data[10])
+                    current_lat[0] = float(flight_data[11])
+                    current_lon[0] = float(flight_data[12])
+                    current_vx[0] = float(flight_data[13])
+                    current_vy[0] = float(flight_data[14])
                 except ValueError as e:
                     print(
                         f"Invalid data from ESP32 - flight data: {flight_data_string}\n {e}")
@@ -282,17 +236,6 @@ if __name__ == '__main__':
         KF_data_cache.clear()
 
     def read_ToF_run_kf_and_LQR():
-        """Read ToF sensor, and run the Kalman filter and LQR control algorithms
-        """
-
-        # NOTE: Altitude measurements in m.
-        # you can run LQR even when the drone is close to ground but you cannot run KF.
-        # So, to compensate use the previous estimates of alpha and beta
-        # and the current ToF sensor readings. In this case if the ToF returns outliers
-        # send current altitude as desired altitude to LQR so it has no control.
-
-        # Reading the tof altitude invokes the automatic update from the sensor,
-        # no need to read the sensor explicitly
         distance__from_tof_sensor = tof.distance
 
         if distance__from_tof_sensor == -1:
@@ -351,6 +294,23 @@ if __name__ == '__main__':
             print_debug(
                 f"alphan hat: {alpha_hat[0]} beta hat: {beta_hat[0]} k11: {-gain_kp_from_rc[0]} k12: {-gain_kd_from_rc[0]} Tref_LQR: {Tref_t[0]} alt_hat: {z_hat[0]} alt_ref: {altitude_ref_mts[0]}")
 
+    def run_navigation_control():
+        """Run the navigation control algorithm"""
+        if nav_control_enabled[0]:
+            if nav_mpc._NAV_MPC__initial_lat is None:
+                nav_mpc.set_initial_location(current_lat[0], current_lon[0])
+            
+            nav_mpc.set_relative_target(target_distance[0], target_angle[0])
+            
+            current_state = nav_mpc.get_current_state(current_lat[0], current_lon[0], current_vx[0], current_vy[0])
+            target_state = nav_mpc.get_target_state()
+            
+            control_action = nav_mpc.get_control_action(current_state, target_state)
+            
+            # Here, you would use the control_action to adjust the drone's movement
+            # This might involve setting roll and pitch targets, for example
+            print(f"Navigation control action: {control_action}")
+
     if enable_caching[0]:
         time_before_thread_starts[0] = time_ns()
 
@@ -365,6 +325,10 @@ if __name__ == '__main__':
                        function_call_count=0)
     scheduler.schedule("read_ToF_run_kf_and_LQR",
                        read_ToF_run_kf_and_LQR,
+                       function_call_frequency=sampling_frequency,
+                       function_call_count=0)
+    scheduler.schedule("run_navigation_control",
+                       run_navigation_control,
                        function_call_frequency=sampling_frequency,
                        function_call_count=0)
 
@@ -385,8 +349,8 @@ if __name__ == '__main__':
                      data_processor=processor,  
                      log_file=ANE_filename) as ASensor,
           Gnss(window_length=3,  
-                     data_processor=processor,  
-                     log_file=GNSS_filename) as GnssSensor):
+               data_processor=processor,  
+               log_file=GNSS_filename) as GnssSensor):
         
         while True:
             scheduler.run()  # run the scheduled functions
@@ -394,5 +358,3 @@ if __name__ == '__main__':
             if is_kill[0] and switch_a_status[0]:
                 print("All sensors are saving data")
                 break
-    
-    
