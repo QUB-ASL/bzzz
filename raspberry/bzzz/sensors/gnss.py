@@ -17,18 +17,12 @@ def readUBX(readbytes):
         i = 0
         payloadlength = 0
         ackPacket=[b'\xB5',b'\x62',b'\x01',b'\x00',b'\x00',b'\x00']
-        while i < payloadlength +8:              
-            if j < len(readbytes) :
-                incoming_byte = readbytes[j]   
-                j += 1
-            else :
-                break
+        while i < payloadlength +8: 
+            incoming_byte = readbytes[j]   
+            j += 1
             if (i < 3) and (incoming_byte == ackPacket[i]):
                 i += 1
-            elif i == 3:
-                ackPacket[i]=incoming_byte
-                i += 1              
-            elif i == 4 :
+            elif i == 3 or i == 4:
                 ackPacket[i]=incoming_byte
                 i += 1
             elif i == 5 :
