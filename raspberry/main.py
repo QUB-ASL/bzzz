@@ -102,8 +102,8 @@ if __name__ == '__main__':
         radio_data.set_throttle(throttle)
 
     def save_data():
-        blackbox_fname = datetime.datetime.now().strftime
-        ("BB-%d-%m-%y--%H-%M.csv")
+        blackbox_fname = datetime.datetime.now().strftime(
+            "BB-%d-%m-%y--%H-%M.csv")
         logger.save_to_csv(blackbox_fname)
         print("All sensors are saving data; bye!")
 
@@ -115,8 +115,8 @@ if __name__ == '__main__':
         data_to_log[1] = y[1]
         data_to_log[2] = y[2]
         data_to_log[3] = altitude_ctrl.altitude_reference()
-        data_to_log[4:8] = state_est.reshape((6, ))
-        data_to_log[8] = radio_data.throttle_reference_percentage()
+        data_to_log[4:10] = state_est.reshape((6, ))
+        data_to_log[10] = radio_data.throttle_reference_percentage()
         logger.record(current_timestamp, data_to_log)
 
     def control_loop(tof, barometer, gnss, esp_bridge):
@@ -157,14 +157,14 @@ if __name__ == '__main__':
     # ------------------------------------------------
     # MAIN LOOP!
     # ------------------------------------------------
-    EVO_filename = datetime.datetime.now().strftime
-    ("Evo-ToF-%d-%m-%y--%H-%M.csv")
-    BAR_filename = datetime.datetime.now().strftime
-    ("PressureSensor-%d-%m-%y--%H-%M.csv")
-    ANE_filename = datetime.datetime.now().strftime
-    ("Anemometer-%d-%m-%y--%H-%M.csv")
-    GNSS_filename = datetime.datetime.now().strftime
-    ("GNSS-%d-%m-%y--%H-%M.csv")
+    EVO_filename = datetime.datetime.now().strftime(
+        "Evo-ToF-%d-%m-%y--%H-%M.csv")
+    BAR_filename = datetime.datetime.now().strftime(
+        "PressureSensor-%d-%m-%y--%H-%M.csv")
+    ANE_filename = datetime.datetime.now().strftime(
+        "Anemometer-%d-%m-%y--%H-%M.csv")
+    GNSS_filename = datetime.datetime.now().strftime(
+        "GNSS-%d-%m-%y--%H-%M.csv")
     processor = MedianFilter()  # You need to define this class 
                                 # based on your requirements
     keep_running = True
@@ -178,4 +178,3 @@ if __name__ == '__main__':
         starttime = time_ns()
         while keep_running:
             keep_running = control_loop(tof, barometer, gnss, esp_bridge)
-            time.sleep(0.018)
