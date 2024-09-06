@@ -32,11 +32,11 @@ if __name__ == '__main__':
         initial_state=np.array(kf_params["initial_state"]),
         initial_sigma=np.diagflat(kf_params["initial_sigma"]),
         state_cov=np.diagflat(kf_params["state_cov"]),
-        gnss_var_rtk = kf_params["gnss_var_rtk"],
-        gnss_var_no_rtk= kf_params["gnss_var_no_rtk"],
-        tof_var_low_alt= kf_params["tof_var_low_alt"],
-        bar_var= kf_params["bar_var"],
-        tof_var_change_alt= kf_params["tof_var_change_alt"],
+        gnss_var_rtk=kf_params["gnss_var_rtk"],
+        gnss_var_no_rtk=kf_params["gnss_var_no_rtk"],
+        tof_var_low_alt=kf_params["tof_var_low_alt"],
+        bar_var=kf_params["bar_var"],
+        tof_var_change_alt=kf_params["tof_var_change_alt"],
         sampling_time=0.02)
     altitude_ctrl = AltitudeController()
     rc = RC()
@@ -87,7 +87,7 @@ if __name__ == '__main__':
         vre = radio_data.trimmer_VRE_percentage()
         sc_vre = trimmer_to_altitude_increment(vre)
         meters_pre_sec_max_increment = 0.04
-        meters_pre_tick_max_increment = (meters_pre_sec_max_increment * 
+        meters_pre_tick_max_increment = (meters_pre_sec_max_increment *
                                          sampling_time)
         increment_action = sc_vre * meters_pre_tick_max_increment
         altitude_ctrl.increment_reference(increment_action)
@@ -135,7 +135,7 @@ if __name__ == '__main__':
         take_emergency_measure(measure, radio_data)
 
         flight_mode = radio_data.switch_C()
-        rtk_status =    gnss.rtk_status
+        rtk_status = gnss.rtk_status
         y_tof = tof.distance
         y_bar = barometer.altitude()
         y_gnss = gnss.altitude
@@ -165,12 +165,12 @@ if __name__ == '__main__':
         "Anemometer-%d-%m-%y--%H-%M.csv")
     GNSS_filename = datetime.datetime.now().strftime(
         "GNSS-%d-%m-%y--%H-%M.csv")
-    processor = MedianFilter()  # You need to define this class 
+    processor = MedianFilter()  # You need to define this class
                                 # based on your requirements
     keep_running = True
-    with (EvoSensor(window_length=3,  
-                    data_processor=processor,  
-                    log_file=EVO_filename) as tof, 
+    with (EvoSensor(window_length=3,
+                    data_processor=processor,
+                    log_file=EVO_filename) as tof,
           Anemometer(log_file=ANE_filename) as anemometer,
           BMP180Sensor(log_file=BAR_filename) as barometer,
           Gnss(log_file=GNSS_filename) as gnss,

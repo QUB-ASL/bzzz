@@ -1,5 +1,6 @@
 from math import pi, atan2, sqrt  # math functions for calculations
 
+
 class Angles:
 
     # function to convert radians to degrees

@@ -17,15 +17,16 @@ class AltitudeController:
         Increment the altitude reference in meters.
         """
         self.__altitude_reference += by
-    
+
     def control_action(self, z_est, vz_est):
         """
         calculates the throttle percentage required
         to keep the quadcopter at constant altitude.
         """
         altitude_error = z_est - self.__altitude_reference
-        u = self.__tau_eq + self.__p_gain * altitude_error + self.__d_gain * vz_est
-        return u 
+        u = (self.__tau_eq + self.__p_gain * altitude_error
+             + self.__d_gain * vz_est)
+        return u
 
     def set_p_gain(self, p_gain):
         """
@@ -40,13 +41,13 @@ class AltitudeController:
         This gain is multiplied with the velocity estmiate. 
         """
         self.__d_gain = d_gain
-    
+
     def set_altitude_reference(self, altitude_reference):
         """
         sets the altitude reference height in meters from the ground.
         """
         self.__altitude_reference = altitude_reference
-    
+
     def set_tau_eq(self, tau_eq):
         """
         Sets the equilibrium/hovering throttle as a percentage.
@@ -58,4 +59,3 @@ class AltitudeController:
         Returns the altitude reference height in meters from the ground.
         """
         return self.__altitude_reference
-

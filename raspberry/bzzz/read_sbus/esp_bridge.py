@@ -28,7 +28,7 @@ class EspBridge:
     def __exit__(self, *args):
         if self.ser is not None:
             self.ser.close()
-    
+
     def receive_from_esp(self):
         """
         Read data from ESP32 via UART.
@@ -43,4 +43,3 @@ class EspBridge:
                 print(f"UnicodeDecodeError {e}, retrying....")
         else:
             return None
-        
