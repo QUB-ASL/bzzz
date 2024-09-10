@@ -1,1 +1,213 @@
+import numpy as np
+from osqp import OSQP
+import control as ctrl
+from scipy import sparse
+import matplotlib.pyplot as plt
+from scipy.linalg import block_diag
 
+# Definitions
+Ts = 0.02
+g = 9.8
+Tr = 0.5  # Time constant for r dynamics
+Tp = 0.7  # Time constant for p dynamics
+Td = 0.1  
+
+Ax = 5
+Ay = 5
+Az = 1
+Kr = 1
+Kp = 1
+theta_rd = 0.2  # Desired value for r
+theta_pd = 0.3  # Desired value for p
+
+# System dynamics
+A = np.array([[1, 0, Ts, 0, 0, 0],
+              [0, 1,  0, Ts,  0, 0],
+              [0, 0, 1-(Ts*Ax), 0, 0, -Ts*g],
+              [0, 0, 0, 1-(Ts*Ay), Ts*g, 0],
+              [0, 0, 0, 0, 1-(Ts/Tr), 0],
+              [0, 0, 0, 0,  0, 1-(Ts/Tp)]])
+
+B = np.array([[0, 0],
+              [0, 0],
+              [0, 0],
+              [0, 0],
+              [(Ts*Kr)/Tr, 0],
+              [0, (Ts*Kp)/Tp]])
+
+# Cost function weights
+Q = np.array([[2, 0, 0, 0, 0, 0],
+              [0, 2, 0, 0, 0, 0],
+              [0, 0, 1, 0, 0, 0],
+              [0, 0, 0, 1, 0, 0],
+              [0, 0, 0, 0, 1, 0],
+              [0, 0, 0, 0, 0, 1]])
+R = 10*np.array([[1, 0],
+              [0, 1]])  # Weight for inputs
+
+nx = A.shape[1]  # Number of states
+nu = B.shape[1]  # Number of inputs
+I = np.eye(nx)
+
+# Prediction horizon
+N = 25  # Set the prediction horizon
+
+# Initialize A_cal with the identity matrix
+A_cal = I.copy()
+
+# Calculate A^1 to A^N and concatenate vertically
+for n in range(1, N):
+    A_cal = np.vstack((A_cal, np.linalg.matrix_power(A, n)))
+
+# Initialize B_cal with zeros
+B_cal = np.zeros((N * nx, nu * N))
+
+# Fill B_cal with the required matrix products
+for i in range(N):
+    for j in range(i + 1):
+        # Compute A^(i-j) * B
+        result = np.linalg.matrix_power(A, i-j) @ B
+        # Place the result in the correct block within B_cal
+        B_cal[i*nx:(i+1)*nx, j*nu:(j+1)*nu] = result
+
+P, _, K = ctrl.dare(A, B, Q, R)
+K = -K
+
+# Create a list with Q repeated N times
+Q_list = [Q] * (N-1)
+
+# Append P to the end of this list
+Q_list.append(P)
+
+Q_boldface = block_diag(*Q_list)
+
+# Create an identity matrix of size N
+I_N = np.eye(N)
+
+# Use the Kronecker product to create R_boldface
+R_boldface = np.kron(I_N, R)
+
+# Calculate F
+F = B_cal.T @ Q_boldface @ A_cal
+
+# Calculate G
+G = B_cal.T @ Q_boldface @ B_cal
+
+P = sparse.csc_matrix(G+R_boldface)
+
+max_tilt = np.deg2rad(10)
+
+# Create constraint matrices
+E_r = sparse.csc_matrix(([1], ([0], [4])), shape=(1, nx))
+E_p = sparse.csc_matrix(([1], ([0], [5])), shape=(1, nx))
+E_rp = sparse.vstack([E_r, E_p])
+
+# Construct E_boldface
+E_boldface = sparse.kron(sparse.eye(N), E_rp)
+
+# Compute E_boldface @ B_cal
+EB = E_boldface @ B_cal
+
+# Ensure EB is a sparse matrix
+if not sparse.issparse(EB):
+    EB = sparse.csc_matrix(EB)
+
+# Combine matrices
+F_constraint = sparse.eye(2*N)
+
+# Construct the constraint vectors
+tilt_max = max_tilt * np.ones(N*2, )
+tilt_min = -max_tilt * np.ones(2*N, )
+
+# Compute q (cost function linear term)
+q = np.zeros(N * nu)  # Initialize q with zeros
+
+# Construct the constraint vectors
+l = tilt_min
+u = tilt_max
+
+# Update OSQP setup
+osqp = OSQP()
+osqp.setup(P=P, q=F, A=F_constraint, l=l, u=u, warm_start=True)
+
+# Simulation loop
+x0 = np.array([[0.25, 0.10, 0.0, 0.0, 0, 0]]).T  # Initial state
+x = x0
+sim_steps = 2000  # Number of simulation steps
+x_cache = np.zeros((nx, sim_steps))
+u_cache = np.zeros((nu, sim_steps))  # Store control actions
+
+for k in range(sim_steps):
+    x_cache[:, k] = np.reshape(x, (nx,))
+    
+    # Predict state trajectory
+    x_pred = np.zeros((nx, N))
+    x_pred[:, 0] = x.flatten()
+    for i in range(1, N):
+        x_pred[:, i] = A @ x_pred[:, i-1]
+    
+    # Solve MPC problem
+    osqp.update(q=F @ x)
+    res = osqp.solve()
+    
+    u_opt = np.reshape(res.x[0:nu], (nu, 1))
+
+    n = np.array([[0, 0.005]]).T
+    u_opt = u_opt + n
+   
+    # Apply the control input and update the state
+    x = A @ x + B @ u_opt
+
+    # Store control action
+    u_cache[:, k] = u_opt.flatten()
+
+    # Check if constraints are respected
+    roll = x[4, 0]
+    pitch = x[5, 0]
+    if abs(roll) > max_tilt or abs(pitch) > max_tilt:
+        print(f"Constraint violated at step {k}: Roll = {np.rad2deg(roll):.2f}°, Pitch = {np.rad2deg(pitch):.2f}°")
+
+# Create time array in seconds
+time_in_seconds = np.arange(sim_steps) * Ts
+
+# Plotting
+plt.figure(figsize=(15, 10))
+
+state_labels = ['x', 'y', 'vx', 'vy', 'r', 'p']
+control_labels = ['u1', 'u2']
+colors = ['b', 'g', 'r', 'c', 'm', 'y']
+control_colors = ['r', 'g']
+
+for i in range(6):
+    ax1 = plt.subplot(3, 2, i+1)
+    
+    if i >= 4:
+        ax1.plot(time_in_seconds, np.rad2deg(x_cache[i, :]), color=colors[i], label=state_labels[i])
+        ax1.set_ylabel('Degrees', color=colors[i])
+    else:
+        ax1.plot(time_in_seconds, x_cache[i, :], color=colors[i], label=state_labels[i])
+        ax1.set_ylabel('State Value', color=colors[i])
+    
+    ax1.set_xlabel('Time (seconds)')
+    ax1.tick_params(axis='y', labelcolor=colors[i])
+    
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    
+    if i < 2:  # Plot both control actions on the first two subplots
+        ax2.plot(time_in_seconds, u_cache[0, :], color=control_colors[0], linestyle='--', label=control_labels[0])
+        ax2.plot(time_in_seconds, u_cache[1, :], color=control_colors[1], linestyle='--', label=control_labels[1])
+    else:  # Plot only one control action on the other subplots
+        control_index = (i - 2) % 2
+        ax2.plot(time_in_seconds, u_cache[control_index, :], color=control_colors[control_index], linestyle='--', label=control_labels[control_index])
+    
+    ax2.set_ylabel('Control Value', color='k')
+    ax2.tick_params(axis='y', labelcolor='k')
+    
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper right')
+    
+    ax1.set_title(f'State {state_labels[i]} and Control Actions')
+
+plt.tight_layout()
+plt.show()
