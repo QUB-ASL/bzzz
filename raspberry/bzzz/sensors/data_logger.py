@@ -33,6 +33,17 @@ class DataLogger:
         self.__timestamps_vault[self.__cursor] = timestamp
         self.__cursor = self.__cursor + 1
 
+    def record_series(self, timestamp, data):
+        """
+        Record/log data-series in memory
+
+        :param timestamp: timestamp of measurements (same timestamp applied to whole series)
+        :param data: measurements (numpy array)
+        """
+        self.__data_vault[self.__cursor:self.__cursor+data.shape[0], :] = data
+        self.__timestamps_vault[self.__cursor:self.__cursor+data.shape[0]] = timestamp
+        self.__cursor += data.shape[0]
+
     def save_to_csv(self, filename):
         """
         Save the data to a CSV file
