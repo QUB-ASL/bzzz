@@ -93,6 +93,7 @@ def plot_wind_data(U: bool,
             plt.plot(df_wind_3.V_axis)
         plt.title('V Wind speed over Time', fontsize=20)
         plt.ylabel('Wind Speed', fontsize=16)
+        plt.legend(['Raw_data', 'Median over 10', 'Median over 20'])
     
         if acf_pacf_1 is True:
             plot_acf(df_wind.V_axis, lags=50)
@@ -130,13 +131,13 @@ def plot_wind_data(U: bool,
 plot_wind_data(U=True,
                V=True,
                W=True,
-               file_name_1='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_20.csv',
+               file_name_1='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49.csv',
                data_freq_1=40,
                acf_pacf_1=True,
-               file_name_2='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_5Hz.csv',
-               data_freq_2=5,
+               file_name_2='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_median_filtered_N_11.csv',
+               data_freq_2=40,
                acf_pacf_2=False,
-               file_name_3='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_5Hz_N_2.csv',
-               data_freq_3=5,
+               file_name_3='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_median_filtered_N_21.csv',
+               data_freq_3=40,
                acf_pacf_3=False)
 plt.show()

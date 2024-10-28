@@ -95,8 +95,8 @@ def validate_model(file_name,
     
     
     quantile_error_U = np.quantile(error_i_U, quantile_level)
-    quantile_error_W = np.quantile(error_i_V, quantile_level)
-    quantile_error_V = np.quantile(error_i_W, quantile_level)
+    quantile_error_V = np.quantile(error_i_V, quantile_level)
+    quantile_error_W = np.quantile(error_i_W, quantile_level)
 
     print(f'Error Index of ARMA({str(ARIMA_p)},0,{str(ARIMA_q)})')
     print(f'U_axis = {str(quantile_error_U)}')
@@ -123,12 +123,12 @@ def validate_model(file_name,
                     writer.writerow([f'({str(ARIMA_p)},0,{str(ARIMA_q)})', quantile_error_W])
 
     # if quantile_error_U < 1.29 :
-    #   plt.figure(figsize=(10,4))
-    #   sns.distplot(error_i_U, hist=False)
-    #   plt.plot([quantile_error_U, quantile_error_U], [0, 1], color='C0')
-    #   plt.title(f'Error Index of ARIMA({str(ARIMA_p)},0,{str(ARIMA_q)})', fontsize=20)
-    #   plt.ylabel('Density', fontsize=16)
-    #   plt.xlabel('Error value', fontsize=16)
+    plt.figure(figsize=(10,4))
+    sns.distplot(error_i_U, hist=False)
+    plt.plot([quantile_error_U, quantile_error_U], [0, 1], color='C0')
+    plt.title(f'Error Index of ARIMA({str(ARIMA_p)},0,{str(ARIMA_q)})', fontsize=20)
+    plt.ylabel('Density', fontsize=16)
+    plt.xlabel('Error value', fontsize=16)
                        
     return 0
 
@@ -136,6 +136,15 @@ def validate_model(file_name,
 #     for j in range(10):
 #         validate_model('raspberry/data/wind_data/16-09-23--18-35/16-09-23--18-35_N_5',4000,8000,8500,i,0,j,10,0.95)
 
-validate_model('raspberry/data/wind_data/16-09-23--18-35/16-09-23--18-35_N_5',0,2000,2005,2,0,2,10,0.95,False)
+validate_model(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10',
+               train_start = 0,
+               train_end = 2000,
+               test_end = 2500,
+               ARIMA_p = 5,
+               ARIMA_d = 0,
+               ARIMA_q = 8,
+               Prediction_horizon = 10,
+               quantile_level = 0.95,
+               logger = False)
 
 plt.show()

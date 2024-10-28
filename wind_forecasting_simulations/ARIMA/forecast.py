@@ -66,12 +66,13 @@ def fit_and_forecast(file_name,
             print(f'model_fit_2 summary = {model_fit_2.summary()}')
             print(f'model_fit_2 params = {model_fit_2.params}')
         
-        start = time()
+        
         ## Define series 
         rolling_predictions_1 = pd.Series()
         t_minus_x = pd.Series()
         rolling_predictions_2 = pd.Series()
         
+        start = time()
         ## Rolling prediction for wind speed
         for x in range(train_end, test_end):
             t_minus_x[df_wind.index[x+prediction_horizon]] = df_wind.Wind_Speed[x]
@@ -83,14 +84,14 @@ def fit_and_forecast(file_name,
                 model_fit_2 = model_fit_2.append(updated_data, refit=False)
                 rolling_predictions_2[df_wind.index[x+prediction_horizon]] = model_fit_2.predict(x+prediction_horizon)
             
+        end = time()
+        print('Model Fitting Time:', end - start)
+        
             # with open('rolling_predictions.csv', "a+", newline="") as f:
             #     # creating the writer
             #     writer = csv.writer(f)
             #     # using writerow to write individual record one by one
             #     writer.writerow([rolling_predictions_1[df_wind.index[x+prediction_horizon_1]]])
-        
-        end = time()
-        print('Model Fitting Time:', end - start)
         
         ## Get residuals for rolling prediction and using previous wind speed
         residuals_rolling_predictions_1 = test_data - rolling_predictions_1
@@ -775,13 +776,13 @@ def fix_params_and_forecast(file_name,
 
 
 
-fit_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_20.csv',
-                 train_end = 4000,
-                 test_end = 6000,
-                 prediction_horizon = 5,
+fit_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv',
+                 train_end = 10000,
+                 test_end = 11000,
+                 prediction_horizon = 10,
                  ARIMA_p_1 = 5,
                  ARIMA_d_1 = 0,
-                 ARIMA_q_1 = 12,
+                 ARIMA_q_1 = 8,
                  ARIMA_p_2 = None,
                  ARIMA_d_2 = None,
                  ARIMA_q_2 = None,
@@ -795,7 +796,7 @@ fit_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23-
 
 # fix_params_and_forecast(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv',
 #                         train_end = 8,
-#                         test_end = 1020,
+#                         test_end = 100,
 #                         prediction_horizon = 10,
 #                         ARIMA_p_1 = 5,
 #                         ARIMA_d_1 = 0,

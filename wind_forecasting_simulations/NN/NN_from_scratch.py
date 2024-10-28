@@ -89,7 +89,6 @@ class RBFNetworkQR:
         rhs = self.Q.T @ self.b
         lhs = self.R + self.regulariser * self.I
         self.weights = spla.solve_triangular(lhs, rhs)
-        print(self.regulariser)
 
     def update(self, 
                new_X, 
@@ -284,76 +283,78 @@ def NN(file_name,
 # Example usage
 if __name__ == "__main__":
 
-    # Parameters for training and testing
-    window_size = 15
-    prediction_horizon = 10
-    number_of_initial_points = 500
-    num_centers = 5  # Number of RBF centers
-    adaptation_rate=0.1  # Adaptation rate for online K-means
-    regulariser = 0  # Regularization parameter
+    # # Parameters for training and testing
+    # window_size = 15
+    # prediction_horizon = 10
+    # number_of_initial_points = 500
+    # num_centers = 5  # Number of RBF centers
+    # adaptation_rate=0.1  # Adaptation rate for online K-means
+    # regulariser = 0  # Regularization parameter
 
-    # Read Data
-    df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', usecols=[3])
+    # # Read Data
+    # df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', usecols=[3])
 
-    series = df_wind.values.reshape(-1)
+    # series = df_wind.values.reshape(-1)
 
-    t = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', usecols=[0])
-    t = t.values.reshape(-1)
+    # t = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', usecols=[0])
+    # t = t.values.reshape(-1)
     
-    # Prepare the time series data for RBF network
-    X, y = prepare_time_series_data(series, window_size, prediction_horizon)
+    # # Prepare the time series data for RBF network
+    # X, y = prepare_time_series_data(series, window_size, prediction_horizon)
 
-    # Split the data: first number of initial points for initial fit, 
-    # rest for updates
-    X_initial = X[:number_of_initial_points]
-    y_initial = y[:number_of_initial_points]
-    X_remaining = X[number_of_initial_points:]
-    y_remaining = y[number_of_initial_points:]
+    # # Split the data: first number of initial points for initial fit, 
+    # # rest for updates
+    # X_initial = X[:number_of_initial_points]
+    # y_initial = y[:number_of_initial_points]
+    # X_remaining = X[number_of_initial_points:]
+    # y_remaining = y[number_of_initial_points:]
 
-    # Initialize online K-means with 5 clusters
-    online_kmeans = OnlineKMeans(n_clusters=num_centers, 
-                                 adaptation_rate=adaptation_rate, 
-                                 forgetting_factor=None, 
-                                 random_state=42)
-    initial_centers = online_kmeans.initialize_centers(X_initial)
+    # # Initialize online K-means with 5 clusters
+    # online_kmeans = OnlineKMeans(n_clusters=num_centers, 
+    #                              adaptation_rate=adaptation_rate, 
+    #                              forgetting_factor=None, 
+    #                              random_state=42)
+    # initial_centers = online_kmeans.initialize_centers(X_initial)
     
-    # Initialize and train the RBF network using QR decomposition
-    rbf_net = RBFNetworkQR(num_centers=num_centers, 
-                           centers=initial_centers,
-                           regulariser=regulariser)
-    rbf_net.fit(X_initial, y_initial)
+    # # Initialize and train the RBF network using QR decomposition
+    # rbf_net = RBFNetworkQR(num_centers=num_centers, 
+    #                        centers=initial_centers,
+    #                        regulariser=regulariser)
+    # rbf_net.fit(X_initial, y_initial)
 
-    # Incrementally update the RBF network with the remaining data points
-    for i in range(X_remaining.shape[0]):
-        updated_centers = online_kmeans.update(i)
-        rbf_net.update(X_remaining[i], 
-                       y_remaining[i],
-                       updated_centers)
+    # # Incrementally update the RBF network with the remaining data points
+    # for i in range(X_remaining.shape[0]):
+    #     updated_centers = online_kmeans.update(i)
+    #     rbf_net.update(X_remaining[i], 
+    #                    y_remaining[i],
+    #                    updated_centers)
     
-    # Predict the 10th step ahead for the entire series
-    y_pred = predict_tenth_step_ahead(rbf_net, 
-                                      series, 
-                                      window_size, 
-                                      prediction_horizon)
+    # # Predict the 10th step ahead for the entire series
+    # y_pred = predict_tenth_step_ahead(rbf_net, 
+    #                                   series, 
+    #                                   window_size, 
+    #                                   prediction_horizon)
     
-    BenchmarkScore_U = math.sqrt(mean_squared_error(y, y_pred))
-    print('Benchmark_U Score: %.5f RMSE' % (BenchmarkScore_U))
+    # BenchmarkScore_U = math.sqrt(mean_squared_error(y, y_pred))
+    # print('Benchmark_U Score: %.5f RMSE' % (BenchmarkScore_U))
 
-    # Plot the true time series and the 10th step ahead predictions
-    plt.figure(figsize=(12, 6))
-    plt.plot(t, series, label='True Time Series', color='blue')
-    plt.plot(t[window_size + prediction_horizon - 1:], y_pred, label='10th Step Ahead Prediction', color='red', linestyle='--')
-    plt.title('10th Step Ahead Time Series Prediction using RBF Neural Network (QR Decomposition)')
-    plt.xlabel('Time')
-    plt.ylabel('Value')
-    plt.legend()
-    plt.show()
+    # # Plot the true time series and the 10th step ahead predictions
+    # plt.figure(figsize=(12, 6))
+    # plt.plot(t, series, label='True Time Series', color='blue')
+    # plt.plot(t[window_size + prediction_horizon - 1:], y_pred, label='10th Step Ahead Prediction', color='red', linestyle='--')
+    # plt.title('10th Step Ahead Time Series Prediction using RBF Neural Network (QR Decomposition)')
+    # plt.xlabel('Time')
+    # plt.ylabel('Value')
+    # plt.legend()
+    # plt.show()
+
     
-    # for i in range(5,101,5):
-    #     for j in range(5,101,5):
-    #         NN(file_name = 'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10',
-    #         window_size = j,
-    #         num_centers = i,
-    #         adaptation_rate = 0.1,
-    #         prediction_horizon = 10)
+    for i in range(5,101,5):
+        for j in range(i,101,5):
+            NN(file_name = 'raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10',
+            window_size = j,
+            num_centers = i,
+            adaptation_rate = 0.1,
+            regulariser =0,
+            prediction_horizon = 10)
     
