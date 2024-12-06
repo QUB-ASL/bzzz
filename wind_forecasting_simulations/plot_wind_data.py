@@ -23,25 +23,34 @@ def plot_wind_data(U: bool,
                    acf_pacf_2: bool=False,
                    file_name_3=None,
                    data_freq_3=None,
-                   acf_pacf_3: bool=False):
+                   acf_pacf_3: bool=False,
+                   file_name_4=None,
+                   data_freq_4=None,
+                   acf_pacf_4: bool=False,):
     #read data
     df_wind = pd.read_csv(file_name_1)
     if file_name_2 is not None:
         df_wind_2 = pd.read_csv(file_name_2)
     if file_name_3 is not None:
         df_wind_3 = pd.read_csv(file_name_3)
+    if file_name_4 is not None:
+        df_wind_4 = pd.read_csv(file_name_4)
 
     index_freq_1 = 1000/data_freq_1
     if data_freq_2 is not None:
         index_freq_2 = 1000/data_freq_2
     if data_freq_3 is not None:
         index_freq_3 = 1000/data_freq_3
+    if data_freq_4 is not None:
+        index_freq_4 = 1000/data_freq_4
     #set index
     df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq=f'{index_freq_1}L')
     if file_name_2 is not None and data_freq_2 is not None:
         df_wind_2.index = pd.date_range(df_wind_2.Index_2[0], df_wind_2.Index_2.iloc[-1], freq=f'{index_freq_2}L')
     if file_name_3 is not None and data_freq_3 is not None:
         df_wind_3.index = pd.date_range(df_wind_3.Index_2[0], df_wind_3.Index_2.iloc[-1], freq=f'{index_freq_3}L')
+    if file_name_4 is not None and data_freq_4 is not None:
+        df_wind_4.index = pd.date_range(df_wind_4.Index_2[0], df_wind_4.Index_2.iloc[-1], freq=f'{index_freq_4}L')
 
     plt.figure(figsize=(10,4))
     plt.plot(df_wind.Wind_Speed)
@@ -49,6 +58,8 @@ def plot_wind_data(U: bool,
         plt.plot(df_wind_2.Wind_Speed)
     if file_name_3 is not None:
         plt.plot(df_wind_3.Wind_Speed)
+    if file_name_4 is not None:
+        plt.plot(df_wind_4.Wind_Speed)
     plt.title('combined Wind speed over Time', fontsize=20)
     plt.ylabel('Wind Speed', fontsize=16)
 
@@ -61,6 +72,9 @@ def plot_wind_data(U: bool,
     if acf_pacf_3 is True:
         plot_acf(df_wind_3.Wind_Speed, lags=50)
         plot_pacf(df_wind_3.Wind_Speed, lags=50)
+    if acf_pacf_4 is True:
+        plot_acf(df_wind_4.Wind_Speed, lags=50)
+        plot_pacf(df_wind_4.Wind_Speed, lags=50)
 
 
     if U is True:
@@ -70,6 +84,8 @@ def plot_wind_data(U: bool,
             plt.plot(df_wind_2.U_axis)
         if file_name_3 is not None:
             plt.plot(df_wind_3.U_axis)
+        if file_name_4 is not None:
+            plt.plot(df_wind_4.U_axis)
         plt.title('U Wind speed over Time', fontsize=20)
         plt.ylabel('Wind Speed', fontsize=16)
     
@@ -82,6 +98,9 @@ def plot_wind_data(U: bool,
         if acf_pacf_3 is True:
             plot_acf(df_wind_3.U_axis, lags=50)
             plot_pacf(df_wind_3.U_axis, lags=50)
+        if acf_pacf_4 is True:
+            plot_acf(df_wind_4.U_axis, lags=50)
+            plot_pacf(df_wind_4.U_axis, lags=50)
 
 
     if V is True:
@@ -91,9 +110,12 @@ def plot_wind_data(U: bool,
             plt.plot(df_wind_2.V_axis)
         if file_name_3 is not None:
             plt.plot(df_wind_3.V_axis)
+        if file_name_4 is not None:
+            plt.plot(df_wind_4.V_axis)
         plt.title('V Wind speed over Time', fontsize=20)
-        plt.ylabel('Wind Speed', fontsize=16)
-        plt.legend(['Raw_data', 'Median over 10', 'Median over 20'])
+        plt.ylabel('Wind Speed (m/s)', fontsize=16)
+        plt.xlabel('Time', fontsize=16)
+        plt.legend(['Raw_data', 'Median over 11', 'Median over 21'], fontsize=12)
     
         if acf_pacf_1 is True:
             plot_acf(df_wind.V_axis, lags=50)
@@ -104,6 +126,9 @@ def plot_wind_data(U: bool,
         if acf_pacf_3 is True:
             plot_acf(df_wind_3.V_axis, lags=50)
             plot_pacf(df_wind_3.V_axis, lags=50)
+        if acf_pacf_4 is True:
+            plot_acf(df_wind_4.V_axis, lags=50)
+            plot_pacf(df_wind_4.V_axis, lags=50)
 
     
     if W is True:
@@ -113,6 +138,8 @@ def plot_wind_data(U: bool,
             plt.plot(df_wind_2.W_axis)
         if file_name_3 is not None:
             plt.plot(df_wind_3.W_axis)
+        if file_name_4 is not None:
+            plt.plot(df_wind_4.W_axis)
         plt.title('W Wind speed over Time', fontsize=20)
         plt.ylabel('Wind Speed', fontsize=16)
     
@@ -125,15 +152,18 @@ def plot_wind_data(U: bool,
         if acf_pacf_3 is True:
             plot_acf(df_wind_3.W_axis, lags=50)
             plot_pacf(df_wind_3.W_axis, lags=50)
+        if acf_pacf_4 is True:
+            plot_acf(df_wind_4.W_axis, lags=50)
+            plot_pacf(df_wind_4.W_axis, lags=50)
 
     return 0
 
-plot_wind_data(U=True,
+plot_wind_data(U=False,
                V=True,
-               W=True,
+               W=False,
                file_name_1='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49.csv',
                data_freq_1=40,
-               acf_pacf_1=True,
+               acf_pacf_1=False,
                file_name_2='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_median_filtered_N_11.csv',
                data_freq_2=40,
                acf_pacf_2=False,

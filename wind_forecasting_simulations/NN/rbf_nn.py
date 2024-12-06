@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import scipy.linalg as spla
+import time
 
 class RBFNeuralNetwork:
     def __init__(self, input_dim, hidden_dim, output_dim, sigma):
@@ -11,7 +12,6 @@ class RBFNeuralNetwork:
         
         # Initialize the centers (randomly chosen initially)
         self.centers = np.random.randn(hidden_dim, input_dim)
-        print(self.centers)
         
         # Initialize the weights between hidden and output layer
         self.weights = np.random.randn(hidden_dim, output_dim)
@@ -43,17 +43,16 @@ class RBFNeuralNetwork:
         Update the model when new data (new_X, new_y) arrives using QR rank-1 update.
         """
         # Compute the RBF activation for the new sample new_X
-        new_Phi = self._calculate_activations(new_X)
-        new_Phi = new_Phi.T
+        new_Phi = self._calculate_activations(new_X.reshape(1, -1))
+        new_Phi = new_Phi.reshape(-1)
         
         self.Q, self.R = spla.qr_update(self.Q, self.R, new_Phi, new_Phi)
-        print(new_y)
-        print(new_Phi)
 
-        rhs_updated = self.b + new_y * new_Phi
-        print(rhs_updated)
+        # Update the b vector
+        self.b = self.b + new_y * new_Phi
+        rhs_updated = self.Q.T @ self.b
         # Update weights using the updated R matrix
-        self.weights = spla.solve_triangular(self.R, self.Q.T @ rhs_updated)
+        self.weights = spla.solve_triangular(self.R, rhs_updated)
     
     def predict(self, X):
         # Predict using the trained network
@@ -76,7 +75,7 @@ if __name__ == "__main__":
     # print(t)
 
     # Read Data
-    df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', usecols=[3])
+    df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', usecols=[8])
 
     series = df_wind.values.reshape(-1)
     # print(series)
@@ -101,9 +100,10 @@ if __name__ == "__main__":
     rbf_net.fit(X_initial, y_initial)
 
     # Incrementally update the RBF network with the remaining data points
+    start = time.time()
     for i in range(X_remaining.shape[0]):
-        print(X_remaining.shape[0])
         rbf_net.update(X_remaining[i], y_remaining[i])
+    print(f"Time taken for incremental update: {time.time() - start:.2f} seconds")
     
     # Make predictions
     y_pred = rbf_net.predict(X)
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     # Plot the results
     import matplotlib.pyplot as plt
     
-    plt.scatter(t, series, label='True Data')
+    plt.plot(t, series, label='True Data')
     plt.plot(t[window_size + prediction_horizon - 1:], y_pred, label='RBF Predictions', color='red')
     plt.legend()
     plt.show()

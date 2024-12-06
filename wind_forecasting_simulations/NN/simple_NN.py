@@ -22,6 +22,7 @@ def NN(file_name,
        nodes_2,
        nodes_3,
        nodes_4 ):
+    max_wind_speed = 10
     ## Read Data
     df_wind_U = pd.read_csv(f'{file_name}.csv', usecols=[7])
     df_wind_V = pd.read_csv(f'{file_name}.csv', usecols=[8])
@@ -34,14 +35,11 @@ def NN(file_name,
     dataset_W = df_wind_W.values
     dataset_W = df_wind_W.values.astype('float32')
 
-    scaler_U = MinMaxScaler(feature_range=(0, 1)) #Also try QuantileTransformer
-    scaler_V = MinMaxScaler(feature_range=(0, 1)) #Also try QuantileTransformer
-    scaler_W = MinMaxScaler(feature_range=(0, 1)) #Also try QuantileTransformer
-    dataset_U = scaler_U.fit_transform(dataset_U)
-    dataset_V = scaler_V.fit_transform(dataset_V)
-    dataset_W = scaler_W.fit_transform(dataset_W)
+    dataset_U = (dataset_U + max_wind_speed)/(2*max_wind_speed)
+    dataset_V = (dataset_V + max_wind_speed)/(2*max_wind_speed)
+    dataset_W = (dataset_W + max_wind_speed)/(2*max_wind_speed)
 
-    train_size = int(len(dataset_U) * 0.66)
+    train_size = int(len(dataset_U) * 0.99)
     train_U, test_U = dataset_U[0:train_size,:], dataset_U[train_size:len(dataset_U),:]
     train_V, test_V = dataset_V[0:train_size,:], dataset_V[train_size:len(dataset_V),:]
     train_W, test_W = dataset_W[0:train_size,:], dataset_W[train_size:len(dataset_W),:]
@@ -49,13 +47,14 @@ def NN(file_name,
     def to_sequences(dataset, seq_size=1):
         x = []
         y = []
+        y_only_ph = []
 
         for i in range(len(dataset)-seq_size-prediction_size):
-            #print(i)
-            window = dataset[i:(i+seq_size), 0]
+            window = dataset[(i+seq_size):i:-1, 0]
             x.append(window)
-            y_outputs = dataset[(i+seq_size):(i+seq_size+prediction_size), 0]
+            y_outputs = dataset[(i+seq_size+1):(i+seq_size+prediction_size+1), 0]
             y.append(y_outputs)
+            y_only_ph.append([y_outputs[-1]])
             
         return np.array(x),np.array(y)
 
@@ -69,8 +68,6 @@ def NN(file_name,
     trainX_W, trainY_W = to_sequences(train_W, seq_size)
     testX_W, testY_W = to_sequences(test_W, seq_size)
 
-    #Input dimensions are... (N x seq_size)
-    print('Build deep model...')
     # create and fit dense model
     model_U = Sequential()
     model_U.add(Dense(nodes_1, input_dim=seq_size, activation='relu')) 
@@ -87,7 +84,7 @@ def NN(file_name,
     model_U.fit(trainX_U, trainY_U, validation_data=(testX_U, testY_U),
             verbose=2, epochs=no_of_epochs)
 
-    model_U.save("model_U.keras")
+    # model_U.save("model_U.keras")
 
     model_V = Sequential()
     model_V.add(Dense(nodes_1, input_dim=seq_size, activation='relu')) 
@@ -104,7 +101,7 @@ def NN(file_name,
     model_V.fit(trainX_V, trainY_V, validation_data=(testX_V, testY_V),
             verbose=2, epochs=no_of_epochs)
 
-    model_V.save("model_V.keras")
+    # model_V.save("model_V.keras")
 
     model_W = Sequential()
     model_W.add(Dense(nodes_1, input_dim=seq_size, activation='relu')) 
@@ -121,7 +118,7 @@ def NN(file_name,
     model_W.fit(trainX_W, trainY_W, validation_data=(testX_W, testY_W),
             verbose=2, epochs=no_of_epochs)
 
-    model_W.save("model_W.keras")
+    # model_W.save("model_W.keras")
 
     trainPredict_U = model_U.predict(trainX_U)
     testPredict_U = model_U.predict(testX_U)
@@ -143,88 +140,96 @@ def NN(file_name,
     trainPredict_U = get_last_prediction(trainPredict_U, prediction_size)
     trainPredict_U = np.reshape(trainPredict_U, (-1, 1))
     trainY_U = get_last_prediction(trainY_U, prediction_size)
+    trainY_U = np.reshape(trainY_U, (1, -1))
     testPredict_U = get_last_prediction(testPredict_U, prediction_size)
     testPredict_U = np.reshape(testPredict_U, (-1, 1))
     testY_U = get_last_prediction(testY_U, prediction_size)
+    testY_U = np.reshape(testY_U, (1, -1))
 
     trainPredict_V = get_last_prediction(trainPredict_V, prediction_size)
     trainPredict_V = np.reshape(trainPredict_V, (-1, 1))
     trainY_V = get_last_prediction(trainY_V, prediction_size)
+    trainY_V = np.reshape(trainY_V, (1, -1))
     testPredict_V = get_last_prediction(testPredict_V, prediction_size)
     testPredict_V = np.reshape(testPredict_V, (-1, 1))
     testY_V = get_last_prediction(testY_V, prediction_size)
+    testY_V = np.reshape(testY_V, (1, -1))
 
     trainPredict_W = get_last_prediction(trainPredict_W, prediction_size)
     trainPredict_W = np.reshape(trainPredict_W, (-1, 1))
     trainY_W = get_last_prediction(trainY_W, prediction_size)
+    trainY_W = np.reshape(trainY_W, (1, -1))
     testPredict_W = get_last_prediction(testPredict_W, prediction_size)
     testPredict_W = np.reshape(testPredict_W, (-1, 1))
     testY_W = get_last_prediction(testY_W, prediction_size)
+    testY_W = np.reshape(testY_W, (1, -1))
 
-    # Estimate model performance
-    #SInce we used minmaxscaler we can now use scaler.inverse_transform
-    #to invert the transformation.
+    dataset_U = dataset_U * 2 * max_wind_speed - max_wind_speed
+    trainPredict_U = trainPredict_U * 2 * max_wind_speed - max_wind_speed
+    trainY_U = trainY_U * 2 * max_wind_speed - max_wind_speed
+    testPredict_U = testPredict_U * 2 * max_wind_speed - max_wind_speed
+    testY_U = testY_U * 2 * max_wind_speed - max_wind_speed
 
-    trainPredict_U = scaler_U.inverse_transform(trainPredict_U)
-    trainY_U_inverse = scaler_U.inverse_transform([trainY_U])
-    testPredict_U = scaler_U.inverse_transform(testPredict_U)
-    testY_U_inverse = scaler_U.inverse_transform([testY_U])
+    dataset_V = dataset_V * 2 * max_wind_speed - max_wind_speed
+    trainPredict_V = trainPredict_V * 2 * max_wind_speed - max_wind_speed
+    trainY_V = trainY_V * 2 * max_wind_speed - max_wind_speed
+    testPredict_V = testPredict_V * 2 * max_wind_speed - max_wind_speed
+    testY_V = testY_V * 2 * max_wind_speed - max_wind_speed
 
-    trainPredict_V = scaler_V.inverse_transform(trainPredict_V)
-    trainY_V_inverse = scaler_V.inverse_transform([trainY_V])
-    testPredict_V = scaler_V.inverse_transform(testPredict_V)
-    testY_V_inverse = scaler_V.inverse_transform([testY_V])
+    dataset_W = dataset_W * 2 * max_wind_speed - max_wind_speed
+    trainPredict_W = trainPredict_W * 2 * max_wind_speed - max_wind_speed
+    trainY_W = trainY_W * 2 * max_wind_speed - max_wind_speed
+    testPredict_W = testPredict_W * 2 * max_wind_speed - max_wind_speed
+    testY_W = testY_W * 2 * max_wind_speed - max_wind_speed
 
-    trainPredict_W = scaler_W.inverse_transform(trainPredict_W)
-    trainY_W_inverse = scaler_W.inverse_transform([trainY_W])
-    testPredict_W = scaler_W.inverse_transform(testPredict_W)
-    testY_W_inverse = scaler_W.inverse_transform([testY_W])
+    print(trainY_U)
+    print(trainPredict_U)
 
     # calculate root mean squared error
-    trainScore_U = math.sqrt(mean_squared_error(trainY_U_inverse[0], trainPredict_U[:,0]))
+    trainScore_U = math.sqrt(mean_squared_error(trainY_U[0], trainPredict_U[:,0]))
     print('Train_U Score: %.2f RMSE' % (trainScore_U))
 
-    testScore_U = math.sqrt(mean_squared_error(testY_U_inverse[0], testPredict_U[:,0]))
+    testScore_U = math.sqrt(mean_squared_error(testY_U[0], testPredict_U[:,0]))
     print('Test_U Score: %.2f RMSE' % (testScore_U))
 
-    trainScore_V = math.sqrt(mean_squared_error(trainY_V_inverse[0], trainPredict_V[:,0]))
+    trainScore_V = math.sqrt(mean_squared_error(trainY_V[0], trainPredict_V[:,0]))
     print('Train_V Score: %.2f RMSE' % (trainScore_V))
 
-    testScore_V = math.sqrt(mean_squared_error(testY_V_inverse[0], testPredict_V[:,0]))
+    testScore_V = math.sqrt(mean_squared_error(testY_V[0], testPredict_V[:,0]))
     print('Test_V Score: %.2f RMSE' % (testScore_V))
 
-    trainScore_W = math.sqrt(mean_squared_error(trainY_W_inverse[0], trainPredict_W[:,0]))
+    trainScore_W = math.sqrt(mean_squared_error(trainY_W[0], trainPredict_W[:,0]))
     print('Train_W Score: %.2f RMSE' % (trainScore_W))
 
-    testScore_W = math.sqrt(mean_squared_error(testY_W_inverse[0], testPredict_W[:,0]))
+    testScore_W = math.sqrt(mean_squared_error(testY_W[0], testPredict_W[:,0]))
     print('Test_W Score: %.2f RMSE' % (testScore_W))
 
     # shift train predictions for plotting
     #we must shift the predictions so that they align on the x-axis with the original dataset. 
     trainPredictPlot_U = np.empty_like(dataset_U)
     trainPredictPlot_U[:, :] = np.nan
-    trainPredictPlot_U[seq_size:len(trainPredict_U)+seq_size, :] = trainPredict_U
+    trainPredictPlot_U[seq_size+prediction_size:len(trainPredict_U)+seq_size+prediction_size, :] = trainPredict_U
 
     trainPredictPlot_V = np.empty_like(dataset_V)
     trainPredictPlot_V[:, :] = np.nan
-    trainPredictPlot_V[seq_size:len(trainPredict_V)+seq_size, :] = trainPredict_V
+    trainPredictPlot_V[seq_size+prediction_size:len(trainPredict_V)+seq_size+prediction_size, :] = trainPredict_V
 
     trainPredictPlot_W = np.empty_like(dataset_W)
     trainPredictPlot_W[:, :] = np.nan
-    trainPredictPlot_W[seq_size:len(trainPredict_W)+seq_size, :] = trainPredict_W
+    trainPredictPlot_W[seq_size+prediction_size:len(trainPredict_W)+seq_size+prediction_size, :] = trainPredict_W
 
     # shift test predictions for plotting
     testPredictPlot_U = np.empty_like(dataset_U)
     testPredictPlot_U[:, :] = np.nan
-    testPredictPlot_U[len(trainPredict_U)+(seq_size*2)+prediction_size:len(dataset_U)-prediction_size, :] = testPredict_U
+    testPredictPlot_U[len(trainPredict_U)+(seq_size*2)+(2*prediction_size):len(dataset_U), :] = testPredict_U
 
     testPredictPlot_V = np.empty_like(dataset_V)
     testPredictPlot_V[:, :] = np.nan
-    testPredictPlot_V[len(trainPredict_V)+(seq_size*2)+prediction_size:len(dataset_V)-prediction_size, :] = testPredict_V
+    testPredictPlot_V[len(trainPredict_V)+(seq_size*2)+(2*prediction_size):len(dataset_V), :] = testPredict_V
 
     testPredictPlot_W = np.empty_like(dataset_W)
     testPredictPlot_W[:, :] = np.nan
-    testPredictPlot_W[len(trainPredict_W)+(seq_size*2)+prediction_size:len(dataset_W)-prediction_size, :] = testPredict_W
+    testPredictPlot_W[len(trainPredict_W)+(seq_size*2)+(2*prediction_size):len(dataset_W), :] = testPredict_W
 
     # shift data for comparing plotting
     df_wind_U
@@ -236,11 +241,11 @@ def NN(file_name,
         df_wind_t_plus_prediction_step_V[i]= df_wind_V.values[i-prediction_size]
         df_wind_t_plus_prediction_step_W[i]= df_wind_W.values[i-prediction_size]
 
-    BenchmarkScore_U = math.sqrt(mean_squared_error(df_wind_U.values[:,0], df_wind_t_plus_prediction_step_U[:,0]))
+    BenchmarkScore_U = math.sqrt(mean_squared_error(df_wind_U.values, df_wind_t_plus_prediction_step_U))
     print('Benchmark_U Score: %.5f RMSE' % (BenchmarkScore_U))
-    BenchmarkScore_V = math.sqrt(mean_squared_error(df_wind_V.values[:,0], df_wind_t_plus_prediction_step_U[:,0]))
+    BenchmarkScore_V = math.sqrt(mean_squared_error(df_wind_V.values, df_wind_t_plus_prediction_step_V))
     print('Benchmark_V Score: %.5f RMSE' % (BenchmarkScore_V))
-    BenchmarkScore_W = math.sqrt(mean_squared_error(df_wind_W.values[:,0], df_wind_t_plus_prediction_step_U[:,0]))
+    BenchmarkScore_W = math.sqrt(mean_squared_error(df_wind_W.values, df_wind_t_plus_prediction_step_W))
     print('Benchmark_W Score: %.5f RMSE' % (BenchmarkScore_W))
 
     num_layers = 1
@@ -273,48 +278,48 @@ def NN(file_name,
     # plot baseline and predictions
     plt.figure(figsize=(10,4))
     plt.title('U', fontsize=20)
-    plt.plot(scaler_U.inverse_transform(dataset_U))
+    plt.plot(dataset_U)
     plt.plot(trainPredictPlot_U)
     plt.plot(testPredictPlot_U)
     # plt.plot(scaler_U.inverse_transform(dataset_t_plus_prediction_step_U))
 
     plt.figure(figsize=(10,4))
     plt.title('U Error', fontsize=20)
-    plt.plot((scaler_U.inverse_transform(dataset_U))-trainPredictPlot_U)
-    plt.plot((scaler_U.inverse_transform(dataset_U))-testPredictPlot_U)
+    plt.plot(dataset_U-trainPredictPlot_U)
+    plt.plot(dataset_U-testPredictPlot_U)
     # plt.plot((scaler_U.inverse_transform(dataset_U))-scaler.inverse_transform(dataset_t_plus_prediction_step_U))
     
 
     plt.figure(figsize=(10,4))
     plt.title('V', fontsize=20)
-    plt.plot(scaler_V.inverse_transform(dataset_V))
+    plt.plot(dataset_V)
     plt.plot(trainPredictPlot_V)
     plt.plot(testPredictPlot_V)
     # plt.plot(scaler_V.inverse_transform(dataset_t_plus_prediction_step_V))
 
     plt.figure(figsize=(10,4))
     plt.title('V Error', fontsize=20)
-    plt.plot((scaler_V.inverse_transform(dataset_V))-trainPredictPlot_V)
-    plt.plot((scaler_V.inverse_transform(dataset_V))-testPredictPlot_V)
+    plt.plot(dataset_V-trainPredictPlot_V)
+    plt.plot(dataset_V-testPredictPlot_V)
     # plt.plot((scaler_V.inverse_transform(dataset_V))-scaler.inverse_transform(dataset_t_plus_prediction_step_V))
 
 
     plt.figure(figsize=(10,4))
     plt.title('W', fontsize=20)
-    plt.plot(scaler_W.inverse_transform(dataset_W))
+    plt.plot(dataset_W)
     plt.plot(trainPredictPlot_W)
     plt.plot(testPredictPlot_W)
     # plt.plot(scaler_W.inverse_transform(dataset_t_plus_prediction_step_W))
 
     plt.figure(figsize=(10,4))
     plt.title('W Error', fontsize=20)
-    plt.plot((scaler_W.inverse_transform(dataset_W))-trainPredictPlot_W)
-    plt.plot((scaler_W.inverse_transform(dataset_W))-testPredictPlot_W)
+    plt.plot(dataset_W-trainPredictPlot_W)
+    plt.plot(dataset_W-testPredictPlot_W)
     # plt.plot((scaler_W.inverse_transform(dataset_W))-scaler.inverse_transform(dataset_t_plus_prediction_step_W))
     plt.show()
 
 # for i in range(15,101,5):
-#     NN(file_name = 'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10',
+#     NN(file_name = 'raspberry/data/wind_data/25-09-23--17_06/25-09-23--17_06_N_10',
 #         input_size = 10,
 #         prediction_horizon = 40,
 #         no_of_epochs = 10,
@@ -325,42 +330,42 @@ def NN(file_name,
 #         nodes_2 = 0,
 #         nodes_3 = 0,
 #         nodes_4 = 0 )
-    # for j in range(5,101,5):
-    #     NN(file_name = 'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10',
-    #         input_size = 10,
-    #         prediction_horizon = 40,
-    #         no_of_epochs = 10,
-    #         Layer_2 = True,
-    #         Layer_3 = False,
-    #         Layer_4 = False,
-    #         nodes_1 = i,
-    #         nodes_2 = j,
-    #         nodes_3 = 0,
-    #         nodes_4 = 0 )
-    #     for k in range(5,101,5):
-    #         NN(file_name = 'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10',
-    #             input_size = 10,
-    #             prediction_horizon = 40,
-    #             no_of_epochs = 10,
-    #             Layer_2 = True,
-    #             Layer_3 = True,
-    #             Layer_4 = False,
-    #             nodes_1 = i,
-    #             nodes_2 = j,
-    #             nodes_3 = k,
-    #             nodes_4 = 0 )
-            # for l in range(5,101,5):
-            #     NN(file_name = 'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10',
-            #         input_size = 10,
-            #         prediction_horizon = 40,
-            #         no_of_epochs = 10,
-            #         Layer_2 = True,
-            #         Layer_3 = True,
-            #         Layer_4 = True,
-            #         nodes_1 = i,
-            #         nodes_2 = j,
-            #         nodes_3 = k,
-            #         nodes_4 = l )
+#     for j in range(5,101,5):
+#         NN(file_name = 'raspberry/data/wind_data/25-09-23--17_06/25-09-23--17_06_N_10',
+#             input_size = 10,
+#             prediction_horizon = 40,
+#             no_of_epochs = 10,
+#             Layer_2 = True,
+#             Layer_3 = False,
+#             Layer_4 = False,
+#             nodes_1 = i,
+#             nodes_2 = j,
+#             nodes_3 = 0,
+#             nodes_4 = 0 )
+#         for k in range(5,101,5):
+#             NN(file_name = 'raspberry/data/wind_data/25-09-23--17_06/25-09-23--17_06_N_10',
+#                 input_size = 10,
+#                 prediction_horizon = 40,
+#                 no_of_epochs = 10,
+#                 Layer_2 = True,
+#                 Layer_3 = True,
+#                 Layer_4 = False,
+#                 nodes_1 = i,
+#                 nodes_2 = j,
+#                 nodes_3 = k,
+#                 nodes_4 = 0 )
+#             for l in range(5,101,5):
+#                 NN(file_name = 'raspberry/data/wind_data/25-09-23--17_06/25-09-23--17_06_N_10',
+#                     input_size = 10,
+#                     prediction_horizon = 40,
+#                     no_of_epochs = 10,
+#                     Layer_2 = True,
+#                     Layer_3 = True,
+#                     Layer_4 = True,
+#                     nodes_1 = i,
+#                     nodes_2 = j,
+#                     nodes_3 = k,
+#                     nodes_4 = l )
 
 
 NN(file_name = 'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10',
