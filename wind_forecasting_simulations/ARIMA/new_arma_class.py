@@ -357,9 +357,9 @@ def run_arima_model(file_name,
 # Example usage
 if __name__ == "__main__":
 
-    for i in range(21):
+    for i in range(11,21):
         for j in range(21):   
-            run_arima_model(file_name='raspberry/data/wind_data/16-09-23--18-50/16-09-23--18-50_N_10',
+            run_arima_model(file_name='raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10',
                             train_end=24000,
                             test_end=28800,
                             prediction_horizon=10,
