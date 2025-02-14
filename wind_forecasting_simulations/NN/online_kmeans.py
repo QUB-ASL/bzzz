@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import calinski_harabasz_score
@@ -42,6 +43,7 @@ class OnlineKMeans:
         self.random_state = random_state
         self.labels = None 
         self.cluster_data = defaultdict(list)
+        self.t = 0
     
     def initialise_centres(self, X):
         """
@@ -74,12 +76,11 @@ class OnlineKMeans:
             return 1 / (self.counts[cluster_idx] + 1)
         
         elif self.adaptation_rate == 'Method 5':
-            t = 0  # Time step 
             # Calculate b as given in the formula
             b = 1 / (self.n_clusters + self.counts[cluster_idx])
 
             # First term: exponential decay based on time and cluster count
-            first_term = np.exp(-self.p * ((t**2) / (self.n_clusters**3)))
+            first_term = np.exp(-self.p * ((self.t**2) / (self.n_clusters**3)))
 
             # Second term: decay based on the previous learning rate
             second_term = b * np.exp(-self.n_clusters * self.eta_prev)
@@ -89,7 +90,7 @@ class OnlineKMeans:
 
             # Update eta_prev to the current eta_t for the next iteration
             self.eta_prev = eta_t
-            t += 1
+            self.t += 1
             return eta_t
         
         else:
@@ -114,7 +115,7 @@ class OnlineKMeans:
         # Compute the Bimodality Coefficient
         bc = (g**2 + 1) / (k + 3 * ((n_points - 1)**2) / ((n_points - 2) * (n_points - 3)))
 
-        if bc > 0.555:
+        if bc > 0.6:
             self._split_cluster(cluster_idx, cluster_points)
 
     def _split_cluster(self, cluster_idx, cluster_points):
@@ -335,9 +336,9 @@ def animation(X, initial_data_end, interval=1000):
 
     # Initialize online K-means with 5 clusters
     online_kmeans = OnlineKMeans(n_clusters=5, 
-                                 adaptation_rate=0.1,
-                                #  eta_0=0.02,
-                                #  p=0.9,
+                                 adaptation_rate='Method 5',
+                                 eta_0=0.9,
+                                 p=0.1,
                                 #  momentum=0.9,
                                  random_state=42)
 
@@ -356,17 +357,21 @@ def animation(X, initial_data_end, interval=1000):
     cmap = plt.get_cmap('tab10')  # Use a set of 10 distinct colors
 
     # Set up the main figure with two subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
+    # fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
+    fig = plt.figure(figsize=(16, 8))
+    gs = gridspec.GridSpec(5, 1, height_ratios=[3, 3, 3, 2, 2]) 
+    ax1 = fig.add_subplot(gs[:3])  # Takes the first two rows
+    ax2 = fig.add_subplot(gs[3:])  # Takes the last row
 
     # Configure the PCA scatter plot (subplot 1)
-    ax1.set_xlim(-12, 20)
-    ax1.set_ylim(-12, 12)
-    ax1.set_title('Data Points and Cluster Centers in PCA Space')
-    ax1.set_xlabel('Principal Component 1')
-    ax1.set_ylabel('Principal Component 2')
-    scatter_points = ax1.scatter(X_pca[:, 0], X_pca[:, 1], c=c, cmap=cmap, edgecolor='k')
-    scatter_centers = ax1.scatter(centers_pca[:, 0], centers_pca[:, 1], s = 80 , color='yellow', label='Cluster Centers', edgecolor='darkred')
-    ax1.legend()
+    ax1.set_xlim(-11, 17)
+    ax1.set_ylim(-6, 6)
+    ax1.set_title('Data Points and Cluster Centers in PCA Space', fontsize=32)
+    ax1.set_xlabel('Principal Component 1', fontsize=23)
+    ax1.set_ylabel('Principal Component 2', fontsize=23)
+    scatter_points = ax1.scatter(X_pca[:, 0], X_pca[:, 1], s=120, c=c, cmap=cmap, edgecolor='k')
+    scatter_centers = ax1.scatter(centers_pca[:, 0], centers_pca[:, 1], s = 500, color='yellow', label='Cluster Centers', edgecolor='darkred')
+    ax1.legend(fontsize=20)
 
     def update(frame):
         ax2.clear()
@@ -378,13 +383,13 @@ def animation(X, initial_data_end, interval=1000):
         # Update the colors to match new labels
         scatter_points.set_array(online_kmeans.labels[:initial_data_end + frame])
 
-        ax2.set_title('Cluster Centers in Original Feature Space')
-        ax2.set_xlabel('Feature Index')
-        ax2.set_ylabel('Feature Value')
+        ax2.set_title('Cluster Centers in Original Feature Space', fontsize=32)
+        ax2.set_xlabel('Feature Index', fontsize=23)
+        ax2.set_ylabel('Feature Value', fontsize=23)
         ax2.set_ylim(0, 5)
         for i, center in enumerate(online_kmeans.centers):
-                ax2.plot(center, label=f'Cluster {i+1}')
-        ax2.legend(loc='upper right')
+                ax2.plot(center, label=f'Cluster {i+1}', linewidth=4)
+        ax2.legend(loc='upper right', fontsize=20)
 
         return scatter_points, scatter_centers
     
@@ -397,7 +402,7 @@ def animation(X, initial_data_end, interval=1000):
 if __name__ == "__main__":
 
     i = 0
-    split_data = 1000
+    split_data = 1200
     plot_data_every = 50
     last_data = split_data + plot_data_every
 

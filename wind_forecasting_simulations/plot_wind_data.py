@@ -158,16 +158,24 @@ def plot_wind_data(U: bool,
 
     return 0
 
-plot_wind_data(U=False,
+# plot_wind_data(U=False,
+#                V=True,
+#                W=False,
+#                file_name_1='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49.csv',
+#                data_freq_1=40,
+#                acf_pacf_1=False,
+#                file_name_2='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_median_filtered_N_11.csv',
+#                data_freq_2=40,
+#                acf_pacf_2=False,
+#                file_name_3='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_median_filtered_N_21.csv',
+#                data_freq_3=40,
+#                acf_pacf_3=False)
+
+plot_wind_data(U=True,
                V=True,
-               W=False,
-               file_name_1='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49.csv',
+               W=True,
+               file_name_1='raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv',
                data_freq_1=40,
-               acf_pacf_1=False,
-               file_name_2='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_median_filtered_N_11.csv',
-               data_freq_2=40,
-               acf_pacf_2=False,
-               file_name_3='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_median_filtered_N_21.csv',
-               data_freq_3=40,
-               acf_pacf_3=False)
+               acf_pacf_1=False)
+
 plt.show()

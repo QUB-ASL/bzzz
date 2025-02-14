@@ -25,7 +25,8 @@ class RBFNetworkQR:
                  num_centers, 
                  sigma=None, 
                  centers=None, 
-                 regulariser=None):
+                 regulariser=None,
+                 weights = None):
         """
         Initialize the RBF Network.
 
@@ -35,17 +36,24 @@ class RBFNetworkQR:
         :param regulariser: Regularization parameter
         """
         self.num_centers = num_centers
-        self.sigma = sigma
         self.centers = centers
         self.regulariser = regulariser
+        self.weights = weights
         self.Q = None
         self.R = None
-        self.weights = None
         self.b = None
         self.I = np.eye(num_centers)
         self.X = None
         self.y = None
         self.A = None
+        # If sigma is not specified, calculate it based on the distances 
+        # between centers
+        if sigma is None:
+            dists = np.linalg.norm(self.centers[:, np.newaxis] 
+                                   - self.centers, axis=2)
+            self.sigma = np.mean(dists)
+        else:
+            self.sigma = sigma
 
     def _rbf_function(self, x, center):
         """
@@ -78,19 +86,12 @@ class RBFNetworkQR:
         :param X: Input data
         :param y: Target values
         """
-        # If sigma is not specified, calculate it based on the distances 
-        # between centers
-        if self.sigma is None:
-            dists = np.linalg.norm(self.centers[:, np.newaxis] 
-                                   - self.centers, axis=2)
-            self.sigma = np.mean(dists)
-
         A = self._calculate_A(X)
         # Solve for the weights using QR decomposition
-        self.Q, self.R = np.linalg.qr(A.T @ A)
+        self.Q, self.R = np.linalg.qr(A.T @ A + self.regulariser * self.I)
         self.b = A.T @ y
         rhs = self.Q.T @ self.b
-        lhs = self.R + self.regulariser * self.I
+        lhs = self.R 
         self.weights = spla.solve_triangular(lhs, rhs)
         self.X = X
         self.y = y
@@ -118,7 +119,7 @@ class RBFNetworkQR:
             # Append a new column and row to Q and R for the new center
             a = np.zeros((self.X.shape[0], 1))
             for i in range(self.X.shape[0]):
-                 a[i] = self._rbf_function(self.X[1], updated_centers[-1])
+                 a[i] = self._rbf_function(self.X[i], updated_centers[-1])
             new_column = self.A.T @ a
             self.A = np.hstack((self.A, a))
             new_row = a.T @ self.A
@@ -127,7 +128,6 @@ class RBFNetworkQR:
             self.Q, self.R = spla.qr_insert(self.Q, self.R, new_row, self.num_centers - 1, 'row')
             new_b = a.T @ self.y
             self.b = np.append(self.b, new_b)
-            print(new_X, new_y)
 
         else:
             self.centers = updated_centers
@@ -144,7 +144,7 @@ class RBFNetworkQR:
 
         # Solve for updated weights
         rhs = self.Q.T @ self.b
-        lhs = self.R + self.regulariser * self.I
+        lhs = self.R
         self.weights = spla.solve_triangular(lhs, rhs)
 
         # Append lists
@@ -253,31 +253,47 @@ def NN(file_name,
     trainScore_W = math.sqrt(mean_squared_error(y_W, y_pred_W))
     print('trainScore_W Score: %.5f RMSE' % (trainScore_W))
 
-    with open(f'{file_name}_RBF_NN_PH_{prediction_horizon}_RMSE_U.csv',
-              "a+", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow([f'Train_U_Window_size_{window_size}_Number_of_centers_{num_centers}', trainScore_U])
+    print(f'rbf_U_centers: {U_centers}')
+    print(f'rbf_U_weights: {rbf_net_U.weights}')
 
-    with open(f'{file_name}_RBF_NN_PH_{prediction_horizon}_RMSE_V.csv',
-              "a+", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow([f'Train_V_Window_size_{window_size}_Number_of_centers_{num_centers}', trainScore_V])
+    # Generate implicit x-values
+    t = np.arange(len(series_U))
 
-    with open(f'{file_name}_RBF_NN_PH_{prediction_horizon}_RMSE_W.csv',
-              "a+", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow([f'Train_W_Window_size_{window_size}_Number_of_centers_{num_centers}', trainScore_W])
+    # Plot the true time series and the 10th step ahead predictions
+    plt.figure(figsize=(12, 6))
+    plt.plot(t, series_U, label='True Time Series', color='blue')
+    plt.plot(t[prediction_horizon + window_size:], y_pred_U, label='10th Step Ahead Prediction', color='red', linestyle='--')
+    plt.title('10th Step Ahead Time Series Prediction using RBF Neural Network (QR Decomposition)', fontsize=32)
+    plt.xlabel('Time', fontsize=23)
+    plt.ylabel('Value', fontsize=23)
+    plt.legend(fontsize=20)
+    plt.show()
+
+    # with open(f'{file_name}_RBF_NN_PH_{prediction_horizon}_RMSE_U.csv',
+    #           "a+", newline="") as f:
+    #             writer = csv.writer(f)
+    #             writer.writerow([f'Train_U_Window_size_{window_size}_Number_of_centers_{num_centers}', trainScore_U])
+
+    # with open(f'{file_name}_RBF_NN_PH_{prediction_horizon}_RMSE_V.csv',
+    #           "a+", newline="") as f:
+    #             writer = csv.writer(f)
+    #             writer.writerow([f'Train_V_Window_size_{window_size}_Number_of_centers_{num_centers}', trainScore_V])
+
+    # with open(f'{file_name}_RBF_NN_PH_{prediction_horizon}_RMSE_W.csv',
+    #           "a+", newline="") as f:
+    #             writer = csv.writer(f)
+    #             writer.writerow([f'Train_W_Window_size_{window_size}_Number_of_centers_{num_centers}', trainScore_W])
 
 # Example usage
 if __name__ == "__main__":
 
     # Parameters for training and testing
-    window_size = 15
+    window_size = 5
     prediction_horizon = 10
     number_of_initial_points = 1000
-    num_centers = 5  # Number of RBF centers
-    adaptation_rate=0.  # Adaptation rate for online K-means
-    regulariser = 0. # Regularization parameter
+    num_centers = 15  # Number of RBF centers
+    adaptation_rate= 0.0 # Adaptation rate for online K-means
+    regulariser = 0.0008 # Regularization parameter
 
     # Read Data
     df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', usecols=[8])
@@ -298,7 +314,10 @@ if __name__ == "__main__":
 
     # Initialize online K-means with 5 clusters
     online_kmeans = OnlineKMeans(n_clusters=num_centers, 
-                                 adaptation_rate=adaptation_rate, 
+                                 adaptation_rate=adaptation_rate,
+                                #  eta_0=0.9,
+                                #  p=0.1,
+                                #  momentum=0.5, 
                                  random_state=42)
     initial_centers = online_kmeans.initialise_centres(X_initial)
     
@@ -319,21 +338,41 @@ if __name__ == "__main__":
 
     BenchmarkScore_U = math.sqrt(mean_squared_error(y_predict, y_pred))
     print('Benchmark_U Score: %.5f RMSE' % (BenchmarkScore_U))
+    print(f'for window_size: {window_size} and num_centers: {num_centers} and adaptation_rate: {adaptation_rate} and regulariser: {regulariser}')
 
     # Generate implicit x-values
     t = np.arange(len(series))
 
     # Plot the true time series and the 10th step ahead predictions
     plt.figure(figsize=(12, 6))
-    plt.plot(t, series, label='True Time Series', color='blue')
-    plt.plot(t[number_of_initial_points + 2*prediction_horizon + window_size:], y_pred, label='10th Step Ahead Prediction', color='red', linestyle='--')
-    plt.title('10th Step Ahead Time Series Prediction using RBF Neural Network (QR Decomposition)')
-    plt.xlabel('Time')
-    plt.ylabel('Value')
-    plt.legend()
+    plt.plot(t, series, label='True Time Series', color='black', linewidth=4)
+    plt.plot(t[10:], series[0:-10], label='Persistence Method', color='blue', linestyle='--', linewidth=2)
+    plt.plot(t[number_of_initial_points + 2*prediction_horizon + window_size:], y_pred, label='RBF NN Method', color='red', linestyle='--', linewidth=4)
+    plt.title('10th Step Ahead Time Series Prediction using RBF NN (updating) VS Persistence', fontsize=32)
+    plt.xlabel('Time Step', fontsize=23)
+    plt.ylabel('Wind Speed (m/s)', fontsize=23)
+    plt.legend(fontsize=20)
     plt.show()
 
     
+    # for i in range(5,101,5):
+    #     for j in range(5,101,5):
+            # NN(file_name = 'raspberry/data/wind_data/16-09-23--18-35/16-09-23--18-35_N_10',
+            # window_size = 5,
+            # num_centers = 15,
+            # adaptation_rate = 0.0,
+            # regulariser =0,
+            # prediction_horizon = 10)
+
+    # for i in range(5,101,5):
+    #     for j in range(5,101,5):
+    #         NN(file_name = 'raspberry/data/wind_data/16-09-23--18-50/16-09-23--18-50_N_10',
+    #         window_size = j,
+    #         num_centers = i,
+    #         adaptation_rate = 0.0,
+    #         regulariser =0,
+    #         prediction_horizon = 10)
+
     # for i in range(5,101,5):
     #     for j in range(5,101,5):
     #         NN(file_name = 'raspberry/data/wind_data/25-09-23--17-06/25-09-23--17-06_N_10',
@@ -342,4 +381,85 @@ if __name__ == "__main__":
     #         adaptation_rate = 0.0,
     #         regulariser =0,
     #         prediction_horizon = 10)
+
+
+    #     # Parameters for training and testing
+    # window_size = 5
+    # prediction_horizon = 10
+    # number_of_initial_points = 1000
+    # num_centers = 15  # Number of RBF centers
+    # adaptation_rate=0.  # Adaptation rate for online K-means
+    # regulariser = 0 # Regularization parameter
+
+    # # Read Data
+    # df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', usecols=[8])
+
+    # series = df_wind.values.reshape(-1)
+
+    # # Prepare the time series data for RBF network
+    # X, y = prepare_time_series_data(series, window_size, prediction_horizon)
+
+    # # Split the data: first number of initial points for initial fit, 
+    # # rest for updates
+    # # X_initial = X[:number_of_initial_points]
+    # # y_initial = y[:number_of_initial_points]
+    # # X_update = X[number_of_initial_points:]
+    # # y_update = y[number_of_initial_points:]
+    # # X_predict = X[number_of_initial_points + prediction_horizon:]
+    # # y_predict = y[number_of_initial_points + prediction_horizon:]
+
+    # # Initialize online K-means with 5 clusters
+    # # online_kmeans = OnlineKMeans(n_clusters=num_centers, 
+    # #                              adaptation_rate=adaptation_rate, 
+    # #                              random_state=42)
+    # # initial_centers = online_kmeans.initialise_centres(X_initial)
+
+    # rbf_centers = np.array([[-0.20972233, -0.2075368,  -0.20699677, -0.20798667, -0.21016227],
+    #                 [1.89863988, 1.89980074, 1.90048287, 1.90000685, 1.89857222],
+    #                 [-1.44886963, -1.45559866, -1.45785451, -1.45542487, -1.44849511],
+    #                 [4.12300518, 4.14316454, 4.14997769, 4.14235578, 4.12118884],
+    #                 [-0.58886111, -0.58867664, -0.58850176, -0.58816616, -0.58827087],
+    #                 [0.61804511, 0.6147604,  0.61399737, 0.61528543, 0.61846244],
+    #                 [3.3329001,  3.34601816, 3.35037454, 3.34577901, 3.33216633],
+    #                 [1.49516368, 1.49328723, 1.49279968, 1.49365202, 1.49568017],
+    #                 [-1.02574085, -1.02898248, -1.03007778, -1.02914034, -1.02621726],
+    #                 [0.1966223,  0.19444408,  0.19356163,  0.19399402,  0.19615315],
+    #                 [2.30409389, 2.30806527, 2.30891348, 2.30738084, 2.30362371],
+    #                 [-1.95683855, -1.96699022, -1.97060372, -1.96761252, -1.95811761],
+    #                 [1.07230902, 1.06854207, 1.06710083, 1.06845743, 1.07230768],
+    #                 [-2.75216366, -2.76677145, -2.771969, -2.76638428, -2.75015501],
+    #                 [2.76905847, 2.77678981, 2.77961552, 2.77726856, 2.76999329]])
+    
+    # rbf_U_weights = np.array([-39901.42706735, 26679.39879257, -53194.04270865, 349.73791859,
+    #                 20497.29098497, 29690.58036054, -485.92401118, -75410.08776215,
+    #                 48727.82676702, -22543.52337223, 10329.81264644, 17641.92606364,
+    #                 45169.37478822, -1501.99054145, -6047.44779433])
+    
+    # # Initialize and train the RBF network using QR decomposition
+    # rbf_net = RBFNetworkQR(num_centers=num_centers, 
+    #                        centers=rbf_centers,
+    #                        regulariser=regulariser,
+    #                         weights=rbf_U_weights)
+    # # rbf_net.fit(X_initial, y_initial)
+
+    # # Incrementally update the RBF network with the remaining data points
+    # y_pred = []
+    # for i in range(X.shape[0]):
+    #     y_pred.append(rbf_net.predict(X[i].reshape(1, -1))[0])
+
+    # BenchmarkScore_U = math.sqrt(mean_squared_error(y, y_pred))
+    # print('Benchmark_U Score: %.5f RMSE' % (BenchmarkScore_U))
+
+    # # Generate implicit x-values
+    # t = np.arange(len(series))
+
+    # # Plot the true time series and the 10th step ahead predictions
+    # plt.figure(figsize=(12, 6))
+    # plt.plot(t, series, label='True Time Series', color='black', linewidth=4)
+    # plt.plot(t[prediction_horizon + window_size:], y_pred, label='10th Step Ahead Prediction', color='red', linestyle='--', linewidth=4)
+    # plt.title('10th Step Ahead Time Series Prediction using RBF Neural Network', fontsize=32)
+    # plt.xlabel('Time Step', fontsize=23)
+    # plt.ylabel('Wind Speed (m/s)', fontsize=23)
+    # plt.legend(fontsize=20)
+    # plt.show()
     

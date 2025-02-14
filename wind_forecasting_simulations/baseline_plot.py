@@ -4,15 +4,14 @@ import numpy as np
 import seaborn as sns
 
 def plot_persistence_method(file_name,
-                            prediction_horizon_1,
-                            prediction_horizon_2,):
+                            prediction_horizon_1,):
     sample_time = 0.025
     time_ph_1 = prediction_horizon_1 * sample_time
-    time_ph_2 = prediction_horizon_2 * sample_time
+#     time_ph_2 = prediction_horizon_2 * sample_time
     t_minus_ph_1 = pd.Series()
-    t_minus_ph_2 = pd.Series()
+#     t_minus_ph_2 = pd.Series()
     error_ph_1 = pd.Series()
-    error_ph_2 = pd.Series()
+#     error_ph_2 = pd.Series()
 
     #read data
     df_wind = pd.read_csv(file_name)
@@ -24,44 +23,43 @@ def plot_persistence_method(file_name,
             t_minus_ph_1[df_wind.index[x+prediction_horizon_1]] = df_wind.V_axis[x]
             error_ph_1[df_wind.index[x]] = np.sqrt((df_wind.V_axis[x+prediction_horizon_1] - t_minus_ph_1[x])**2)
     
-    for x in range(len(df_wind)-prediction_horizon_2):
-            t_minus_ph_2[df_wind.index[x+prediction_horizon_2]] = df_wind.V_axis[x]
-            error_ph_2[df_wind.index[x]] = np.sqrt((df_wind.V_axis[x+prediction_horizon_2] - t_minus_ph_2[x])**2)
+#     for x in range(len(df_wind)-prediction_horizon_2):
+#             t_minus_ph_2[df_wind.index[x+prediction_horizon_2]] = df_wind.V_axis[x]
+#             error_ph_2[df_wind.index[x]] = np.sqrt((df_wind.V_axis[x+prediction_horizon_2] - t_minus_ph_2[x])**2)
 
     RMSE_ph_1 = np.sqrt(np.mean((df_wind.V_axis - t_minus_ph_1)**2))
     print(f'RMSE for t minus {prediction_horizon_1} is {RMSE_ph_1}')
-    RMSE_ph_2 = np.sqrt(np.mean((df_wind.V_axis - t_minus_ph_2)**2))
-    print(f'RMSE for t minus {prediction_horizon_2} is {RMSE_ph_2}')
+#     RMSE_ph_2 = np.sqrt(np.mean((df_wind.V_axis - t_minus_ph_2)**2))
+#     print(f'RMSE for t minus {prediction_horizon_2} is {RMSE_ph_2}')
 
     quantile_error_ph_1 = np.quantile(error_ph_1, 0.95)
     print(f'Quantile Error: {quantile_error_ph_1}')
-    quantile_error_ph_2 = np.quantile(error_ph_2, 0.95)
-    print(f'Quantile Error: {quantile_error_ph_2}')
+#     quantile_error_ph_2 = np.quantile(error_ph_2, 0.95)
+#     print(f'Quantile Error: {quantile_error_ph_2}')
 
 
     plt.figure(figsize=(10,4))
-    plt.plot(df_wind.V_axis, label='wind speed', color='black')
-    plt.plot(t_minus_ph_1, label=f'Persistence prediction using t minus {prediction_horizon_1}-steps ({time_ph_1} seconds)', color='blue')
-    plt.plot(t_minus_ph_2, label=f'Persistence prediction using t minus {prediction_horizon_2}-steps ({time_ph_2} seconds)', color='red')
-    plt.title('Persistence prediction of wind speed over time', fontsize=20)
-    plt.legend(fontsize=12)
-    plt.ylabel('Wind Speed (m/s)', fontsize=16)
-    plt.xlabel('Time', fontsize=16)
+    plt.plot(df_wind.V_axis, label='wind speed', color='blue', linewidth=2)
+    plt.plot(t_minus_ph_1, label=f'Persistence prediction using t minus {prediction_horizon_1}-steps ({time_ph_1} seconds)', color='red', linestyle='--', linewidth=2)
+#     plt.plot(t_minus_ph_2, label=f'Persistence prediction using t minus {prediction_horizon_2}-steps ({time_ph_2} seconds)', color='red')
+    plt.title('Persistence prediction of wind speed over time', fontsize=32)
+    plt.legend(fontsize=20)
+    plt.ylabel('Wind Speed (m/s)', fontsize=23)
+    plt.xlabel('Time', fontsize=23)
 
     plt.figure(figsize=(10,4))
     sns.distplot(error_ph_1, hist=False, color='blue')
-    sns.distplot(error_ph_2, hist=False, color='red')
+#     sns.distplot(error_ph_2, hist=False, color='red')
     plt.plot([RMSE_ph_1, RMSE_ph_1], [0, 1], color='darkblue')
-    plt.plot([RMSE_ph_2, RMSE_ph_2], [0, 1], color='firebrick')
-    plt.text(RMSE_ph_1, 0.5, f'RMSE: {RMSE_ph_1:.2f}', color='darkblue', fontsize=12, ha='center')
-    plt.text(RMSE_ph_2, 0.5, f'RMSE: {RMSE_ph_2:.2f}', color='firebrick', fontsize=12, ha='center')
+#     plt.plot([RMSE_ph_2, RMSE_ph_2], [0, 1], color='firebrick')
+    plt.text(RMSE_ph_1, 0.5, f'RMSE: {RMSE_ph_1:.2f}', color='darkblue', fontsize=20, ha='center')
+#     plt.text(RMSE_ph_2, 0.5, f'RMSE: {RMSE_ph_2:.2f}', color='firebrick', fontsize=12, ha='center')
     plt.plot([quantile_error_ph_1, quantile_error_ph_1], [0, 1], color='darkblue')
-    plt.plot([quantile_error_ph_2, quantile_error_ph_2], [0, 1], color='firebrick')
-    plt.text(quantile_error_ph_1, 0.5, f'95% Quantile \n Error: {quantile_error_ph_1:.2f}', color='darkblue', fontsize=12, ha='center')
-    plt.text(quantile_error_ph_2, 0.5, f'95% Quantile \n Error: {quantile_error_ph_2:.2f}', color='firebrick', fontsize=12, ha='center')
+#     plt.plot([quantile_error_ph_2, quantile_error_ph_2], [0, 1], color='firebrick')
+    plt.text(quantile_error_ph_1, 0.5, f'95% Quantile \n Error: {quantile_error_ph_1:.2f}', color='darkblue', fontsize=20, ha='center')
+#     plt.text(quantile_error_ph_2, 0.5, f'95% Quantile \n Error: {quantile_error_ph_2:.2f}', color='firebrick', fontsize=12, ha='center')
     plt.title(f'Probability Density Error of the Persistence predictions', fontsize=20)
-    plt.legend((f'Error of Persistence prediction using t minus {prediction_horizon_1}-steps ({time_ph_1} seconds)',
-                f'Error of Persistence prediction using t minus {prediction_horizon_2}-steps ({time_ph_2} seconds)'), fontsize=12)
+    plt.legend((f'Error of Persistence prediction using t minus {prediction_horizon_1}-steps ({time_ph_1} seconds)'), fontsize=12)
     plt.ylabel('Probability Density', fontsize=16)
     plt.xlabel('Error (m/s)', fontsize=16)
     
@@ -92,10 +90,10 @@ def assume_average_wind_speed(file_name):
     plt.figure(figsize=(10,4))
     plt.plot(df_wind.V_axis, label='wind speed', color='black')
     plt.plot(average_wind_speed, label=f'Average wind speed', color='blue')
-    plt.title('Average wind speed over time', fontsize=20)
-    plt.legend(fontsize=12)
-    plt.ylabel('Wind Speed (m/s)', fontsize=16)
-    plt.xlabel('Time', fontsize=16)
+    plt.title('Average wind speed over time', fontsize=32)
+    plt.legend(fontsize=20)
+    plt.ylabel('Wind Speed (m/s)', fontsize=23)
+    plt.xlabel('Time', fontsize=23)
 
     plt.figure(figsize=(10,4))
     sns.distplot(error, hist=False, color='blue')
@@ -103,14 +101,14 @@ def assume_average_wind_speed(file_name):
     plt.text(RMSE, 0.5, f'RMSE: {RMSE:.2f}', color='darkblue', fontsize=12, ha='center')
     plt.plot([quantile_error, quantile_error], [0, 1], color='darkblue')
     plt.text(quantile_error, 0.5, f'95% Quantile \n Error: {quantile_error:.2f}', color='darkblue', fontsize=12, ha='center')
-    plt.title(f'Probability Density Error of the Average wind speed', fontsize=20)
-    plt.legend(('Error of Average wind speed'), fontsize=12)
-    plt.ylabel('Probability Density', fontsize=16)
-    plt.xlabel('Error (m/s)', fontsize=16)
+    plt.title(f'Probability Density Error of the Average wind speed', fontsize=32)
+    plt.legend(('Error of Average wind speed'), fontsize=20)
+    plt.ylabel('Probability Density', fontsize=23)
+    plt.xlabel('Error (m/s)', fontsize=23)
     
     plt.show()
 
 
 
-# plot_persistence_method('raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv', 10, 40)
-assume_average_wind_speed('raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv')
+plot_persistence_method('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', 10)
+# assume_average_wind_speed('raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv')
