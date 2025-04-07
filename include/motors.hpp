@@ -18,6 +18,11 @@ namespace bzzz
         Servo m_backLeftEsc;   // create servo object to control back left ESC
         Servo m_backRightEsc;  // create servo object to control back right ESC
 
+        #if UAV_TYPE == UAV_TYPE_HEXACOPTER
+        Servo m_middleLeftEsc;    // create servo object to control middle left ESC
+        Servo m_middleRightEsc;   // create servo object to control middle right ESC
+        #endif
+
     public:
         /**
          * Construct a new torque system
@@ -36,12 +41,24 @@ namespace bzzz
          * @param rotor_speed_front_right set motor speed for FRONT_RIGHT_ESC_PIN
          * @param rotor_speed_back_left set motor speed for BACK_LEFT_ESC_PIN
          * @param rotor_speed_back_right set motor speed for BACK_RIGHT_ESC_PIN
+         * @param rotor_speed_middle_left set motor speed for MIDDLE_LEFT_ESC_PIN
+         * @param rotor_speed_middle_right set motor speed for MIDDLE_RIGHT_ESC_PIN
          */
+        #if UAV_TYPE == UAV_TYPE_HEXACOPTER
+        void writeSpeedToEsc(
+            int rotor_speed_front_left,
+            int rotor_speed_front_right,
+            int rotor_speed_back_left,
+            int rotor_speed_back_right,
+            int rotor_speed_middle_left,
+            int rotor_speed_middle_right);
+        #else
         void writeSpeedToEsc(
             int rotor_speed_front_left,
             int rotor_speed_front_right,
             int rotor_speed_back_left,
             int rotor_speed_back_right);
+        #endif
 
         /**
          * @brief disarm all motors

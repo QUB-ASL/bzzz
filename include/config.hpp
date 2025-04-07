@@ -3,9 +3,10 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+// UAV Type Selection
 #define UAV_TYPE_QUADCOPTER 1
 #define UAV_TYPE_HEXACOPTER 2
-#define UAV_TYPE UAV_TYPE_HEXACOPTER
+#define UAV_TYPE UAV_TYPE_HEXACOPTER  // <- Change this to UAV_TYPE_QUADCOPTER if needed
 
 /**
  * Timer config
@@ -49,12 +50,12 @@
     #define BACK_LEFT_ESC_PIN 27
     #define BACK_RIGHT_ESC_PIN 26
 #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
-    #define NE_ESC_PIN 0
-    #define NW_ESC_PIN 0
-    #define E_ESC_PIN 0
-    #define W_ESC_PIN 0
-    #define SE_ESC_PIN 0
-    #define SW_ESC_PIN 0
+    #define FRONT_LEFT_ESC_PIN 25
+    #define FRONT_RIGHT_ESC_PIN 33
+    #define BACK_LEFT_ESC_PIN 27
+    #define BACK_RIGHT_ESC_PIN 26
+    #define MIDDLE_LEFT_ESC_PIN 23   // temporary pin placement
+    #define MIDDLE_RIGHT_ESC_PIN 22  // temporary pin placement
 #endif
 
 #define ARM_ROTOR_SPEED 900
@@ -111,7 +112,7 @@
 
 /**
  * Fail-safe config
-*/
+ */
 #define TX_CONNECTION_TIMEOUT_IN_uS 500000
 #define UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms 3000
 

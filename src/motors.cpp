@@ -1,58 +1,89 @@
 #include "motors.hpp"
 
-namespace bzzz
+using namespace bzzz;
+
+MotorDriver::MotorDriver() {}
+
+void MotorDriver::attachEscToPwmPin(void)
 {
+    m_frontLeftEsc.attach(FRONT_LEFT_ESC_PIN, -1, 0, 180, ABSOLUTE_MIN_PWM, ABSOLUTE_MAX_PWM);
+    m_frontRightEsc.attach(FRONT_RIGHT_ESC_PIN, -1, 0, 180, ABSOLUTE_MIN_PWM, ABSOLUTE_MAX_PWM);
+    m_backLeftEsc.attach(BACK_LEFT_ESC_PIN, -1, 0, 180, ABSOLUTE_MIN_PWM, ABSOLUTE_MAX_PWM);
+    m_backRightEsc.attach(BACK_RIGHT_ESC_PIN, -1, 0, 180, ABSOLUTE_MIN_PWM, ABSOLUTE_MAX_PWM);
 
-    MotorDriver::MotorDriver(){};
+#if UAV_TYPE == UAV_TYPE_HEXACOPTER
+    m_middleLeftEsc.attach(MIDDLE_LEFT_ESC_PIN, -1, 0, 180, ABSOLUTE_MIN_PWM, ABSOLUTE_MAX_PWM);
+    m_middleRightEsc.attach(MIDDLE_RIGHT_ESC_PIN, -1, 0, 180, ABSOLUTE_MIN_PWM, ABSOLUTE_MAX_PWM);
+#endif
+}
 
-    void MotorDriver::attachEscToPwmPin(void)
-    {
-        m_frontLeftEsc.attach(FRONT_LEFT_ESC_PIN, -1, 0, 180, ABSOLUTE_MIN_PWM, ABSOLUTE_MAX_PWM);
-        m_frontRightEsc.attach(FRONT_RIGHT_ESC_PIN, -1, 0, 180, ABSOLUTE_MIN_PWM, ABSOLUTE_MAX_PWM);
-        m_backLeftEsc.attach(BACK_LEFT_ESC_PIN, -1, 0, 180, ABSOLUTE_MIN_PWM, ABSOLUTE_MAX_PWM);
-        m_backRightEsc.attach(BACK_RIGHT_ESC_PIN, -1, 0, 180, ABSOLUTE_MIN_PWM, ABSOLUTE_MAX_PWM);
-    }
+#if UAV_TYPE == UAV_TYPE_HEXACOPTER
+void MotorDriver::writeSpeedToEsc(
+    int rotorSpeedFrontLeft,
+    int rotorSpeedFrontRight,
+    int rotorSpeedBackLeft,
+    int rotorSpeedBackRight,
+    int rotorSpeedMiddleLeft,
+    int rotorSpeedMiddleRight)
+{
+    m_frontLeftEsc.writeMicroseconds(rotorSpeedFrontLeft);
+    m_frontRightEsc.writeMicroseconds(rotorSpeedFrontRight);
+    m_backLeftEsc.writeMicroseconds(rotorSpeedBackLeft);
+    m_backRightEsc.writeMicroseconds(rotorSpeedBackRight);
+    m_middleLeftEsc.writeMicroseconds(rotorSpeedMiddleLeft);
+    m_middleRightEsc.writeMicroseconds(rotorSpeedMiddleRight);
+}
+#else
+void MotorDriver::writeSpeedToEsc(
+    int rotorSpeedFrontLeft,
+    int rotorSpeedFrontRight,
+    int rotorSpeedBackLeft,
+    int rotorSpeedBackRight)
+{
+    m_frontLeftEsc.writeMicroseconds(rotorSpeedFrontLeft);
+    m_frontRightEsc.writeMicroseconds(rotorSpeedFrontRight);
+    m_backLeftEsc.writeMicroseconds(rotorSpeedBackLeft);
+    m_backRightEsc.writeMicroseconds(rotorSpeedBackRight);
+}
+#endif
 
-    void MotorDriver::writeSpeedToEsc(int rotorSpeedFrontLeft, int rotorSpeedFrontRight,
-                                      int rotorSpeedBackLeft, int rotorSpeedBackRight)
-    {
-        m_frontLeftEsc.writeMicroseconds(rotorSpeedFrontLeft);   // sets the ESC speed
-        m_frontRightEsc.writeMicroseconds(rotorSpeedFrontRight); // sets the ESC speed
-        m_backLeftEsc.writeMicroseconds(rotorSpeedBackLeft);     // sets the ESC speed
-        m_backRightEsc.writeMicroseconds(rotorSpeedBackRight);   // sets the ESC speed
-    };
+void MotorDriver::disarm(void)
+{
+    m_frontLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
+    m_frontRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
+    m_backLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
+    m_backRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
 
-    void MotorDriver::disarm(void)
-    {
-        m_armStatus = 0;
-        m_frontLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);  // stop the motors. sets the ESC speed to ZERO_ROTOR_SPEED
-        m_frontRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED); // stop the motors. sets the ESC speed to ZERO_ROTOR_SPEED
-        m_backLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);   // stop the motors. sets the ESC speed to ZERO_ROTOR_SPEED
-        m_backRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);  // stop the motors. sets the ESC speed to ZERO_ROTOR_SPEED
-    };
+#if UAV_TYPE == UAV_TYPE_HEXACOPTER
+    m_middleLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
+    m_middleRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
+#endif
 
-    void MotorDriver::arm(void)
-    {
-        m_armStatus = 1;
-        m_frontLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);  // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED
-        m_frontRightEsc.writeMicroseconds(ARM_ROTOR_SPEED); // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED
-        m_backLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);   // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED
-        m_backRightEsc.writeMicroseconds(ARM_ROTOR_SPEED);  // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED
-        delay(100);
-    };
+    m_armStatus = false;
+}
 
-    bool MotorDriver::getArmStatus(void)
-    {
-        return m_armStatus;
-    };
+void MotorDriver::arm(void)
+{
+    m_frontLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);
+    m_frontRightEsc.writeMicroseconds(ARM_ROTOR_SPEED);
+    m_backLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);
+    m_backRightEsc.writeMicroseconds(ARM_ROTOR_SPEED);
 
-    void MotorDriver::attachAndArm()
-    {
-        delay(1500);
-        attachEscToPwmPin();
-        delay(1500);
-        arm();       // arm the motors
-        delay(5000); // Note that RC_ESC recommends a delay of 5000 ms after arming
-    }
+#if UAV_TYPE == UAV_TYPE_HEXACOPTER
+    m_middleLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);
+    m_middleRightEsc.writeMicroseconds(ARM_ROTOR_SPEED);
+#endif
 
+    m_armStatus = true;
+}
+
+bool MotorDriver::getArmStatus(void)
+{
+    return m_armStatus;
+}
+
+void MotorDriver::attachAndArm()
+{
+    attachEscToPwmPin();
+    arm();
 }
