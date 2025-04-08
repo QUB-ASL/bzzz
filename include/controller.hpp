@@ -88,8 +88,11 @@ the RC.
             int &motorFR,
             int &motorBL,
             int &motorBR,
-            int &motorML,    // adding for new motor middle left
-            int &motorMR,    // adding for new motor middle right
+            // when using hexacopter...
+        #if UAV_TYPE == UAV_TYPE_HEXACOPTER
+            int &motorML,
+            int &motorMR,
+        #endif
             float controlToPwmScaling = U_TO_PWM,
             int motorClipLow = ZERO_ROTOR_SPEED,
             int motorClipHigh = ABSOLUTE_MAX_PWM);

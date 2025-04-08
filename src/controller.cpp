@@ -42,8 +42,10 @@ namespace bzzz
         int &motorFR,
         int &motorBL,
         int &motorBR,
-        int &motorML,    // adding for new motor middle left
-        int &motorMR,    // adding for new motor middle right
+        #if UAV_TYPE == UAV_TYPE_HEXACOPTER
+        int &motorML,   // adding for new motor middle left
+        int &motorMR,   // adding for new motor middle right
+    #endif    
         float controlToPwmScaling,
         int motorClipLow,
         int motorClipHigh)
@@ -56,15 +58,20 @@ namespace bzzz
         int mFR = throttle + controlToPwmScaling * (-controls[0] + controls[1] - controls[2]);
         int mBL = throttle + controlToPwmScaling * (controls[0] - controls[1] - controls[2]);
         int mBR = throttle + controlToPwmScaling * (-controls[0] - controls[1] + controls[2]);
-        int mML = throttle + controlToPwmScaling * (-controls[0]              - controls[2]); // adding for new motor middle left
-        int mMR = throttle + controlToPwmScaling * (+controls[0]               + controls[2]); // adding for new motor middle right
         // clip motor signals between motorClipLow and motorClipHigh
         motorFL = clip(mFL, motorClipLow, motorClipHigh);
         motorFR = clip(mFR, motorClipLow, motorClipHigh);
         motorBL = clip(mBL, motorClipLow, motorClipHigh);
         motorBR = clip(mBR, motorClipLow, motorClipHigh);
-        motorML = clip(mML, motorClipLow, motorClipHigh); // adding for new motor middle left
-        motorMR = clip(mMR, motorClipLow, motorClipHigh); // adding for new motor middle right
+
+        #if UAV_TYPE == UAV_TYPE_HEXACOPTER
+        // compute motor signals from control actions (and cast float as int)
+        int mML = throttle + controlToPwmScaling * (-controls[0] - controls[2]);
+        int mMR = throttle + controlToPwmScaling * ( controls[0] + controls[2]);
+        // clip motor signals between motorClipLow and motorClipHigh
+        motorML = clip(mML, motorClipLow, motorClipHigh);
+        motorMR = clip(mMR, motorClipLow, motorClipHigh);
+    #endif
     }
 
 #ifdef BZZZ_DEBUG
