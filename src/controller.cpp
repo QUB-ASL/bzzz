@@ -42,6 +42,8 @@ namespace bzzz
         int &motorFR,
         int &motorBL,
         int &motorBR,
+        int &motorML,    // adding for new motor middle left
+        int &motorMR,    // adding for new motor middle right
         float controlToPwmScaling,
         int motorClipLow,
         int motorClipHigh)
@@ -54,11 +56,15 @@ namespace bzzz
         int mFR = throttle + controlToPwmScaling * (-controls[0] + controls[1] - controls[2]);
         int mBL = throttle + controlToPwmScaling * (controls[0] - controls[1] - controls[2]);
         int mBR = throttle + controlToPwmScaling * (-controls[0] - controls[1] + controls[2]);
+        int mML = throttle + controlToPwmScaling * (-controls[0]              - controls[2]); // adding for new motor middle left
+        int mMR = throttle + controlToPwmScaling * (+controls[0]               + controls[2]); // adding for new motor middle right
         // clip motor signals between motorClipLow and motorClipHigh
         motorFL = clip(mFL, motorClipLow, motorClipHigh);
         motorFR = clip(mFR, motorClipLow, motorClipHigh);
         motorBL = clip(mBL, motorClipLow, motorClipHigh);
         motorBR = clip(mBR, motorClipLow, motorClipHigh);
+        motorML = clip(mML, motorClipLow, motorClipHigh); // adding for new motor middle left
+        motorMR = clip(mMR, motorClipLow, motorClipHigh); // adding for new motor middle right
     }
 
 #ifdef BZZZ_DEBUG

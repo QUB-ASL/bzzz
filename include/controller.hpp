@@ -73,6 +73,8 @@ the RC.
          * @param motorFR signal to front right motor
          * @param motorBL  signal to back left motor
          * @param motorBR signal to back right motor
+         * @param motorML signal to middle left motor
+         * @param motorMR signal to middle right motor
          * @param controlToPwmScaling (optional) scaling parameter
          * @param motorClipLow (optional) lowest value of motor signal [default: 1000]
          * @param motorClipHigh highest value of motor signal [default: 2000]
@@ -86,6 +88,8 @@ the RC.
             int &motorFR,
             int &motorBL,
             int &motorBR,
+            int &motorML,    // adding for new motor middle left
+            int &motorMR,    // adding for new motor middle right
             float controlToPwmScaling = U_TO_PWM,
             int motorClipLow = ZERO_ROTOR_SPEED,
             int motorClipHigh = ABSOLUTE_MAX_PWM);
