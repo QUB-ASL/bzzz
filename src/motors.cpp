@@ -26,12 +26,12 @@ void MotorDriver::writeSpeedToEsc(
     int rotorSpeedMiddleLeft,
     int rotorSpeedMiddleRight)
 {
-    m_frontLeftEsc.writeMicroseconds(rotorSpeedFrontLeft);
-    m_frontRightEsc.writeMicroseconds(rotorSpeedFrontRight);
-    m_backLeftEsc.writeMicroseconds(rotorSpeedBackLeft);
-    m_backRightEsc.writeMicroseconds(rotorSpeedBackRight);
-    m_middleLeftEsc.writeMicroseconds(rotorSpeedMiddleLeft);
-    m_middleRightEsc.writeMicroseconds(rotorSpeedMiddleRight);
+    m_frontLeftEsc.writeMicroseconds(rotorSpeedFrontLeft);     // sets the ESC speed
+    m_frontRightEsc.writeMicroseconds(rotorSpeedFrontRight);   // sets the ESC speed
+    m_backLeftEsc.writeMicroseconds(rotorSpeedBackLeft);       // sets the ESC speed
+    m_backRightEsc.writeMicroseconds(rotorSpeedBackRight);     // sets the ESC speed
+    m_middleLeftEsc.writeMicroseconds(rotorSpeedMiddleLeft);   // sets the ESC speed
+    m_middleRightEsc.writeMicroseconds(rotorSpeedMiddleRight); // sets the ESC speed
 }
 #else
 void MotorDriver::writeSpeedToEsc(
@@ -40,23 +40,23 @@ void MotorDriver::writeSpeedToEsc(
     int rotorSpeedBackLeft,
     int rotorSpeedBackRight)
 {
-    m_frontLeftEsc.writeMicroseconds(rotorSpeedFrontLeft);
-    m_frontRightEsc.writeMicroseconds(rotorSpeedFrontRight);
-    m_backLeftEsc.writeMicroseconds(rotorSpeedBackLeft);
-    m_backRightEsc.writeMicroseconds(rotorSpeedBackRight);
+    m_frontLeftEsc.writeMicroseconds(rotorSpeedFrontLeft);     // sets the ESC speed
+    m_frontRightEsc.writeMicroseconds(rotorSpeedFrontRight);   // sets the ESC speed
+    m_backLeftEsc.writeMicroseconds(rotorSpeedBackLeft);       // sets the ESC speed
+    m_backRightEsc.writeMicroseconds(rotorSpeedBackRight);     // sets the ESC speed
 }
 #endif
 
 void MotorDriver::disarm(void)
 {
-    m_frontLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
-    m_frontRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
-    m_backLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
-    m_backRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
+    m_frontLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);     // stop the motors. sets the ESC speed to ZERO_ROTOR_SPEED
+    m_frontRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);    // stop the motors. sets the ESC speed to ZERO_ROTOR_SPEED
+    m_backLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);      // stop the motors. sets the ESC speed to ZERO_ROTOR_SPEED
+    m_backRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);     // stop the motors. sets the ESC speed to ZERO_ROTOR_SPEED
 
 #if UAV_TYPE == UAV_TYPE_HEXACOPTER
-    m_middleLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
-    m_middleRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);
+    m_middleLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);    // stop the motors. sets the ESC speed to ZERO_ROTOR_SPEED
+    m_middleRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);   // stop the motors. sets the ESC speed to ZERO_ROTOR_SPEED
 #endif
 
     m_armStatus = false;
@@ -64,14 +64,14 @@ void MotorDriver::disarm(void)
 
 void MotorDriver::arm(void)
 {
-    m_frontLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);
-    m_frontRightEsc.writeMicroseconds(ARM_ROTOR_SPEED);
-    m_backLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);
-    m_backRightEsc.writeMicroseconds(ARM_ROTOR_SPEED);
+    m_frontLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);      // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED
+    m_frontRightEsc.writeMicroseconds(ARM_ROTOR_SPEED);     // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED
+    m_backLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);       // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED
+    m_backRightEsc.writeMicroseconds(ARM_ROTOR_SPEED);      // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED
 
 #if UAV_TYPE == UAV_TYPE_HEXACOPTER
-    m_middleLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);
-    m_middleRightEsc.writeMicroseconds(ARM_ROTOR_SPEED);
+    m_middleLeftEsc.writeMicroseconds(ARM_ROTOR_SPEED);     // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED
+    m_middleRightEsc.writeMicroseconds(ARM_ROTOR_SPEED);    // start the motors. sets the ESC speed to IDLE_ROTOR_SPEED
 #endif
 
     m_armStatus = true;
@@ -84,6 +84,9 @@ bool MotorDriver::getArmStatus(void)
 
 void MotorDriver::attachAndArm()
 {
-    attachEscToPwmPin();
-    arm();
+    delay(1500);
+        attachEscToPwmPin();
+        delay(1500);
+        arm();       // arm the motors
+        delay(5000); // Note that RC_ESC recommends a delay of 5000 ms after arming
 }
