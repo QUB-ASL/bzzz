@@ -24,7 +24,7 @@ float IMUData[6];
 int motorFL, motorFR, motorBL, motorBR;
 
 #if UAV_TYPE == UAV_TYPE_HEXACOPTER
-int motorML, motorMR;
+int motorML, motorMR;   // middle left (ML) and middle right (MR) motors
 #endif
 
 bool wasKill = 0;
@@ -32,7 +32,21 @@ bool isKill = 0;
 unsigned long timestampLastKill = 0;
 bool isThrottleStickDown = 0;
 
+/** 
+ * Here the timer state is declared as a global variable
+ * so that it can be accessed by the loop function (and possibly
+ * by other interrupts). When accessing `timerState` we should
+ * be first acquiring its lock (i.e., the `timerMux`).
+*/
+
 volatile bool timerState = true;
+
+/**
+ * Callback, attached to the timer interrupt
+ * It is generally advisable to keep the implementation of this
+ * function as lean as possible (it should just toggle a flag).
+ * This function is executed only ONCE every period.
+ */
 
 void IRAM_ATTR onTimer()
 {
@@ -40,6 +54,13 @@ void IRAM_ATTR onTimer()
   timerState = !timerState;
   taskEXIT_CRITICAL_ISR(&timerMux);
 }
+
+/**
+ * Setup the timer for running the main loop at a fixed rate.
+ * timerAlarmWrite is simply a counter; we count a number of
+ * timer periods before calling the callback function (onTimer).
+ * The second argument is the sampling period in micros.
+ */
 
 void setupTimer()
 {
@@ -49,6 +70,10 @@ void setupTimer()
   timerAlarmEnable(timer);
 }
 
+/**
+ * Setup the AHRS
+ */
+
 void setupAHRS()
 {
   ahrs.setup();
@@ -57,32 +82,52 @@ void setupAHRS()
                              MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_Y, MAGNETOMETER_SCALE_Z);
 }
 
+
+/**
+ * Setup function
+ */
+
 void setup()
 {
-  setupTimer();
-  setupBuzzer();
-  Serial.begin(SERIAL_BAUD_RATE);
-  setupAHRS();
-  ahrs.averageQuaternion(initialQuaternion);
-  ahrs.averageAngularVelocities(initialAngularVelocity);
-  buzz(2);
+  setupTimer();                                          // setup the main loop timer
+  setupBuzzer();                                         // setup the buzzer
+  Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
+  setupAHRS();                                           // setup the IMU and AHRS
+  ahrs.averageQuaternion(initialQuaternion);             // determine initial attitude
+  ahrs.averageAngularVelocities(initialAngularVelocity); // determine initial attitude
+  buzz(2);                                               // 2 beeps => AHRS setup complete
   logSerial(LogVerbosityLevel::Info, "waiting for PiSerial...");
-  waitForPiSerial();
-  buzz(4);
+  waitForPiSerial(); // wait for the RPi and the RC to connect
+  buzz(4);           // 4 beeps => RPi+RC connected
   logSerial(LogVerbosityLevel::Info, "waiting for arm...");
-  raspberryEsp32Interface.waitForArmCommand();
+  raspberryEsp32Interface.waitForArmCommand(); // wait for the RC to send an arming command
   logSerial(LogVerbosityLevel::Info, "arming...");
-  buzz(2, 400);
-  motorDriver.attachAndArm();
-  buzz(6);
+  buzz(2, 400);               // two long beeps => preparation for arming
+  motorDriver.attachAndArm(); // attach ESC and arm motors
+  buzz(6);                    // 6 beeps => motors armed; keep clear!
 }
+
+/**
+ * Set controller gain values from RC trimmers
+ *
+ * Trimmer A - X/Y quaternion gain
+ * Trimmer B - X/Y angular velocity gain
+ * Trimmer C - Yaw angular velocity gain
+ */
 
 void setGainsFromRcTrimmers()
 {
-  controller.setQuaternionGain(-QUATERNION_XY_GAIN * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
-  controller.setAngularVelocityXYGain(-OMEGA_XY_GAIN * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
-  controller.setYawAngularVelocityGain(-OMEGA_Z_GAIN * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
+  controller.setQuaternionGain(
+    -QUATERNION_XY_GAIN * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
+controller.setAngularVelocityXYGain(
+    -OMEGA_XY_GAIN * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
+controller.setYawAngularVelocityGain(
+    -OMEGA_Z_GAIN * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
 }
+
+/**
+ * Loop function
+ */
 
 void loop()
 {
@@ -94,9 +139,9 @@ void loop()
   float measuredAngularVelocity[3];
   float angularVelocityCorrected[3];
 
-  if (!timerState)
-    return;
+  if (!timerState) return;
 
+  // if raspberryEsp32Interface data received update the last data read time.
   if (raspberryEsp32Interface.readPiData())
   {
     raspberryEsp32Interface.sendFlightDataToPi(
@@ -107,16 +152,17 @@ void loop()
     wasKill = isKill;
     isKill = raspberryEsp32Interface.kill();
     isThrottleStickDown = raspberryEsp32Interface.throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE;
-    logSerial(LogVerbosityLevel::Debug, ">> [%d, %d] >> %lu\n", isKill, wasKill, timestampLastKill);
+    logSerial(LogVerbosityLevel::Debug, ">> [%d, %d] >> %lu\n",
+      isKill, wasKill, timestampLastKill);
   }
 
-  if (!isKill && wasKill)
-  {
+  // If you're attempting to resurrect it...
+  // K --> U
+  if (!isKill && wasKill){
+    // If you're too late, you need to pull the stick down
     unsigned long timeElapsedSinceKill = millis() - timestampLastKill;
-    if (timeElapsedSinceKill >= UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms)
-    {
-      if (!isThrottleStickDown)
-      {
+    if (timeElapsedSinceKill >= UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms) {
+      if (!isThrottleStickDown){
         motorDriver.disarm();
         isKill = 1;
         return;
@@ -124,14 +170,15 @@ void loop()
     }
   }
 
+  // one function to run all fail safe checks
   if (isKill || failSafes.isSerialTimeout())
   {
-    if (!wasKill)
-    {
+    if (!wasKill) {
+      // U --> K
       timestampLastKill = millis();
     }
     motorDriver.disarm();
-    return;
+    return;  // exit the loop
   }
 
   ahrs.update();
@@ -139,6 +186,7 @@ void loop()
   ahrs.quaternion(quaternionImuData);
   ahrs.angularVelocity(measuredAngularVelocity);
 
+  // Determine correct angularVelocity
   angularVelocityCorrected[0] = measuredAngularVelocity[0] - initialAngularVelocity[0];
   angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
   angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
@@ -156,6 +204,7 @@ void loop()
     yawRateReference = yawRateRC + deadZoneYawRate;
   }
 
+  // take the current Yaw angle as reference, this means that we are not correcting the Yaw.
   yawReferenceRad = ahrs.currentYawRad();
 
   Quaternion referenceQuaternion(
@@ -165,20 +214,30 @@ void loop()
 
   Quaternion currentQuaternion(quaternionImuData);
   Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
-  Quaternion attitudeError = referenceQuaternion - relativeQuaternion;
+  Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
 
   IMUData[0] = relativeQuaternion[1];
   IMUData[1] = relativeQuaternion[2];
   IMUData[2] = relativeQuaternion[3];
   ahrs.getAccelerometerValues(IMUData + 3);
 
+  // Throttle from RC to throttle reference
   float throttleRef = raspberryEsp32Interface.throttleReferencePWM();
 
+  // Compute control actions and send them to the motors
+  #if UAV_TYPE == UAV_TYPE_QUADCOPTER
   controller.motorPwmSignals(attitudeError,
                              angularVelocityCorrected,
                              yawRateReference,
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR);
+#elif UAV_TYPE == UAV_TYPE_HEXACOPTER
+  controller.motorPwmSignals(attitudeError,
+                             angularVelocityCorrected,
+                             yawRateReference,
+                             throttleRef,
+                             motorFL, motorFR, motorBL, motorBR, motorML, motorMR);
+#endif
 
 #if UAV_TYPE == UAV_TYPE_HEXACOPTER
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR, motorML, motorMR);
