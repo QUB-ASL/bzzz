@@ -22,11 +22,7 @@ float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
 float IMUData[6];
 int motorFL, motorFR, motorBL, motorBR;
-
-#if UAV_TYPE == UAV_TYPE_HEXACOPTER
-int motorML, motorMR;   // middle left (ML) and middle right (MR) motors
-#endif
-
+int motorML = 0, motorMR = 0; // Dummy for quad, used for hex
 bool wasKill = 0;
 bool isKill = 0;
 unsigned long timestampLastKill = 0;
@@ -223,7 +219,8 @@ void loop()
                              angularVelocityCorrected,
                              yawRateReference,
                              throttleRef,
-                             motorFL, motorFR, motorBL, motorBR);
+                             motorFL, motorFR, motorBL, motorBR,
+                             motorML, motorMR);
 #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
   controller.motorPwmSignals(attitudeError,
                              angularVelocityCorrected,
