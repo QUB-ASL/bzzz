@@ -42,8 +42,8 @@ namespace bzzz
         int &motorFR,
         int &motorBL,
         int &motorBR,
-        int &motorML,   // adding for new motor middle left
-        int &motorMR,   // adding for new motor middle right  
+        int &motorML,  // adding for new motor middle left
+        int &motorMR,  // adding for new motor middle right
         float controlToPwmScaling,
         int motorClipLow,
         int motorClipHigh)
@@ -81,8 +81,8 @@ namespace bzzz
         motorBR = clip(mBR, motorClipLow, motorClipHigh);
     
         // safe defaults for unused motors
-        motorML = throttle;   // set to idle throttle
-        motorMR = throttle;   // set to idle throttle
+        motorML = motorClipLow;   // set to idle rotor speed
+        motorMR = motorClipLow;   // set to idle rotor speed
 #endif
     }
 
