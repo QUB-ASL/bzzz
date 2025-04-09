@@ -38,7 +38,6 @@ bool isThrottleStickDown = 0;
  * by other interrupts). When accessing `timerState` we should
  * be first acquiring its lock (i.e., the `timerMux`).
 */
-
 volatile bool timerState = true;
 
 /**
@@ -47,7 +46,6 @@ volatile bool timerState = true;
  * function as lean as possible (it should just toggle a flag).
  * This function is executed only ONCE every period.
  */
-
 void IRAM_ATTR onTimer()
 {
   taskENTER_CRITICAL_ISR(&timerMux);
@@ -61,7 +59,6 @@ void IRAM_ATTR onTimer()
  * timer periods before calling the callback function (onTimer).
  * The second argument is the sampling period in micros.
  */
-
 void setupTimer()
 {
   timer = timerBegin(TIMER_ID, TIMER_PRESCALER, true);
@@ -73,7 +70,6 @@ void setupTimer()
 /**
  * Setup the AHRS
  */
-
 void setupAHRS()
 {
   ahrs.setup();
@@ -86,7 +82,6 @@ void setupAHRS()
 /**
  * Setup function
  */
-
 void setup()
 {
   setupTimer();                                          // setup the main loop timer
@@ -114,7 +109,6 @@ void setup()
  * Trimmer B - X/Y angular velocity gain
  * Trimmer C - Yaw angular velocity gain
  */
-
 void setGainsFromRcTrimmers()
 {
   controller.setQuaternionGain(
@@ -128,7 +122,6 @@ controller.setYawAngularVelocityGain(
 /**
  * Loop function
  */
-
 void loop()
 {
   taskENTER_CRITICAL_ISR(&timerMux);
