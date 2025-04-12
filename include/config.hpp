@@ -44,19 +44,17 @@
 /*
  * Motors config
  */
-#if UAV_TYPE == UAV_TYPE_QUADCOPTER
     #define FRONT_LEFT_ESC_PIN 25
     #define FRONT_RIGHT_ESC_PIN 33
     #define BACK_LEFT_ESC_PIN 27
     #define BACK_RIGHT_ESC_PIN 26
-#elif UAV_TYPE == UAV_TYPE_HEXACOPTER
-    #define FRONT_LEFT_ESC_PIN 25
-    #define FRONT_RIGHT_ESC_PIN 33
-    #define BACK_LEFT_ESC_PIN 27
-    #define BACK_RIGHT_ESC_PIN 26
+
+#if UAV_TYPE == UAV_TYPE_HEXACOPTER
     #define MIDDLE_LEFT_ESC_PIN 23   // temporary pin placement
     #define MIDDLE_RIGHT_ESC_PIN 22  // temporary pin placement
 #endif
+
+
 
 #define ARM_ROTOR_SPEED 900
 #define ZERO_ROTOR_SPEED 1000
