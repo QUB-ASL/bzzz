@@ -63,7 +63,7 @@ the RC.
 #endif /* BZZZ_DEBUG */
 
                 /**
-         * @brief PWM signals to the four motors
+         * @brief PWM signals to the four motors (QUADCOPTER VERSION)
          *
          * @param attitudeError attitude error quaternion
          * @param angularVelocity angular velocity (from IMU)
@@ -71,12 +71,40 @@ the RC.
          * @param throttle throttle signal (between 1000 and 2000)
          * @param motorFL signal to front left motor
          * @param motorFR signal to front right motor
-         * @param motorBL  signal to back left motor
+         * @param motorBL signal to back left motor
+         * @param motorBR signal to back right motor
+         * @param controlToPwmScaling scaling parameter
+         * @param motorClipLow lowest value of motor signal [default: 1000]
+         * @param motorClipHigh highest value of motor signal [default: 2000]
+         */
+        void motorPwmSignals(
+            Quaternion &attitudeError,
+            const float *angularVelocity,
+            float angularVelocityYawRef,
+            float throttle,
+            int &motorFL,
+            int &motorFR,
+            int &motorBL,
+            int &motorBR,
+            float controlToPwmScaling = U_TO_PWM,
+            int motorClipLow = ZERO_ROTOR_SPEED,
+            int motorClipHigh = ABSOLUTE_MAX_PWM);
+
+        /**
+         * @brief PWM signals to the six motors (HEXACOPTER VERSION)
+         *
+         * @param attitudeError attitude error quaternion
+         * @param angularVelocity angular velocity (from IMU)
+         * @param angularVelocityYawRef angular velocity (yaw) reference
+         * @param throttle throttle signal (between 1000 and 2000)
+         * @param motorFL signal to front left motor
+         * @param motorFR signal to front right motor
+         * @param motorBL signal to back left motor
          * @param motorBR signal to back right motor
          * @param motorML signal to middle left motor
          * @param motorMR signal to middle right motor
-         * @param controlToPwmScaling (optional) scaling parameter
-         * @param motorClipLow (optional) lowest value of motor signal [default: 1000]
+         * @param controlToPwmScaling scaling parameter
+         * @param motorClipLow lowest value of motor signal [default: 1000]
          * @param motorClipHigh highest value of motor signal [default: 2000]
          */
         void motorPwmSignals(
