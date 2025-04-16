@@ -8,6 +8,12 @@ from sklearn.metrics import calinski_harabasz_score
 from matplotlib.animation import FuncAnimation
 from collections import defaultdict
 from scipy.stats import skew, kurtosis
+import seaborn as sns
+from scipy.stats import gaussian_kde
+from scipy.spatial import ConvexHull, Delaunay
+from matplotlib.animation import FuncAnimation
+import matplotlib.gridspec as gridspec
+from matplotlib.lines import Line2D
 
 class OnlineKMeans:
     def __init__(self, 
@@ -16,7 +22,8 @@ class OnlineKMeans:
                  eta_0=None,
                  p=None,
                  momentum=None,
-                 random_state=None):
+                 random_state=None,
+                 initial_centers=None):
         """
         Initialise the Online K-means model.
 
@@ -38,14 +45,15 @@ class OnlineKMeans:
         self.p = p
         self.momentum = momentum
         self.eta_prev = eta_0
-        self.centers = None
-        self.counts = None
+        self.centers = initial_centers
+        self.counts = np.zeros(self.n_clusters)
         self.random_state = random_state
         self.labels = None 
         self.cluster_data = defaultdict(list)
         self.t = 0
+        self.last_split_cluster_idx = None
     
-    def initialise_centres(self, X):
+    def initialise_centres(self, X=None):
         """
         Initialise the cluster centres using scikit-learn's KMeans 
         (KMeans++ initialisation).
@@ -53,17 +61,27 @@ class OnlineKMeans:
         Parameters:
         - X: numpy array, data to initialise centres from.
         """
-        kmeans = KMeans(n_clusters=self.n_clusters, 
+        if self.centers is not None:
+            if X is None:
+                X = self.centers  # Use the provided centers as dummy data for fitting
+            init_param = self.centers
+        else:
+            if X is None:
+                raise ValueError("X must be provided if initial centers are not set.")
+            init_param = 'k-means++'
+
+        kmeans = KMeans(n_clusters=self.n_clusters,
+                        init=init_param, 
                         random_state=self.random_state)
         kmeans.fit(X)
         self.centers = kmeans.cluster_centers_
         self.prev_updates = self.centers
-        self.counts = np.zeros(self.n_clusters)
         self.labels = kmeans.labels_
 
         # Initialise cluster data
         for i, label in enumerate(self.labels):
             self.cluster_data[label].append(X[i])
+            self.counts[label] = len(self.cluster_data[label])
 
         return self.centers
 
@@ -119,6 +137,9 @@ class OnlineKMeans:
             self._split_cluster(cluster_idx, cluster_points)
 
     def _split_cluster(self, cluster_idx, cluster_points):
+        print(f"Splitting cluster {cluster_idx}...")
+        total_count = np.sum(self.counts)
+        print(f"At count: {total_count}")
         local_kmeans = KMeans(n_clusters=2, max_iter=2, random_state=self.random_state)
         local_kmeans.fit(cluster_points)
         local_labels = local_kmeans.labels_
@@ -144,6 +165,14 @@ class OnlineKMeans:
 
         # Extend prev_updates to match the new number of clusters
         self.prev_updates = np.vstack([self.prev_updates, local_centers[1]])
+
+        self.last_split_cluster_idx = cluster_idx
+
+    def get_last_split_cluster_idx(self):
+        """
+        Get the index of the last split cluster.
+        """
+        return self.last_split_cluster_idx
 
     def update(self, x):
         """
@@ -226,10 +255,10 @@ class OnlineKMeans:
 
         plt.figure(figsize=(12, 8))
         plt.scatter(X_pca[:, 0], X_pca[:, 1], c=self.labels, cmap='viridis', marker='o', edgecolor='k')
-        plt.scatter(centers_pca[:, 0], centers_pca[:, 1], color='red', label='Cluster Centers')
+        plt.scatter(centers_pca[:, 0], centers_pca[:, 1], color='red', label='Cluster Centres')
         plt.xlim(-12, 20) 
         plt.ylim(-12, 12)  
-        plt.title('Data Points and Cluster Centers')
+        plt.title('Data Points and Cluster Centres')
         plt.xlabel('Principal Component 1')
         plt.ylabel('Principal Component 2')
         plt.legend()
@@ -237,12 +266,12 @@ class OnlineKMeans:
 
     def plot_centers(self):
         """
-        Plot the cluster centers in the original feature space.
+        Plot the cluster centres in the original feature space.
         """
         plt.figure(figsize=(12, 8))
         for i, center in enumerate(self.centers):
             plt.plot(center, label=f'Cluster {i+1}')
-        plt.title('Cluster Centers')
+        plt.title('Cluster Centres')
         plt.xlabel('Feature Index')
         plt.ylabel('Feature Value')
         plt.legend()
@@ -332,71 +361,241 @@ def prepare_time_series_data(series,
         y.append(series[i + window_size + prediction_horizon])
     return np.array(X), np.array(y)
 
+# def animation(X, initial_data_end, interval=1000):
+
+#     # centres = np.array([[-0.20972233, -0.2075368,  -0.20699677, -0.20798667, -0.21016227],
+#     #                 [1.89863988, 1.89980074, 1.90048287, 1.90000685, 1.89857222],
+#     #                 [-1.44886963, -1.45559866, -1.45785451, -1.45542487, -1.44849511],
+#     #                 [4.12300518, 4.14316454, 4.14997769, 4.14235578, 4.12118884],
+#     #                 [-0.58886111, -0.58867664, -0.58850176, -0.58816616, -0.58827087],
+#     #                 [0.61804511, 0.6147604,  0.61399737, 0.61528543, 0.61846244],
+#     #                 [3.3329001,  3.34601816, 3.35037454, 3.34577901, 3.33216633],
+#     #                 [1.49516368, 1.49328723, 1.49279968, 1.49365202, 1.49568017],
+#     #                 [-1.02574085, -1.02898248, -1.03007778, -1.02914034, -1.02621726],
+#     #                 [0.1966223,  0.19444408,  0.19356163,  0.19399402,  0.19615315],
+#     #                 [2.30409389, 2.30806527, 2.30891348, 2.30738084, 2.30362371],
+#     #                 [-1.95683855, -1.96699022, -1.97060372, -1.96761252, -1.95811761],
+#     #                 [1.07230902, 1.06854207, 1.06710083, 1.06845743, 1.07230768],
+#     #                 [-2.75216366, -2.76677145, -2.771969, -2.76638428, -2.75015501],
+#     #                 [2.76905847, 2.77678981, 2.77961552, 2.77726856, 2.76999329]])
+
+#     # Initialize online K-means with 5 clusters
+#     online_kmeans = OnlineKMeans(n_clusters=5, 
+#                                  adaptation_rate=0.03,
+#                                 #  eta_0=0.9,
+#                                 #  p=0.1,
+#                                 #  momentum=0.9,
+#                                  random_state=42)
+
+#     online_kmeans.initialise_centres(X[:initial_data_end])
+
+#     X_pca = np.array([[0,10], [1,10], [2,10], [3,10], [4,10], [5,10], [6,10], [7,10], [8,10], [9,10]])
+#     colour_labels = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+#     c = colour_labels
+
+#     pca = PCA(n_components=2)
+#     X_pca = np.vstack([X_pca, pca.fit_transform(X[:initial_data_end])])
+#     centers_pca = pca.transform(online_kmeans.centers)
+#     c = np.append(c, online_kmeans.labels)
+
+#      # Define the colormap to ensure consistent cluster colors
+#     cmap = plt.get_cmap('tab10')  # Use a set of 10 distinct colors
+
+#     # Set up the main figure with two subplots
+#     # fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
+#     fig = plt.figure(figsize=(16, 8))
+#     gs = gridspec.GridSpec(5, 1, height_ratios=[3, 3, 3, 2, 2]) 
+#     ax1 = fig.add_subplot(gs[:3])  # Takes the first two rows
+#     ax2 = fig.add_subplot(gs[3:])  # Takes the last row
+
+#     # Configure the PCA scatter plot (subplot 1)
+#     ax1.set_xlim(-11, 17)
+#     ax1.set_ylim(-6, 6)
+#     ax1.set_title('Data Points and Cluster Centers in PCA Space', fontsize=32)
+#     ax1.set_xlabel('Principal Component 1', fontsize=23)
+#     ax1.set_ylabel('Principal Component 2', fontsize=23)
+#     scatter_points = ax1.scatter(X_pca[:, 0], X_pca[:, 1], s=120, c=c, cmap=cmap, edgecolor='k')
+#     scatter_centers = ax1.scatter(centers_pca[:, 0], centers_pca[:, 1], s = 500, color='yellow', label='Cluster Centers', edgecolor='darkred')
+#     ax1.legend(fontsize=20)
+
+#     def update(frame):
+#         ax2.clear()
+#         online_kmeans.update(X[initial_data_end + frame])
+#         X_pca = pca.transform(X[:initial_data_end + frame])
+#         centers_pca = pca.transform(online_kmeans.centers)
+#         scatter_points.set_offsets(X_pca)
+#         scatter_centers.set_offsets(centers_pca)
+#         # Update the colors to match new labels
+#         scatter_points.set_array(online_kmeans.labels[:initial_data_end + frame])
+
+#         ax2.set_title('Cluster Centers in Original Feature Space', fontsize=32)
+#         ax2.set_xlabel('Feature Index', fontsize=23)
+#         ax2.set_ylabel('Feature Value', fontsize=23)
+#         ax2.set_ylim(0, 5)
+#         for i, center in enumerate(online_kmeans.centers):
+#                 ax2.plot(center, label=f'Cluster {i+1}', linewidth=4)
+#         ax2.legend(loc='upper right', fontsize=20)
+
+#         return scatter_points, scatter_centers
+    
+#     anim = FuncAnimation(fig, update, frames=range(0, len(X)-initial_data_end), interval=interval)
+
+#     plt.tight_layout()
+#     plt.show()
+
 def animation(X, initial_data_end, interval=1000):
-
     # Initialize online K-means with 5 clusters
-    online_kmeans = OnlineKMeans(n_clusters=5, 
-                                 adaptation_rate='Method 5',
-                                 eta_0=0.9,
-                                 p=0.1,
-                                #  momentum=0.9,
+    online_kmeans = OnlineKMeans(n_clusters=6, 
+                                 adaptation_rate=0.05, 
                                  random_state=42)
-
     online_kmeans.initialise_centres(X[:initial_data_end])
 
-    X_pca = np.array([[0,10], [1,10], [2,10], [3,10], [4,10], [5,10], [6,10], [7,10], [8,10], [9,10]])
-    colour_labels = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    c = colour_labels
+    number_of_clusters = online_kmeans.n_clusters
 
     pca = PCA(n_components=2)
-    X_pca = np.vstack([X_pca, pca.fit_transform(X[:initial_data_end])])
+    X_pca_all = pca.fit_transform(X)
     centers_pca = pca.transform(online_kmeans.centers)
-    c = np.append(c, online_kmeans.labels)
 
-     # Define the colormap to ensure consistent cluster colors
-    cmap = plt.get_cmap('tab10')  # Use a set of 10 distinct colors
-
-    # Set up the main figure with two subplots
-    # fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
-    fig = plt.figure(figsize=(16, 8))
+    # Set up figure
+    fig = plt.figure(figsize=(18, 8))
     gs = gridspec.GridSpec(5, 1, height_ratios=[3, 3, 3, 2, 2]) 
-    ax1 = fig.add_subplot(gs[:3])  # Takes the first two rows
-    ax2 = fig.add_subplot(gs[3:])  # Takes the last row
+    ax1 = fig.add_subplot(gs[:3])  # PCA space
+    ax2 = fig.add_subplot(gs[3:])  # Feature space
 
-    # Configure the PCA scatter plot (subplot 1)
-    ax1.set_xlim(-11, 17)
-    ax1.set_ylim(-6, 6)
-    ax1.set_title('Data Points and Cluster Centers in PCA Space', fontsize=32)
+    ax1.set_xlim(-11, 18)
+    ax1.set_ylim(-5, 4.5)
+    ax1.set_title('Cluster Density and Centres in PCA Space', fontsize=32)
     ax1.set_xlabel('Principal Component 1', fontsize=23)
     ax1.set_ylabel('Principal Component 2', fontsize=23)
-    scatter_points = ax1.scatter(X_pca[:, 0], X_pca[:, 1], s=120, c=c, cmap=cmap, edgecolor='k')
-    scatter_centers = ax1.scatter(centers_pca[:, 0], centers_pca[:, 1], s = 500, color='yellow', label='Cluster Centers', edgecolor='darkred')
-    ax1.legend(fontsize=20)
+    ax1.tick_params(axis='both', labelsize=20)
 
-    def update(frame):
-        ax2.clear()
-        online_kmeans.update(X[initial_data_end + frame])
-        X_pca = pca.transform(X[:initial_data_end + frame])
-        centers_pca = pca.transform(online_kmeans.centers)
-        scatter_points.set_offsets(X_pca)
-        scatter_centers.set_offsets(centers_pca)
-        # Update the colors to match new labels
-        scatter_points.set_array(online_kmeans.labels[:initial_data_end + frame])
-
-        ax2.set_title('Cluster Centers in Original Feature Space', fontsize=32)
-        ax2.set_xlabel('Feature Index', fontsize=23)
-        ax2.set_ylabel('Feature Value', fontsize=23)
-        ax2.set_ylim(0, 5)
-        for i, center in enumerate(online_kmeans.centers):
-                ax2.plot(center, label=f'Cluster {i+1}', linewidth=4)
-        ax2.legend(loc='upper right', fontsize=20)
-
-        return scatter_points, scatter_centers
+    cluster_colors = ['Blues', 'Oranges', 'Greens', 'Reds', 'Purples', 'Greys', 'PuRd']
+    plot_colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple',  'tab:grey', 'tab:pink']
+    marker_colors_temp = [plt.cm.tab20(i) for i in range(20)]
+    marker_colors = marker_colors_temp[1], marker_colors_temp[3], marker_colors_temp[5], marker_colors_temp[7], marker_colors_temp[9], marker_colors_temp[15], marker_colors_temp[13]
     
+    # Store KDE data to avoid recalculating
+    cluster_kde_data = {}
+    kde_cache = {}
+
+    # === FIRST FRAME: Compute KDE for all clusters ===
+    labels_subset = np.array(online_kmeans.labels[:initial_data_end])  # Convert to array for indexing
+
+    for cluster_idx in range(online_kmeans.n_clusters):
+        cluster_points = X_pca_all[:initial_data_end][labels_subset == cluster_idx]  
+        if len(cluster_points) > 5:
+            cluster_kde_data[cluster_idx] = cluster_points
+            kde = gaussian_kde(cluster_points.T, bw_method=0.3)  # Reduced bandwidth for smoother edges
+
+            # Use dynamic padding around the data to avoid box shape
+            x_min, x_max = cluster_points[:, 0].min(), cluster_points[:, 0].max()
+            y_min, y_max = cluster_points[:, 1].min(), cluster_points[:, 1].max()
+            x_padding = (x_max - x_min) * 0.1  # 10% padding
+            y_padding = (y_max - y_min) * 0.1  # 10% padding
+            x_grid, y_grid = np.meshgrid(np.linspace(x_min - x_padding, x_max + x_padding, 100), 
+                                         np.linspace(y_min - y_padding, y_max + y_padding, 100))
+            density = kde(np.vstack([x_grid.ravel(), y_grid.ravel()])).reshape(x_grid.shape)
+            
+            kde_cache[cluster_idx] = (x_grid, y_grid, density)
+
+        # Get handles and labels from one axis
+        labels = [f'Cluster {i+1}' for i in range(online_kmeans.n_clusters)]
+        handles = [Line2D([0], [0], marker='o', linestyle='None', color=marker_colors[i], markeredgewidth=5, markerfacecolor=plot_colors[i], markersize=20, label=labels[i]) for i in range(online_kmeans.n_clusters)]
+
+        # Place shared legend outside
+        fig.legend(handles, labels, loc='center left', fontsize=20, bbox_to_anchor=(0,1.8), bbox_transform=ax2.transAxes, ncol=2)
+
+    def update(frame, number_of_clusters=number_of_clusters):
+        ax2.clear()
+        ax1.clear()
+        ax1.set_xlim(-11, 18)
+        ax1.set_ylim(-5, 4.5)
+        ax1.set_title('Cluster Density and Centres in PCA Space', fontsize=32)
+        ax1.set_xlabel('Principal Component 1', fontsize=23)
+        ax1.set_ylabel('Principal Component 2', fontsize=23)
+        ax1.tick_params(axis='both', labelsize=20)
+
+        # Update clustering with a new point
+        new_point = X[initial_data_end + frame]
+        online_kmeans.update(new_point)
+
+        centers_pca = pca.transform(online_kmeans.centers)
+        X_pca = X_pca_all[:initial_data_end + frame]
+
+        new_cluster = online_kmeans.labels[initial_data_end + frame]
+        labels_subset = np.array(online_kmeans.labels[:initial_data_end + frame]) 
+
+        cluster_points = X_pca[labels_subset == new_cluster] 
+
+        if len(cluster_points) > 5:
+            cluster_kde_data[new_cluster] = cluster_points
+            kde = gaussian_kde(cluster_points.T, bw_method=0.3)  # Reduced bandwidth for smoother edges
+
+            # Adjust dynamic padding to smooth borders
+            x_min, x_max = cluster_points[:, 0].min(), cluster_points[:, 0].max()
+            y_min, y_max = cluster_points[:, 1].min(), cluster_points[:, 1].max()
+            x_padding = (x_max - x_min) * 0.2  # 10% padding
+            y_padding = (y_max - y_min) * 0.2  # 10% padding
+            x_grid, y_grid = np.meshgrid(np.linspace(x_min - x_padding, x_max + x_padding, 100), 
+                                         np.linspace(y_min - y_padding, y_max + y_padding, 100))
+            density = kde(np.vstack([x_grid.ravel(), y_grid.ravel()])).reshape(x_grid.shape)
+
+            kde_cache[new_cluster] = (x_grid, y_grid, density)
+
+        # Plot all stored KDEs with smooth contours
+        for cluster_idx, (x_grid, y_grid, density) in kde_cache.items():
+            # Plot filled contours for all inner levels, but avoid filling the outermost one
+            contour_levels = np.linspace(np.min(density), np.max(density), 10)
+            
+            # Plot the inner contours with filling
+            ax1.contourf(x_grid, y_grid, density, levels=contour_levels[1:], cmap=cluster_colors[cluster_idx], alpha=0.5)
+            ax1.contourf(x_grid, y_grid, density, levels=contour_levels[3:], cmap=cluster_colors[cluster_idx], alpha=1)
+
+        # Plot cluster centers
+        ax1.scatter(centers_pca[:, 0], centers_pca[:, 1], s=500, color='yellow', label='Cluster Centres', edgecolor='darkred')
+        ax1.legend(loc='upper left', fontsize=20)
+
+        # Define x-ticks: 10 time steps from t-9 to t
+        time_labels = [f't-{14 - i}' if i < 14 else 't' for i in range(15)]
+        x_positions = list(range(15))  # x-axis positions: 0 through 9
+        ax2.set_xticks(x_positions)
+        ax2.set_xticklabels(time_labels)
+
+        # Feature space visualization
+        ax2.set_ylim(0, 6.2)
+        ax2.set_xlim(-2, 14.2)
+        ax2.set_title('Cluster Centres in Feature Space', fontsize=32)
+        ax2.set_xlabel('Temporal Index of RBF Centre', fontsize=23)
+        ax2.set_ylabel('Wind Velocity - m/s', fontsize=23)
+        ax2.tick_params(axis='both', labelsize=20)
+        for i, center in enumerate(online_kmeans.centers):
+            reversed_center = center[::-1]
+            ax2.plot(reversed_center, label=f'Centre {i+1}', linewidth=3, color=plot_colors[i % len(plot_colors)])
+        ax2.legend(loc='upper left', fontsize=20)
+
+        if np.sum(online_kmeans.counts) > 1900:
+            #Plot points in PCA space
+            plot_x_y = np.array([[0,10], [1,10], [2,10], [3,10], [4,10], [5,10], [6,10], [7,10], [8,10], [9,10]])
+            plot_x_y = np.vstack([plot_x_y, X_pca[1900:]])
+            colour_labels = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+            colour_labels = np.append(colour_labels, online_kmeans.labels[1900:initial_data_end + frame])
+            ax1.scatter(plot_x_y[:, 0], plot_x_y[:, 1], s=120, c=colour_labels, cmap='tab10', edgecolor='k')
+            # print(online_kmeans.labels[1210:initial_data_end + frame])
+
+        if online_kmeans.n_clusters > number_of_clusters:
+            # Get handles and labels from one axis
+            labels = [f'Cluster {i+1}' for i in range(online_kmeans.n_clusters)]
+            handles = [Line2D([0], [0], marker='o', linestyle='None', color=marker_colors[i], markeredgewidth=5, markerfacecolor=plot_colors[i], markersize=20, label=labels[i]) for i in range(online_kmeans.n_clusters)]
+
+            # Place shared legend outside
+            fig.legend(handles, labels, loc='center left', fontsize=20, bbox_to_anchor=(0,2.2), bbox_transform=ax2.transAxes, ncol=2 )
+            number_of_clusters = online_kmeans.n_clusters
+
     anim = FuncAnimation(fig, update, frames=range(0, len(X)-initial_data_end), interval=interval)
 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0.02, 1, 1])
     plt.show()
+
 
 # Example usage
 if __name__ == "__main__":
@@ -419,7 +618,7 @@ if __name__ == "__main__":
     prediction_horizon = 10
     X, y = prepare_time_series_data(series, window_size, prediction_horizon)
 
-    animation( X, split_data, -1)
+    animation( X, split_data, 1000)
 
     # # Initialize online K-means with 5 clusters
     # online_kmeans = OnlineKMeans(n_clusters=5, 
@@ -431,7 +630,7 @@ if __name__ == "__main__":
     # # # online_kmeans.get_number_of_clusters_elbow_method(X, 20)
 
     # # Initialize the centers with a random subset of data
-    # online_kmeans.initialize_centers(X[:split_data])
+    # online_kmeans.initialise_centres(X[:split_data])
 
     # # Plot the initial clusters
     # online_kmeans.pca_and_plot_clusters(X[:split_data])

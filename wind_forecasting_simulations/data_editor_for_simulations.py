@@ -43,4 +43,4 @@ def DataEditor(file_name):
     res.to_csv(f'{file_name}.csv', index=False)
 
 
-DataEditor(file_name='raspberry/data/wind_data/21-12-23--15-50')
+DataEditor(file_name='raspberry/data/wind_data/25-09-23--17-06/25-09-23--17-06_N_10')

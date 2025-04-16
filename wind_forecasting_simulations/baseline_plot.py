@@ -12,20 +12,33 @@ def plot_persistence_method(file_name,
 #     t_minus_ph_2 = pd.Series()
     error_ph_1 = pd.Series()
 #     error_ph_2 = pd.Series()
+    new_error = pd.Series()
 
     #read data
     df_wind = pd.read_csv(file_name)
     
     #set index
-    df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="25L")
+    df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="25ms")
+
+    # prevous_error = 0
 
     for x in range(len(df_wind)-prediction_horizon_1):
-            t_minus_ph_1[df_wind.index[x+prediction_horizon_1]] = df_wind.V_axis[x]
-            error_ph_1[df_wind.index[x]] = np.sqrt((df_wind.V_axis[x+prediction_horizon_1] - t_minus_ph_1[x])**2)
+            temp_pred = df_wind.V_axis.iloc[x]
+            # temp_pred = temp_pred + 0.1*prevous_error
+            t_minus_ph_1[df_wind.index[x+prediction_horizon_1]] = temp_pred
+            error_ph_1[df_wind.index[x]] = np.sqrt((df_wind.V_axis.iloc[x + prediction_horizon_1] - t_minus_ph_1.iloc[x])**2)
+            new_error[df_wind.index[x]] = abs(df_wind.V_axis.iloc[x + prediction_horizon_1] - t_minus_ph_1.iloc[x])
+            # if x > prediction_horizon_1:
+            #     prevous_error = df_wind.V_axis.iloc[x] - t_minus_ph_1.iloc[x-prediction_horizon_1]
+
     
 #     for x in range(len(df_wind)-prediction_horizon_2):
 #             t_minus_ph_2[df_wind.index[x+prediction_horizon_2]] = df_wind.V_axis[x]
 #             error_ph_2[df_wind.index[x]] = np.sqrt((df_wind.V_axis[x+prediction_horizon_2] - t_minus_ph_2[x])**2)
+    print(file_name)
+
+    #save error to csv
+    error_ph_1.to_csv(f'{file_name.split(".")[0]}_error_ph_1.csv', index=False)
 
     RMSE_ph_1 = np.sqrt(np.mean((df_wind.V_axis - t_minus_ph_1)**2))
     print(f'RMSE for t minus {prediction_horizon_1} is {RMSE_ph_1}')
@@ -34,6 +47,8 @@ def plot_persistence_method(file_name,
 
     quantile_error_ph_1 = np.quantile(error_ph_1, 0.95)
     print(f'Quantile Error: {quantile_error_ph_1}')
+    percentile_error = np.percentile(new_error, 95)
+    print(f'Percentile Error: {percentile_error}')
 #     quantile_error_ph_2 = np.quantile(error_ph_2, 0.95)
 #     print(f'Quantile Error: {quantile_error_ph_2}')
 
@@ -48,7 +63,8 @@ def plot_persistence_method(file_name,
     plt.xlabel('Time', fontsize=23)
 
     plt.figure(figsize=(10,4))
-    sns.distplot(error_ph_1, hist=False, color='blue')
+    sns.displot(error_ph_1, kind="kde", color='blue')
+    sns.displot(new_error, kind="kde", color='green')
 #     sns.distplot(error_ph_2, hist=False, color='red')
     plt.plot([RMSE_ph_1, RMSE_ph_1], [0, 1], color='darkblue')
 #     plt.plot([RMSE_ph_2, RMSE_ph_2], [0, 1], color='firebrick')
@@ -56,6 +72,7 @@ def plot_persistence_method(file_name,
 #     plt.text(RMSE_ph_2, 0.5, f'RMSE: {RMSE_ph_2:.2f}', color='firebrick', fontsize=12, ha='center')
     plt.plot([quantile_error_ph_1, quantile_error_ph_1], [0, 1], color='darkblue')
 #     plt.plot([quantile_error_ph_2, quantile_error_ph_2], [0, 1], color='firebrick')
+    plt.plot([percentile_error, percentile_error], [0, 1], color='green')
     plt.text(quantile_error_ph_1, 0.5, f'95% Quantile \n Error: {quantile_error_ph_1:.2f}', color='darkblue', fontsize=20, ha='center')
 #     plt.text(quantile_error_ph_2, 0.5, f'95% Quantile \n Error: {quantile_error_ph_2:.2f}', color='firebrick', fontsize=12, ha='center')
     plt.title(f'Probability Density Error of the Persistence predictions', fontsize=20)
@@ -110,5 +127,13 @@ def assume_average_wind_speed(file_name):
 
 
 
+# plot_persistence_method('raspberry/data/wind_data/25-09-23--17-06/25-09-23--17-06_N_10.csv', 10)
 plot_persistence_method('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', 10)
+# plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--15-30/21-12-23--15-30_N_10.csv', 10)
+# plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--16-24/21-12-23--16-24_N_10.csv', 10)
+# plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--17-24/21-12-23--17-24_N_10.csv', 10)
+# plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--18-24/21-12-23--18-24_N_10.csv', 10)
+# plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--19-04/21-12-23--19-04_N_10.csv', 10)
+# plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--19-14/21-12-23--19-14_N_10.csv', 10)
+
 # assume_average_wind_speed('raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv')

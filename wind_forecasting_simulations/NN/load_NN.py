@@ -20,7 +20,7 @@ def to_sequences(dataset, seq_size=1):
         y.append(y_outputs)
         y_only_ph.append([y_outputs[-1]])
         
-    return np.array(x),np.array(y)
+    return np.array(x),np.array(y_only_ph)
 
 def get_last_prediction(data_set, prediction_size):
     output_array = []
@@ -33,7 +33,7 @@ def get_last_prediction(data_set, prediction_size):
 max_wind_speed = 10
 
 ## Read Data
-df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49_N_10.csv', usecols=[8])
+df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', usecols=[8])
 
 dataset = df_wind.values
 dataset = df_wind.values.astype('float32')
@@ -41,17 +41,17 @@ dataset = df_wind.values.astype('float32')
 dataset = (dataset + max_wind_speed)/(2*max_wind_speed)
 
 seq_size = 10
-prediction_size = 40
+prediction_size = 10
 
 X, Y = to_sequences(dataset, seq_size)
 
 model = keras.saving.load_model("model_V.keras")
 
 Predict = model.predict(X)
-Predict = get_last_prediction(Predict, prediction_size)
+# Predict = get_last_prediction(Predict, prediction_size)
 Predict = np.reshape(Predict, (-1, 1))
 
-Y = get_last_prediction(Y, prediction_size)
+# Y = get_last_prediction(Y, prediction_size)
 Y = np.reshape(Y, (1, -1))
 
 dataset = dataset * 2 * max_wind_speed - max_wind_speed
@@ -61,14 +61,14 @@ Y = Y * 2 * max_wind_speed - max_wind_speed
 # Predict_list = np.array([])
 # for i in range(len(X)):
 #     Predict = model.predict(np.array([X[i]]), verbose=0)
-#     Predict = get_last_prediction(Predict, prediction_size)
-#     if i > prediction_size:
-#         last_error = Y[i][prediction_size - 1] - Predict_list[-prediction_size]
-#         Predict = Predict + 0.5*last_error
+#     # Predict = get_last_prediction(Predict, prediction_size)
+#     # if i > prediction_size:
+#     #     last_error = Y[i] - Predict_list[-1]
+#     #     Predict = Predict + 0.9*last_error
 #     Predict_list = np.append(Predict_list, Predict)
 #     Predict_list = np.reshape(Predict_list, (-1, 1))
 
-# Y = get_last_prediction(Y, prediction_size)
+# # Y = get_last_prediction(Y, prediction_size)
 # Y = np.reshape(Y, (1, -1))
 
 # dataset = dataset * 2 * max_wind_speed - max_wind_speed
@@ -80,10 +80,16 @@ print(Predict[:,0])
 
 # calculate root mean squared error
 RMSE_Score = math.sqrt(mean_squared_error(Y[0], Predict[:,0]))
-print('Prediction Score: %.2f RMSE' % (RMSE_Score))
+print('Prediction Score: %f RMSE' % (RMSE_Score))
 
 errors = np.sqrt((Y[0] - Predict[:,0])**2)
+
+#save errors to csv file
+df_error = pd.DataFrame(errors, columns=['Error'])
+df_error.to_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10_error_ph_10_NN_1.csv', index=False)
+
 quantile_error = np.quantile(errors, 0.95)
+print(f'95% quantile error: {quantile_error}')
 
 
 # shift predictions for plotting

@@ -33,14 +33,13 @@ class ARIMA:
                            'ar.L3' : new_model_fit.params[2],
                            'ar.L4' : new_model_fit.params[3],
                            'ar.L5' : new_model_fit.params[4],
-                           'ma.L1' : new_model_fit.params[5],
-                           'ma.L2' : new_model_fit.params[6],
-                           'ma.L3' : new_model_fit.params[7],
-                           'ma.L4' : new_model_fit.params[8],
-                           'ma.L5' : new_model_fit.params[9],
-                           'ma.L6' : new_model_fit.params[10],
-                           'ma.L7' : new_model_fit.params[11],
-                           'ma.L8' : new_model_fit.params[12]}
+                           'ar.L6' : new_model_fit.params[5],
+                           'ar.L7' : new_model_fit.params[6],
+                           'ar.L8' : new_model_fit.params[7],
+                           'ar.L9' : new_model_fit.params[8],
+                           'ma.L1' : new_model_fit.params[9],
+                           'ma.L2' : new_model_fit.params[10],
+                           'ma.L3' : new_model_fit.params[11]}
         print(f'new_params = {self.fix_params}')
 
     def predict(self, new_data_point):
@@ -208,14 +207,14 @@ def run_arima_model(file_name,
         combined_step_errors = pd.Series()
         x=0
         sum_of_squares = 0
-        update_every = 400
+        update_every = 12000
         how_far_back = update_every
 
         train_data = df_wind.values[:train_end]
         test_data = df_wind.values[train_end:test_end]
         model = ARIMA(prediction_horizon=prediction_horizon, p=p, d=d, q=q, fix_params=fix_params)
         model.fit(train_data)
-        # print(f'model_fit params = {model_fit}')
+        print(f'model_fit params = {model.model_fit.params}')
         # with open(f'V_PARAMS.csv', "a+", newline="") as f:
         #                 # creating the writer
         #                 writer = csv.writer(f)
@@ -224,11 +223,11 @@ def run_arima_model(file_name,
 
         # Make predictions
         for i in test_data[:-prediction_horizon]:
-            # if (x+1) % update_every == 0:
-            #     start = time()
-            #     model.update_params(test_data[x+1-how_far_back:x+1])
-            #     print(f'update time = {time() - start}')
-                # how_far_back = int(1.5*update_every)
+            if (x+1) % update_every == 0:
+                start = time()
+                model.update_params(test_data[x+1-how_far_back:x+1])
+                print(f'update time = {time() - start}')
+                how_far_back = int(0.2*update_every)
                 # if x < 4000:
                 #     how_far_back = how_far_back + update_every
                 # print(f'how_far_back = {how_far_back}')
@@ -245,31 +244,41 @@ def run_arima_model(file_name,
         test_data = test_data[prediction_horizon:]
     
         last_step_RMSE = np.sqrt(np.mean((test_data - last_step_prediction)**2))
+        print(f'last_step_RMSE: {last_step_RMSE}')
 
         last_step_error = np.sqrt((test_data - last_step_prediction)**2)
+        print(f'last_step_error: {last_step_error}')
+
+        #save error to csv
+        # last_step_error = pd.Series(last_step_error)
+        last_step_error_pd = pd.DataFrame(last_step_error, columns=['error'])
+        last_step_error_pd.to_csv(f'{file_name.split(".")[0]}_error.csv', index=False)
+
+
         last_step_quantile_error = np.quantile(last_step_error, 0.95)
+        print(f'last_step_quantile_error: {last_step_quantile_error}')
 
         combined_RMSE = np.sqrt(sum_of_squares/(len(test_data)*prediction_horizon))
 
         combined_quantile_errors = np.quantile(combined_step_errors, 0.95)
 
-        # plt.figure(figsize=(10,4))
-        # sns.distplot(last_step_error, hist=False, color='blue')
-        # sns.distplot(combined_step_errors, hist=False, color='red')
-        # plt.plot([last_step_RMSE, last_step_RMSE], [0, 1], color='darkblue')
-        # plt.plot([combined_RMSE, combined_RMSE], [0, 1], color='firebrick')
-        # plt.text(last_step_RMSE, 0.5, f'RMSE: {last_step_RMSE:.2f}', color='darkblue', fontsize=12, ha='center')
-        # plt.text(combined_RMSE, 0.5, f'RMSE: {combined_RMSE:.2f}', color='firebrick', fontsize=12, ha='center')
-        # plt.plot([last_step_quantile_error, last_step_quantile_error], [0, 1], color='darkblue')
-        # plt.plot([combined_quantile_errors, combined_quantile_errors], [0, 1], color='firebrick')
-        # plt.text(last_step_quantile_error, 0.5, f'95% Quantile \n Error: {last_step_quantile_error:.2f}', color='darkblue', fontsize=12, ha='center')
-        # plt.text(combined_quantile_errors, 0.5, f'95% Quantile \n Error: {combined_quantile_errors:.2f}', color='firebrick', fontsize=12, ha='center')
-        # plt.title(f'Probability Density Error of ARIMA({str(p)},{str(d)},{str(q)} using {prediction_horizon} steps ({prediction_time} seconds) forecast', fontsize=20)
-        # plt.legend((f'Error only using the last step forecast',
-        #             f'Error for all the steps in the forecast'), fontsize=12)
-        # plt.ylabel('Probability Density', fontsize=16)
-        # plt.xlabel('Error (m/s)', fontsize=16)
-        # plt.show()
+        plt.figure(figsize=(10,4))
+        sns.distplot(last_step_error, hist=False, color='blue')
+        sns.distplot(combined_step_errors, hist=False, color='red')
+        plt.plot([last_step_RMSE, last_step_RMSE], [0, 1], color='darkblue')
+        plt.plot([combined_RMSE, combined_RMSE], [0, 1], color='firebrick')
+        plt.text(last_step_RMSE, 0.5, f'RMSE: {last_step_RMSE:.2f}', color='darkblue', fontsize=12, ha='center')
+        plt.text(combined_RMSE, 0.5, f'RMSE: {combined_RMSE:.2f}', color='firebrick', fontsize=12, ha='center')
+        plt.plot([last_step_quantile_error, last_step_quantile_error], [0, 1], color='darkblue')
+        plt.plot([combined_quantile_errors, combined_quantile_errors], [0, 1], color='firebrick')
+        plt.text(last_step_quantile_error, 0.5, f'95% Quantile \n Error: {last_step_quantile_error:.2f}', color='darkblue', fontsize=12, ha='center')
+        plt.text(combined_quantile_errors, 0.5, f'95% Quantile \n Error: {combined_quantile_errors:.2f}', color='firebrick', fontsize=12, ha='center')
+        plt.title(f'Probability Density Error of ARIMA({str(p)},{str(d)},{str(q)} using {prediction_horizon} steps ({prediction_time} seconds) forecast', fontsize=20)
+        plt.legend((f'Error only using the last step forecast',
+                    f'Error for all the steps in the forecast'), fontsize=12)
+        plt.ylabel('Probability Density', fontsize=16)
+        plt.xlabel('Error (m/s)', fontsize=16)
+        plt.show()
 
         if logger is True:
             with open(f'{file_name}_Simple_ARMA_{train_end}-{test_end}_V_last_step_RMSE.csv', "a+", newline="") as f:
@@ -357,34 +366,33 @@ def run_arima_model(file_name,
 # Example usage
 if __name__ == "__main__":
 
-    for i in range(11,21):
-        for j in range(21):   
+    # for i in range(11,21):
+    #     for j in range(21):   
             run_arima_model(file_name='raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10',
-                            train_end=24000,
-                            test_end=28800,
+                            train_end=400,
+                            test_end=39370,
                             prediction_horizon=10,
-                            p=i,
+                            p=9,
                             d=0,
-                            q=j,
-                            fix_params=None,
-                            # fix_params = {'ar.L1' : 1.62586372,
-                            #               'ar.L2' : -1.22854507,
-                            #               'ar.L3' : 0.90407584,
-                            #               'ar.L4' : -0.60564708,
-                            #               'ar.L5' : 0.30159468,
-                            #               'ma.L1' : -0.05402197,
-                            #               'ma.L2' : 0.96047342,
-                            #               'ma.L3' : -0.00350676,
-                            #               'ma.L4' : 0.92262971,
-                            #               'ma.L5' : 0.03669299,
-                            #               'ma.L6' : 0.90019724,
-                            #               'ma.L7' : 0.04501903,
-                            #               'ma.L8' : 0.87543338},
+                            q=3,
+                            # fix_params=None,
+                            fix_params = {'ar.L1' : 0.85555221,
+                                          'ar.L2' : 0.9949465,
+                                          'ar.L3' : -0.30541855,
+                                          'ar.L4' : -0.93379016,
+                                          'ar.L5' : 0.30228411,
+                                          'ar.L6' : 0.16281163,
+                                          'ar.L7' : -0.10295508,
+                                          'ar.L8' : -0.17064146,
+                                          'ar.L9' : 0.19521308,
+                                          'ma.L1' : 0.7767682,
+                                          'ma.L2' : -0.33131051,
+                                          'ma.L3' : -0.73381169},
                             combined_wind_speed=False,
-                            U=True,
+                            U=False,
                             V=True,
-                            W=True,
-                            logger=True)
+                            W=False,
+                            logger=False)
 
     # sample_time = 0.025
     # prediction_horizon = 10

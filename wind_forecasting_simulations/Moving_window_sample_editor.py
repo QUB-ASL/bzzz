@@ -11,7 +11,7 @@ def MovingAverageFilter(file_name,
     res = df_wind
     
     #set index
-    df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="200L")
+    df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="25L")
     
     # Calculating mean
     res['Wind_Speed'] = df_wind.Wind_Speed.rolling(number_samples).mean().round(4)
@@ -23,7 +23,7 @@ def MovingAverageFilter(file_name,
     res['W_axis'] = df_wind.W_axis.rolling(number_samples).mean().round(4)
     
     #set index
-    res.index = pd.date_range(res.Index_2[0], res.Index_2.iloc[-1], freq="200L")
+    res.index = pd.date_range(res.Index_2[0], res.Index_2.iloc[-1], freq="25L")
     
     #save file
     res.to_csv(f'{file_name}_N_{str(number_samples)}.csv', index=False)
@@ -69,5 +69,8 @@ def medianFilter(file_name,
 
     plt.show()
 
-medianFilter(file_name='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49',
-                    number_samples=21)
+# medianFilter(file_name='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49',
+#                     number_samples=21)
+
+MovingAverageFilter(file_name='raspberry/data/wind_data/december_2023/21-12-23--20-18/21-12-23--20-18',
+                    number_samples=10)
