@@ -45,7 +45,7 @@
  * Motors config
  */
     #define FRONT_LEFT_ESC_PIN 25
-    #define FRONT_RIGHT_ESC_PIN 23
+    #define FRONT_RIGHT_ESC_PIN 33
     #define BACK_LEFT_ESC_PIN 27
     #define BACK_RIGHT_ESC_PIN 26
 
