@@ -13,9 +13,9 @@ def _distance_mapping(rng):
     if rng == 65535:  # Sensor measuring above its maximum limit
         dec_out = float('nan')  # TOO FAR
     elif rng == 1:  # Sensor not able to measure
-        dec_out = float('nan') # WHATEVER!
+        dec_out = float('nan')  # WHATEVER!
     elif rng == 0:  # Sensor detecting object below minimum range
-        dec_out = -float('nan') # TOO CLOSE
+        dec_out = -float('nan')  # TOO CLOSE
     else:
         # Convert to meters
         dec_out = rng / 1000.0
@@ -28,18 +28,20 @@ class EvoSensor:
                  serial_path='/dev/ttyAMA2',
                  baud=115200,
                  window_length=3,
-                 data_processor=NoFilter(),
+                 data_processor=MedianFilter(),
                  log_file=None,
                  max_samples=100000):
         """
         Create a new instance of Evo time of flight sensor
 
-        :param serial_path: serial path; defaults to /dev/ttyAMA2 (UART2) on RPi
+        :param serial_path: serial path; defaults to /dev/ttyAMA2 (UART2)
         :param baud: baud rate of serial communication; defaults to 115200
         :param window_length: length of window of measurements; default: 3
-        :param data_processor: data processor on buffer of measurements; default: NoFilter()
+        :param data_processor: data processor on buffer of measurements; 
+                               default: MedianFilter()
         :param log_file: file name to log data; default: None
-        :param max_samples: maximum number of samples to record; default: 100000
+        :param max_samples: maximum number of samples to record; 
+                            default: 100000
 
         If `log_file` is None, the data is not logged; otherwise, on exit,
         the data are stored in a CSV file
@@ -67,8 +69,7 @@ class EvoSensor:
                                        max_samples=max_samples,
                                        feature_names=feature_names)
         self.__thread.start()
-   
- 
+
     def __get_measurements_in_background_t(self, serial_path, baud):
         """
         This is a thread that runs in the background to connect to the
@@ -80,7 +81,7 @@ class EvoSensor:
         crc8_fn = crcmod.predefined.mkPredefinedCrcFun('crc-8')
         ser = serial.Serial(serial_path, baud, timeout=1)
         ser.reset_input_buffer()
-        
+
         while self.__keep_going:
             if ser.in_waiting > 0:
                 data_header = ser.read(1)
@@ -88,7 +89,8 @@ class EvoSensor:
                     # After T read 3 bytes
                     frame = data_header + ser.read(3)
                     if frame[3] == crc8_fn(frame[0:3]):
-                        # Convert binary frame to decimal in shifting by 8 the frame
+                        # Convert binary frame to decimal in shifting by 8 the
+                        # frame
                         rng = frame[1] << 8
                         rng = rng | (frame[2] & 0xFF)
 
@@ -98,15 +100,14 @@ class EvoSensor:
                 self.__logger_start_cursor = self.__cursor
                 with self.__lock:
                     self.__values_cache[self.__cursor, :] = dec_out
-                    self.__cursor = (self.__cursor + 1) % self.__window_length                                    
-                    if self.__log_file is not None \
-                        and self.__logger_start_cursor < self.__max_samples:
+                    self.__cursor = (self.__cursor + 1) % self.__window_length
+                    if (self.__log_file is not None and
+                            self.__logger_start_cursor < self.__max_samples):
                         current_timestamp = datetime.datetime.now()
                         self.__logger.record(current_timestamp, dec_out)
                 if not self.__keep_going:
                     ser.close()
                     return
-                
 
     def __enter__(self):
         return self
@@ -124,7 +125,7 @@ class EvoSensor:
         """
         with self.__lock:
             return self.__data_processor.process(
-                self.__values_cache[:, 0:], cursor=self.__cursor)
+                self.__values_cache[:, 0:], cursor=self.__cursor)[0]
 
 
 if __name__ == "__main__":

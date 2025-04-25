@@ -38,7 +38,8 @@ void MotorDriver::writeSpeedToEsc(
     int rotorSpeedFrontLeft,
     int rotorSpeedFrontRight,
     int rotorSpeedBackLeft,
-    int rotorSpeedBackRight)
+    int rotorSpeedBackRight,
+    int minSpeed)
 {
     m_frontLeftEsc.writeMicroseconds(rotorSpeedFrontLeft);     // sets the ESC speed
     m_frontRightEsc.writeMicroseconds(rotorSpeedFrontRight);   // sets the ESC speed

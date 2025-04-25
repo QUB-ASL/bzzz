@@ -29,7 +29,6 @@ class AverageFilter(DataProcessor):
         return np.nanmean(data, axis=0)
 
 
-
 class MedianFilter(DataProcessor):
     """
     Median filter
@@ -41,7 +40,7 @@ class MedianFilter(DataProcessor):
         super().__init__()
 
     def process(self, data, cursor=0):
-        return  np.nanmedian(data, axis=0)
+        return np.nanmedian(data, axis=0)
 
 
 class NoFilter(DataProcessor):

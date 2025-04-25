@@ -59,7 +59,6 @@ namespace bzzz
             int rotor_speed_back_left,
             int rotor_speed_back_right);
 #endif
-
         /**
          * @brief disarm all motors
          */
@@ -88,3 +87,4 @@ namespace bzzz
 } /* end of namespace bzzz */
 
 #endif /* MOTORS_H */
+
