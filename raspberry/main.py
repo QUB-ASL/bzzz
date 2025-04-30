@@ -12,7 +12,7 @@ from bzzz.sensors.time_of_flight_sensor import TimeOfFlightSensor
 from bzzz.read_sbus import RC  # for radio data receiving, encoding and sending to ESP
 
 from bzzz.sensors.evo_time_of_flight import EvoSensor
-from bzzz.sensors.pressure_sensor import PressureSensor
+from bzzz.sensors.pressure_sensor import BMP180Sensor
 from bzzz.sensors.anemometer import Anemometer
 from bzzz.sensors.gnss import Gnss
 from bzzz.sensors.data_logger import DataLogger
