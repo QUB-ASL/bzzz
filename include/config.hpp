@@ -44,14 +44,14 @@
 /*
  * Motors config
  */
-    #define FRONT_LEFT_ESC_PIN 25
-    #define FRONT_RIGHT_ESC_PIN 33
-    #define BACK_LEFT_ESC_PIN 27
-    #define BACK_RIGHT_ESC_PIN 26
+#define FRONT_LEFT_ESC_PIN 25
+#define FRONT_RIGHT_ESC_PIN 33
+#define BACK_LEFT_ESC_PIN 27
+#define BACK_RIGHT_ESC_PIN 26
 
 #if UAV_TYPE == UAV_TYPE_HEXACOPTER
-    #define MIDDLE_LEFT_ESC_PIN 12   // port 3 
-    #define MIDDLE_RIGHT_ESC_PIN 14  // port 3
+#define MIDDLE_LEFT_ESC_PIN 12   // port 3 
+#define MIDDLE_RIGHT_ESC_PIN 14  // port 3
 #endif
 
 

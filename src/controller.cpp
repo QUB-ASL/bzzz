@@ -33,7 +33,7 @@ namespace bzzz
         return max(lo, min(hi, x));
     }
 
-#ifndef UAV_TYPE_HEXACOPTER
+#if UAV_TYPE==UAV_TYPE_QUADCOPTER
 /**
      * Compute PWM signals for motors (quadcopter version).
      * Uses control outputs from controlAction() and maps them to 4 motors.
@@ -67,9 +67,7 @@ namespace bzzz
         motorBL = clip(mBL, motorClipLow, motorClipHigh);
         motorBR = clip(mBR, motorClipLow, motorClipHigh);
     }
-#endif
-
-#ifdef UAV_TYPE_HEXACOPTER
+#elif UAV_TYPE==UAV_TYPE_HEXACOPTER
     /**
      * Compute PWM signals for motors (hexacopter version).
      * Uses control outputs from controlAction() and maps them to 6 motors.
