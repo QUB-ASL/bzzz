@@ -62,7 +62,7 @@ the RC.
         void setYawAngularVelocityGain(float gainOmegaZ);
 #endif /* BZZZ_DEBUG */
 
-#ifndef UAV_TYPE_HEXACOPTER
+#if UAV_TYPE==UAV_TYPE_QUADCOPTER
                 /**
          * @brief PWM signals to the four motors (QUADCOPTER VERSION)
          *
@@ -90,9 +90,7 @@ the RC.
             float controlToPwmScaling = U_TO_PWM,
             int motorClipLow = ZERO_ROTOR_SPEED,
             int motorClipHigh = ABSOLUTE_MAX_PWM);
-#endif
-
-#ifdef UAV_TYPE_HEXACOPTER
+#elif UAV_TYPE==UAV_TYPE_HEXACOPTER
         /**
          * @brief PWM signals to the six motors (HEXACOPTER VERSION)
          *

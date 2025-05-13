@@ -33,13 +33,12 @@ void MotorDriver::writeSpeedToEsc(
     m_middleLeftEsc.writeMicroseconds(rotorSpeedMiddleLeft);   // sets the ESC speed
     m_middleRightEsc.writeMicroseconds(rotorSpeedMiddleRight); // sets the ESC speed
 }
-#else
+#elif UAV_TYPE == UAV_TYPE_QUADCOPTER
 void MotorDriver::writeSpeedToEsc(
     int rotorSpeedFrontLeft,
     int rotorSpeedFrontRight,
     int rotorSpeedBackLeft,
-    int rotorSpeedBackRight,
-    int minSpeed)
+    int rotorSpeedBackRight)
 {
     m_frontLeftEsc.writeMicroseconds(rotorSpeedFrontLeft);     // sets the ESC speed
     m_frontRightEsc.writeMicroseconds(rotorSpeedFrontRight);   // sets the ESC speed

@@ -33,7 +33,8 @@ namespace bzzz
          * Attach ESC to correct motor(ESC_PIN)
          */
         void attachEscToPwmPin(void);
-
+        
+#if UAV_TYPE == UAV_TYPE_HEXACOPTER
         /**
          * @brief Write the correct speed to correct motor(ESC_PIN)
          *
@@ -44,7 +45,6 @@ namespace bzzz
          * @param rotor_speed_middle_left set motor speed for MIDDLE_LEFT_ESC_PIN
          * @param rotor_speed_middle_right set motor speed for MIDDLE_RIGHT_ESC_PIN
          */
-#if UAV_TYPE == UAV_TYPE_HEXACOPTER
         void writeSpeedToEsc(
             int rotor_speed_front_left,
             int rotor_speed_front_right,
@@ -52,7 +52,15 @@ namespace bzzz
             int rotor_speed_back_right,
             int rotor_speed_middle_left,
             int rotor_speed_middle_right);
-#else
+#elif UAV_TYPE == UAV_TYPE_QUADCOPTER
+        /**
+         * @brief Write the correct speed to correct motor(ESC_PIN)
+         *
+         * @param rotor_speed_front_left set motor speed for FRONT_LEFT_ESC_PIN
+         * @param rotor_speed_front_right set motor speed for FRONT_RIGHT_ESC_PIN
+         * @param rotor_speed_back_left set motor speed for BACK_LEFT_ESC_PIN
+         * @param rotor_speed_back_right set motor speed for BACK_RIGHT_ESC_PIN
+         */
         void writeSpeedToEsc(
             int rotor_speed_front_left,
             int rotor_speed_front_right,
