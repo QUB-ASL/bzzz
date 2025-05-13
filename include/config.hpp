@@ -6,7 +6,7 @@
 // UAV Type Selection
 #define UAV_TYPE_QUADCOPTER 1
 #define UAV_TYPE_HEXACOPTER 2
-#define UAV_TYPE UAV_TYPE_HEXACOPTER  // <- Change this to UAV_TYPE_QUADCOPTER if needed
+
 
 /**
  * Timer config
