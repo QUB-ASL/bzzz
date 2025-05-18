@@ -48,6 +48,7 @@ class RBFNetworkQR:
         self.y = None
         self.A = None
         self.apply_learning_rate = 0
+        self.store_weights = weights
 
         # If sigma is not specified, calculate it based on the distances 
         # between centers
@@ -99,6 +100,7 @@ class RBFNetworkQR:
         self.X = X
         self.y = y
         self.A = A
+        self.store_weights = self.weights
 
     def update(self, 
             new_X, 
@@ -136,7 +138,8 @@ class RBFNetworkQR:
             self.b = np.append(self.b, new_b)
 
             self.weights = np.append(self.weights, 0)
-            self.apply_learning_rate = 20
+            self.store_weights = np.hstack((self.store_weights, np.zeros((self.store_weights.shape[0], 1))))
+            self.apply_learning_rate = 10
 
         else:
             self.centers = updated_centers
@@ -156,13 +159,14 @@ class RBFNetworkQR:
         lhs = self.R
         new_weights = spla.solve_triangular(lhs, rhs)
 
-        if self.apply_learning_rate > 0:
-            learning_rate = np.ones(self.num_centers)
-            learning_rate = 0.01
-            self.weights = (1 - learning_rate) * self.weights + learning_rate * new_weights
-            self.apply_learning_rate -= 1
-        else:
-            self.weights = new_weights
+        # if self.apply_learning_rate > 0:
+        #     learning_rate = np.ones(self.num_centers)
+        #     learning_rate = 0.5
+        #     self.weights = (1 - learning_rate) * self.weights + learning_rate * new_weights
+        #     self.apply_learning_rate -= 1
+        # else:
+        self.weights = new_weights
+        self.store_weights = np.vstack((self.store_weights, self.weights))
 
         # Append lists
         self.X = np.vstack((self.X, new_X))
@@ -217,12 +221,44 @@ def prepare_time_series_data(prediction_direction,
     :return: Prepared input and target data
     """
     X, y = [], []
-    for i in range(len(x_wind) - window_size - prediction_horizon):
+    for i in range(1,len(x_wind) - window_size - prediction_horizon):
         X.append(list(y_wind[i:i+window_size][::-1]))
         if prediction_direction == 'x':
             y.append(x_wind[i+window_size+prediction_horizon-1])
         elif prediction_direction == 'y':
             y.append(y_wind[i+window_size+prediction_horizon-1])
+        elif prediction_direction == 'z':
+            y.append(z_wind[i+window_size+prediction_horizon-1])
+        else:
+            raise ValueError('Invalid prediction direction')
+    return np.array(X), np.array(y)
+
+def prepare_time_series_data_difference(prediction_direction,
+                                        x_wind,
+                                        y_wind,
+                                        z_wind,
+                                        window_size, 
+                                        prediction_horizon):
+    """
+    Prepare time series data for training.
+
+    :param prediction_direction: Prediction direction
+    :param x_wind: X-component of wind
+    :param y_wind: Y-component of wind
+    :param z_wind: Z-component of wind
+    :param window_size: Size of the window
+    :param prediction_horizon: Prediction horizon
+    :return: Prepared input and target data
+    """
+    X, y = [], []
+    for i in range(1, len(x_wind) - window_size - prediction_horizon):
+        X.append(list(y_wind[i:i+window_size][::-1] - y_wind[i-1:i+window_size-1][::-1]))
+        # X[-1] = np.hstack((X[-1], y_wind[i:i+window_size][::-1] - y_wind[i-1:i+window_size-1][::-1]))
+        # list(y_wind[i:i+window_size][::-1] - y_wind[i-1:i+window_size-1][::-1])
+        if prediction_direction == 'x':
+            y.append(x_wind[i+window_size+prediction_horizon-1])
+        elif prediction_direction == 'y':
+            y.append(y_wind[i+window_size+prediction_horizon-1] - y_wind[i+window_size-1])
         elif prediction_direction == 'z':
             y.append(z_wind[i+window_size+prediction_horizon-1])
         else:
@@ -332,6 +368,24 @@ def NN(file_name,
     #             writer = csv.writer(f)
     #             writer.writerow([f'Train_W_Window_size_{window_size}_Number_of_centers_{num_centers}', trainScore_W])
 
+def check_vector_change(old_vector, new_vector, threshold, position):
+    max_old_vector = max(abs(old_vector))
+    for i, (old, new) in enumerate(zip(old_vector, new_vector)):
+        if abs(old) > 10 and abs(new) > 10:
+            if old == 0:
+                if new != 0:
+                    print(f"Component {i} changed from 0 to {new} — can't compute percentage change.")
+                continue
+
+            change = abs((new - old) / (abs(old) + (max_old_vector*0.9)))
+            if change > threshold:
+                print(f'Position: {position}')
+                print(f"Component {i} changed by more than {threshold}: {old} -> {new}")
+                # print(f"max_old_vector: {max_old_vector}")
+                # print(f"New weights: {new_vector}")
+                return True
+    return False
+
 # Example usage
 if __name__ == "__main__":
 
@@ -340,10 +394,17 @@ if __name__ == "__main__":
     prediction_horizon = 40
     number_of_initial_points = 400
     num_centers = 15  # Number of RBF centers
-    adaptation_rate= 0.000001 # Adaptation rate for online K-means
-    regulariser = 0.00082 # Regularization parameter
+    adaptation_rate= 0.00000 # Adaptation rate for online K-means
+    regulariser = 0.000001 # Regularization parameter
 
-    # Read Data
+    # # Read Data
+    # df_wind = pd.read_csv('raspberry/data/Anemometer-16-04-25--11-51_N_10.csv')
+
+    # x_wind = df_wind['U_axis'].values
+    # y_wind = df_wind['V_axis'].values
+    # z_wind = df_wind['W_axis'].values
+
+        # Read Data
     df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv')
 
     x_wind = df_wind['U_axis'].values
@@ -357,6 +418,21 @@ if __name__ == "__main__":
                                     z_wind = z_wind,
                                     window_size = window_size,
                                     prediction_horizon = prediction_horizon)
+    
+    # X_OG_initial = X_OG[:number_of_initial_points]
+    # y_OG_initial = y_OG[:number_of_initial_points]
+    # X_OG_update = X_OG[number_of_initial_points:]
+    # y_OG_update = y_OG[number_of_initial_points:]
+    # X_OG_predict = X_OG[number_of_initial_points + prediction_horizon:]
+    # y_OG_predict = y_OG[number_of_initial_points + prediction_horizon:]
+    
+    
+    # X, y = prepare_time_series_data_difference(prediction_direction = 'y',
+    #                                            x_wind = x_wind,
+    #                                            y_wind = y_wind,
+    #                                            z_wind = z_wind,
+    #                                            window_size = window_size,
+    #                                            prediction_horizon = prediction_horizon)
 
     # Split the data: first number of initial points for initial fit, 
     # rest for updates
@@ -366,6 +442,45 @@ if __name__ == "__main__":
     y_update = y[number_of_initial_points:]
     X_predict = X[number_of_initial_points + prediction_horizon:]
     y_predict = y[number_of_initial_points + prediction_horizon:]
+
+    # centres = np.array([
+    # [1. , 1. , 1. , 1. , 1. ],       # 0  Constant 0
+    # [2.5, 2.5, 2.5, 2.5, 2.5],       # 1  Constant 2
+    # [4. , 4. , 4. , 4. , 4. ],       # 2  Constant 4
+    # [5.5, 5.5, 5.5, 5.5, 5.5],       # 3  Constant 6
+    # [7. , 7. , 7. , 7. , 7. ],       # 4  Constant 8
+    # [0. , 0.5, 1. , 1.5, 2. ],       # 5  Ramp up slow
+    # [0. , 1. , 2. , 3. , 4. ],       # 6  Ramp up moderate
+    # [0. , 1.5, 3. , 4.5, 6. ],       # 7  Ramp up faster
+    # [0. , 2. , 4. , 6. , 8. ],       # 8  Ramp up fast
+    # [8. , 7.5, 7. , 6.5, 6. ],       # 9  Ramp down slow
+    # [8. , 7. , 6. , 5. , 4. ],       # 10 Ramp down moderate
+    # [8. , 6.5, 5. , 3.5, 2. ],       # 11 Ramp down faster
+    # [8. , 6. , 4. , 2. , 0. ],       # 12 Ramp down fast
+    # [4. , 5  , 4. , 3  , 4. ],       # 13 Small oscillation
+    # [4. , 6.5, 4. , 1.5, 4. ]        # 14 Large oscillation
+    # ])
+
+    # centres = np.array([[-0.06453707, -0.06821385, -0.05737078, -0.03226434, -0.00902227],
+    #                     [ 0.19338691,  0.19496849,  0.1642155 ,  0.11488895,  0.06955985],
+    #                     [ 0.04059729,  0.06356214,  0.08542602,  0.09633732,  0.09159067],
+    #                     [-0.11245009, -0.12601042, -0.13099057, -0.12652188, -0.11000764],
+    #                     [-0.00052405,  0.00209227,  0.00630957,  0.01111048,  0.01422512],
+    #                     [ 0.0527953 ,  0.10835329,  0.1746289 ,  0.2224657 ,  0.22832639],
+    #                     [ 0.03959756, -0.01066881, -0.06512933, -0.07826501, -0.06229075],
+    #                     [-0.22597066, -0.25590865, -0.26052323, -0.24344477, -0.21019782],
+    #                     [-0.0953256 , -0.05936492,  0.01871464,  0.10203539,  0.13722965],
+    #                     [-0.21047728, -0.19653443, -0.12593466, -0.04078974,  0.01919271],
+    #                     [-0.06261572, -0.00643667,  0.02395917, -0.03736854, -0.11354599],
+    #                     [ 0.26572181,  0.30199859,  0.30893955,  0.29379109,  0.25080417],
+    #                     [ 0.17532806,  0.14594368,  0.04327199, -0.07486537, -0.12799679],
+    #                     [ 0.09074148,  0.07513748,  0.04594552,  0.02102159,  0.00538061],
+    #                     [ 0.00059023, -0.06374246, -0.14621614, -0.21227898, -0.2270293 ]])
+    
+
+    # weights = np.array([ 55.45671054,  -0.17751888,  -1.91476968, -25.62831274, -55.40976183,
+    #                     -0.09955915,  -8.42615975,   3.98928517,   0.29296627,  -4.06670172,
+    #                      3.56873386,  -0.30255413,  -4.43675836,  29.4324898,    8.47225438])
 
     # # PH 10 centers
     # centres = np.array([[ 0.53071695,  0.52723016,  0.52596789,  0.52685064,  0.53004222],
@@ -443,8 +558,18 @@ if __name__ == "__main__":
                        updated_centers,
                        last_split_cluster_idx)
         temp_pred = rbf_net.predict(X_predict[i].reshape(1, -1))[0]
+        # temp_pred = temp_pred + X_OG_predict[i][0] 
         # temp_pred = temp_pred + 0.1*previous_error
         y_pred.append(temp_pred)
+        # if rbf_net.store_weights.shape[0] == 200:
+        #     initial_weights = rbf_net.store_weights[-1]
+        #     print(f'initial_weights: {initial_weights}')
+        # if rbf_net.store_weights.shape[0] > 200:
+        #     if check_vector_change(initial_weights, rbf_net.store_weights[-1], .25, i) is True:
+        #         initial_weights = rbf_net.store_weights[-1]
+        #         print(f'new centres: {rbf_net.centers}')
+        #         print(f'new weights: {rbf_net.store_weights[-1]}')
+
         # if i > prediction_horizon:
         #     previous_error = y_predict[i-prediction_horizon] - y_pred[-prediction_horizon]
 
@@ -461,6 +586,9 @@ if __name__ == "__main__":
     print(f'Percentile Error: {percentile_error}')
     print(f'for window_size: {window_size} and num_centers: {num_centers} and adaptation_rate: {adaptation_rate} and regulariser: {regulariser}')
 
+    store_weights_df = pd.DataFrame(rbf_net.store_weights)
+    store_weights_df.to_csv(f'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10_weights.csv', index=False)
+
     # Generate implicit x-values
     t = np.arange(len(y_wind))
 
@@ -468,11 +596,15 @@ if __name__ == "__main__":
     plt.figure(figsize=(12, 6))
     plt.plot(t, y_wind, label='True Time Series', color='black', linewidth=4)
     plt.plot(t[10:], y_wind[0:-10], label='Persistence Method', color='blue', linestyle='--', linewidth=4)
-    plt.plot(t[number_of_initial_points + 2*prediction_horizon + window_size:], y_pred, label='RBF NN Method', color='red', linestyle='--', linewidth=4)
+    plt.plot(t[number_of_initial_points + 2*prediction_horizon + window_size:-1], y_pred, label='RBF NN Method', color='red', linestyle='--', linewidth=4)
     plt.title('10th Step Ahead Time Series Prediction using RBF NN (updating) VS Persistence', fontsize=32)
     plt.xlabel('Time Step', fontsize=23)
     plt.ylabel('Wind Speed (m/s)', fontsize=23)
     plt.legend(fontsize=20)
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(store_weights_df)
+
     plt.show()
 
     

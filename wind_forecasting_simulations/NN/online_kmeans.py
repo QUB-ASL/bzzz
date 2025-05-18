@@ -115,6 +115,44 @@ class OnlineKMeans:
             # Use a fixed learning rate
             return self.adaptation_rate
         
+    def mardia_skewness_kurtosis(self, X):
+        """
+        Computes Mardia's multivariate skewness and kurtosis.
+
+        Parameters
+        ----------
+        X : array_like, shape (n_samples, n_features)
+            The data matrix.
+
+        Returns
+        -------
+        skewness : float
+            Mardia’s multivariate skewness b_{1,d}.
+        kurtosis : float
+            Mardia’s multivariate kurtosis b_{2,d}.
+        """
+        X = np.asarray(X)
+        n, d = X.shape
+
+        # 1. centre and covariance (population)
+        mean = X.mean(axis=0)
+        S = np.cov(X, rowvar=False, ddof=0)
+
+        # 2. inverse (pseudo-inverse for stability)
+        S_inv = np.linalg.pinv(S)
+
+        # 3. demean
+        diffs = X - mean
+
+        # 4. pairwise Mahalanobis inner products
+        D = diffs @ S_inv @ diffs.T   # shape (n, n), D[i,j] = (x_i-μ)^T S⁻¹ (x_j-μ)
+
+        # 5. skewness and kurtosis
+        b1d = D.ravel().dot(D.ravel()**2) / (n**2)        # ∑ D_ij^3 / n^2
+        b2d = np.sum(np.diag(D)**2) / n                   # ∑ (D_ii)^2 / n
+
+        return b1d, b2d
+        
     def check_and_split_cluster(self, cluster_idx):
         """
         Check if a cluster needs splitting based on the 
@@ -122,6 +160,10 @@ class OnlineKMeans:
         """
         cluster_points = np.array(self.cluster_data[cluster_idx])
         n_points = cluster_points.shape[0]
+
+        # print(self.centers)
+
+        # print(self.centers[cluster_idx].reshape(1, -1))
 
         if n_points < 50:  # Not enough points to compute BC
             return
@@ -134,13 +176,15 @@ class OnlineKMeans:
         bc = (g**2 + 1) / (k + 3 * ((n_points - 1)**2) / ((n_points - 2) * (n_points - 3)))
 
         if bc > 0.6:
+            print(f"Cluster {cluster_idx} is bimodal. SPLITTING...")
             self._split_cluster(cluster_idx, cluster_points)
 
     def _split_cluster(self, cluster_idx, cluster_points):
-        print(f"Splitting cluster {cluster_idx}...")
+        # print(f"Splitting cluster {cluster_idx}...")
         total_count = np.sum(self.counts)
-        print(f"At count: {total_count}")
-        local_kmeans = KMeans(n_clusters=2, max_iter=2, random_state=self.random_state)
+        # print(f"At count: {total_count}")
+        local_kmeans = KMeans(n_clusters=2, init=np.vstack([self.centers[cluster_idx].reshape(1, -1),self.centers[cluster_idx].reshape(1, -1)]), n_init=1,
+                              max_iter=2, random_state=self.random_state)
         local_kmeans.fit(cluster_points)
         local_labels = local_kmeans.labels_
         local_labels[local_labels == 1] = self.n_clusters 
@@ -445,8 +489,8 @@ def prepare_time_series_data(series,
 
 def animation(X, initial_data_end, interval=1000):
     # Initialize online K-means with 5 clusters
-    online_kmeans = OnlineKMeans(n_clusters=6, 
-                                 adaptation_rate=0.05, 
+    online_kmeans = OnlineKMeans(n_clusters=5, 
+                                 adaptation_rate=0.0, 
                                  random_state=42)
     online_kmeans.initialise_centres(X[:initial_data_end])
 
@@ -457,17 +501,17 @@ def animation(X, initial_data_end, interval=1000):
     centers_pca = pca.transform(online_kmeans.centers)
 
     # Set up figure
-    fig = plt.figure(figsize=(18, 8))
-    gs = gridspec.GridSpec(5, 1, height_ratios=[3, 3, 3, 2, 2]) 
-    ax1 = fig.add_subplot(gs[:3])  # PCA space
-    ax2 = fig.add_subplot(gs[3:])  # Feature space
+    fig = plt.figure(figsize=(7, 4))
+    # gs = gridspec.GridSpec(5, 1, height_ratios=[3, 3, 3, 2, 2]) 
+    ax1 = fig.add_subplot(111)  # PCA space
+    # ax2 = fig.add_subplot(gs[3:])  # Feature space
 
     ax1.set_xlim(-11, 18)
     ax1.set_ylim(-5, 4.5)
-    ax1.set_title('Cluster Density and Centres in PCA Space', fontsize=32)
-    ax1.set_xlabel('Principal Component 1', fontsize=23)
-    ax1.set_ylabel('Principal Component 2', fontsize=23)
-    ax1.tick_params(axis='both', labelsize=20)
+    ax1.set_title('Cluster Density and Centres in PCA Space', fontsize=16)
+    ax1.set_xlabel('Principal Component 1', fontsize=14)
+    ax1.set_ylabel('Principal Component 2', fontsize=14)
+    ax1.tick_params(axis='both', labelsize=14)
 
     cluster_colors = ['Blues', 'Oranges', 'Greens', 'Reds', 'Purples', 'Greys', 'PuRd']
     plot_colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple',  'tab:grey', 'tab:pink']
@@ -503,17 +547,17 @@ def animation(X, initial_data_end, interval=1000):
         handles = [Line2D([0], [0], marker='o', linestyle='None', color=marker_colors[i], markeredgewidth=5, markerfacecolor=plot_colors[i], markersize=20, label=labels[i]) for i in range(online_kmeans.n_clusters)]
 
         # Place shared legend outside
-        fig.legend(handles, labels, loc='center left', fontsize=20, bbox_to_anchor=(0,1.8), bbox_transform=ax2.transAxes, ncol=2)
+        # fig.legend(handles, labels, loc='center left', fontsize=20, bbox_to_anchor=(0,1.8), bbox_transform=ax2.transAxes, ncol=2)
 
     def update(frame, number_of_clusters=number_of_clusters):
-        ax2.clear()
+        # ax2.clear()
         ax1.clear()
         ax1.set_xlim(-11, 18)
         ax1.set_ylim(-5, 4.5)
-        ax1.set_title('Cluster Density and Centres in PCA Space', fontsize=32)
-        ax1.set_xlabel('Principal Component 1', fontsize=23)
-        ax1.set_ylabel('Principal Component 2', fontsize=23)
-        ax1.tick_params(axis='both', labelsize=20)
+        ax1.set_title('Cluster Density and Centres in PCA Space', fontsize=16)
+        ax1.set_xlabel('Principal Component 1', fontsize=14)
+        ax1.set_ylabel('Principal Component 2', fontsize=14)
+        ax1.tick_params(axis='both', labelsize=14)
 
         # Update clustering with a new point
         new_point = X[initial_data_end + frame]
@@ -552,34 +596,34 @@ def animation(X, initial_data_end, interval=1000):
             ax1.contourf(x_grid, y_grid, density, levels=contour_levels[3:], cmap=cluster_colors[cluster_idx], alpha=1)
 
         # Plot cluster centers
-        ax1.scatter(centers_pca[:, 0], centers_pca[:, 1], s=500, color='yellow', label='Cluster Centres', edgecolor='darkred')
-        ax1.legend(loc='upper left', fontsize=20)
+        ax1.scatter(centers_pca[:, 0], centers_pca[:, 1], s=200, color='yellow', label='Cluster Centres', edgecolor='darkred')
+        ax1.legend(loc='upper left', fontsize=10)
 
         # Define x-ticks: 10 time steps from t-9 to t
         time_labels = [f't-{14 - i}' if i < 14 else 't' for i in range(15)]
         x_positions = list(range(15))  # x-axis positions: 0 through 9
-        ax2.set_xticks(x_positions)
-        ax2.set_xticklabels(time_labels)
+        # ax2.set_xticks(x_positions)
+        # ax2.set_xticklabels(time_labels)
 
-        # Feature space visualization
-        ax2.set_ylim(0, 6.2)
-        ax2.set_xlim(-2, 14.2)
-        ax2.set_title('Cluster Centres in Feature Space', fontsize=32)
-        ax2.set_xlabel('Temporal Index of RBF Centre', fontsize=23)
-        ax2.set_ylabel('Wind Velocity - m/s', fontsize=23)
-        ax2.tick_params(axis='both', labelsize=20)
-        for i, center in enumerate(online_kmeans.centers):
-            reversed_center = center[::-1]
-            ax2.plot(reversed_center, label=f'Centre {i+1}', linewidth=3, color=plot_colors[i % len(plot_colors)])
-        ax2.legend(loc='upper left', fontsize=20)
+        # # Feature space visualization
+        # ax2.set_ylim(0, 6.2)
+        # ax2.set_xlim(-2, 14.2)
+        # ax2.set_title('Cluster Centres in Feature Space', fontsize=32)
+        # ax2.set_xlabel('Temporal Index of RBF Centre', fontsize=23)
+        # ax2.set_ylabel('Wind Velocity - m/s', fontsize=23)
+        # ax2.tick_params(axis='both', labelsize=20)
+        # for i, center in enumerate(online_kmeans.centers):
+        #     reversed_center = center[::-1]
+        #     ax2.plot(reversed_center, label=f'Centre {i+1}', linewidth=3, color=plot_colors[i % len(plot_colors)])
+        # ax2.legend(loc='upper left', fontsize=20)
 
-        if np.sum(online_kmeans.counts) > 1900:
+        if np.sum(online_kmeans.counts) > 1906:
             #Plot points in PCA space
             plot_x_y = np.array([[0,10], [1,10], [2,10], [3,10], [4,10], [5,10], [6,10], [7,10], [8,10], [9,10]])
-            plot_x_y = np.vstack([plot_x_y, X_pca[1900:]])
+            plot_x_y = np.vstack([plot_x_y, X_pca[1906:]])
             colour_labels = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-            colour_labels = np.append(colour_labels, online_kmeans.labels[1900:initial_data_end + frame])
-            ax1.scatter(plot_x_y[:, 0], plot_x_y[:, 1], s=120, c=colour_labels, cmap='tab10', edgecolor='k')
+            colour_labels = np.append(colour_labels, online_kmeans.labels[1906:initial_data_end + frame])
+            ax1.scatter(plot_x_y[:, 0], plot_x_y[:, 1], s=50, c=colour_labels, cmap='tab10', edgecolor='k')
             # print(online_kmeans.labels[1210:initial_data_end + frame])
 
         if online_kmeans.n_clusters > number_of_clusters:
@@ -588,13 +632,23 @@ def animation(X, initial_data_end, interval=1000):
             handles = [Line2D([0], [0], marker='o', linestyle='None', color=marker_colors[i], markeredgewidth=5, markerfacecolor=plot_colors[i], markersize=20, label=labels[i]) for i in range(online_kmeans.n_clusters)]
 
             # Place shared legend outside
-            fig.legend(handles, labels, loc='center left', fontsize=20, bbox_to_anchor=(0,2.2), bbox_transform=ax2.transAxes, ncol=2 )
-            number_of_clusters = online_kmeans.n_clusters
+            # fig.legend(handles, labels, loc='center left', fontsize=20, bbox_to_anchor=(0,1.8), bbox_transform=ax2.transAxes, ncol=2 )
+            # number_of_clusters = online_kmeans.n_clusters
+
+        if np.sum(online_kmeans.counts) == 1935:
+            fig.savefig('raspberry/data/Before_split.pdf', dpi=600, bbox_inches='tight')
+
+        if np.sum(online_kmeans.counts) == 1958:
+            fig.savefig('raspberry/data/Split_cluster.pdf', dpi=600, bbox_inches='tight')
+
+        # fig.savefig('raspberry/data/TEST.svg', dpi=600, bbox_inches='tight')
 
     anim = FuncAnimation(fig, update, frames=range(0, len(X)-initial_data_end), interval=interval)
 
     plt.tight_layout(rect=[0, 0.02, 1, 1])
     plt.show()
+
+    # anim.save('raspberry/data/TEST.gif', fps=10, dpi=600)
 
 
 # Example usage
@@ -618,7 +672,7 @@ if __name__ == "__main__":
     prediction_horizon = 10
     X, y = prepare_time_series_data(series, window_size, prediction_horizon)
 
-    animation( X, split_data, 1000)
+    animation( X, split_data, -1)
 
     # # Initialize online K-means with 5 clusters
     # online_kmeans = OnlineKMeans(n_clusters=5, 

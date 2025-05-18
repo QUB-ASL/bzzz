@@ -8,10 +8,10 @@ def MovingAverageFilter(file_name,
 
     #read data
     df_wind = pd.read_csv(f'{file_name}.csv')
-    res = df_wind
     
     #set index
     df_wind.index = pd.date_range(df_wind.Index_2[0], df_wind.Index_2.iloc[-1], freq="25L")
+    res = df_wind.copy()
     
     # Calculating mean
     res['Wind_Speed'] = df_wind.Wind_Speed.rolling(number_samples).mean().round(4)
@@ -33,6 +33,7 @@ def MovingAverageFilter(file_name,
     plt.plot(res.Wind_Speed)
     plt.title('Wind speed over Time', fontsize=20)
     plt.ylabel('Wind Speed', fontsize=16)
+    plt.legend(['Original', 'Filtered'])
 
     plt.show() 
 
@@ -66,11 +67,12 @@ def medianFilter(file_name,
     plt.plot(res.Wind_Speed)
     plt.title('Wind speed over Time', fontsize=20)
     plt.ylabel('Wind Speed', fontsize=16)
+    plt.legend(['Original', 'Filtered'])
 
     plt.show()
 
 # medianFilter(file_name='raspberry/data/wind_data/25-09-23--16-49/25-09-23--16-49',
 #                     number_samples=21)
 
-MovingAverageFilter(file_name='raspberry/data/wind_data/december_2023/21-12-23--20-18/21-12-23--20-18',
+MovingAverageFilter(file_name='raspberry/data/Anemometer-16-04-25--12-11',
                     number_samples=10)

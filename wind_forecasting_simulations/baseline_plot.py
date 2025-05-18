@@ -128,7 +128,7 @@ def assume_average_wind_speed(file_name):
 
 
 # plot_persistence_method('raspberry/data/wind_data/25-09-23--17-06/25-09-23--17-06_N_10.csv', 10)
-plot_persistence_method('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv', 10)
+plot_persistence_method('raspberry/data/Anemometer-16-04-25--11-51_N_10.csv', 10)
 # plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--15-30/21-12-23--15-30_N_10.csv', 10)
 # plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--16-24/21-12-23--16-24_N_10.csv', 10)
 # plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--17-24/21-12-23--17-24_N_10.csv', 10)

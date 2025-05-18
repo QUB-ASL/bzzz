@@ -21,9 +21,9 @@ def DataEditor(file_name):
     res['V_axis'] = df_wind['V_axis']
     res['W_axis'] = df_wind['W_axis']
 
-    res['Index_2'] = datetime.datetime(2023, 12, 21, 15, 50, 10, 000000)
+    res['Index_2'] = datetime.datetime(2025, 4, 16, 12, 11, 7, 000000)
 
-    for x in range(24001): 
+    for x in range(35978): 
       res['Index_2'][x+1] = res['Index_2'][x] + datetime.timedelta(seconds=0.025)  
 
         # res['Index_2'] = df_wind.Date_Time
@@ -43,4 +43,4 @@ def DataEditor(file_name):
     res.to_csv(f'{file_name}.csv', index=False)
 
 
-DataEditor(file_name='raspberry/data/wind_data/25-09-23--17-06/25-09-23--17-06_N_10')
+DataEditor(file_name='raspberry/data/Anemometer-16-04-25--12-11')
