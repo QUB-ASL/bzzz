@@ -187,6 +187,9 @@
 #     print(f"[GP] Interpolated RBF centers at {query_loc}:\n{centers_interp_gp}")
 #     print(f"[GP] Interpolated RBF weights at {query_loc}:\n{weights_interp_gp}")
 
+
+
+
 import numpy as np
 
 class GPInterpolator:
@@ -229,12 +232,125 @@ class GPInterpolator:
         Sigma += self.noise_var * np.eye(k)
 
         try:
-            inv_Sigma = np.linalg.inv(Sigma)
+            L = np.linalg.cholesky(Sigma)
+            alpha = np.linalg.solve(L.T, np.linalg.solve(L, known_values))
+            interp_value = k_star @ alpha
         except np.linalg.LinAlgError:
-            inv_Sigma = np.linalg.pinv(Sigma)  # fallback if singular
+            inv_Sigma = np.linalg.pinv(Sigma)
+            interp_value = k_star @ inv_Sigma @ known_values
 
-        interp_value = np.dot(k_star, np.dot(inv_Sigma, known_values))
         return interp_value
+
+
+
+# import numpy as np
+
+# class GPInterpolator:
+#     def __init__(self, kernel_type='squared_exponential', gamma=1.0, noise_var=0.0):
+#         self.kernel_type = kernel_type
+#         self.gamma = gamma
+#         self.noise_var = noise_var
+
+#     def _kernel(self, r1, r2):
+#         dist = np.linalg.norm(r1 - r2)
+#         if self.kernel_type == 'squared_exponential':
+#             return np.exp(-self.gamma * dist ** 2)
+#         elif self.kernel_type == 'ornstein_uhlenbeck':
+#             return np.exp(-self.gamma * dist)
+#         else:
+#             raise ValueError("Unsupported kernel type")
+
+#     def _kernel_grad(self, r, known_locs):
+#         """
+#         Gradient of k(r, r_i) w.r.t r, for Taylor expansion.
+#         """
+#         grads = []
+#         for ri in known_locs:
+#             diff = r - ri
+#             dist_sq = np.dot(diff, diff)
+#             if self.kernel_type == 'squared_exponential':
+#                 k_val = np.exp(-self.gamma * dist_sq)
+#                 grad = -2 * self.gamma * k_val * diff
+#             else:
+#                 raise NotImplementedError("Grad only supported for squared_exponential")
+#             grads.append(grad)
+#         return np.stack(grads, axis=0)  # shape: (N, D)
+
+#     def _build_cov_matrix(self, known_locs, query_loc=None):
+#         k = len(known_locs)
+#         Sigma = np.zeros((k, k))
+#         for i in range(k):
+#             for j in range(k):
+#                 Sigma[i, j] = self._kernel(known_locs[i], known_locs[j])
+#         k_star = None
+#         if query_loc is not None:
+#             k_star = np.array([self._kernel(query_loc, loc) for loc in known_locs])
+#         return Sigma, k_star
+
+#     def interpolate(self, known_locs, known_values, query_mean, method='standard',
+#                     input_cov=None, n_samples=1000, alpha=1e-3, beta=2.0, kappa=0.0):
+#         """
+#         method: 'standard' | 'taylor' | 'ut' | 'monte_carlo'
+#         input_cov: Covariance of query point (for taylor/ut/monte_carlo)
+#         """
+#         known_locs = np.array(known_locs)
+#         known_values = np.array(known_values)
+#         query_mean = np.array(query_mean)
+#         D = query_mean.shape[0]
+#         N = known_locs.shape[0]
+
+#         Sigma, _ = self._build_cov_matrix(known_locs)
+#         Sigma += self.noise_var * np.eye(N)
+#         inv_Sigma = np.linalg.pinv(Sigma)
+
+#         if method == 'standard':
+#             _, k_star = self._build_cov_matrix(known_locs, query_mean)
+#             return k_star @ inv_Sigma @ known_values
+
+#         elif method == 'taylor':
+#             if input_cov is None:
+#                 raise ValueError("input_cov is required for Taylor method")
+#             k_star = np.array([self._kernel(query_mean, loc) for loc in known_locs])
+#             grad_k = self._kernel_grad(query_mean, known_locs)  # shape: (N, D)
+#             correction = np.einsum('ni,ij,nj->n', grad_k, input_cov, grad_k)  # (N,)
+#             return (k_star + 0.5 * correction) @ inv_Sigma @ known_values
+
+#         elif method == 'ut':
+#             if input_cov is None:
+#                 raise ValueError("input_cov is required for Unscented Transform")
+#             lambda_ = alpha ** 2 * (D + kappa) - D
+#             sigma_points = [query_mean]
+#             sqrt_mat = np.linalg.cholesky((D + lambda_) * input_cov)
+#             for i in range(D):
+#                 sigma_points.append(query_mean + sqrt_mat[:, i])
+#                 sigma_points.append(query_mean - sqrt_mat[:, i])
+#             sigma_points = np.array(sigma_points)
+
+#             w_m = np.full(2 * D + 1, 1 / (2 * (D + lambda_)))
+#             w_m[0] = lambda_ / (D + lambda_)
+#             w_c = np.copy(w_m)
+#             w_c[0] += 1 - alpha ** 2 + beta
+
+#             preds = []
+#             for pt in sigma_points:
+#                 k_star = np.array([self._kernel(pt, loc) for loc in known_locs])
+#                 preds.append(k_star @ inv_Sigma @ known_values)
+#             preds = np.array(preds)
+#             return np.sum(w_m * preds)
+
+#         elif method == 'monte_carlo':
+#             if input_cov is None:
+#                 raise ValueError("input_cov is required for Monte Carlo")
+#             samples = np.random.multivariate_normal(query_mean, input_cov, size=n_samples)
+#             preds = []
+#             for pt in samples:
+#                 k_star = np.array([self._kernel(pt, loc) for loc in known_locs])
+#                 preds.append(k_star @ inv_Sigma @ known_values)
+#             return np.mean(preds)
+
+#         else:
+#             raise ValueError("Invalid interpolation method")
+
 
 
 class GPParameterInterpolator:

@@ -26,7 +26,8 @@ class RBFNetworkQR:
                  num_centers, 
                  sigma=None, 
                  centers=None,
-                 weights = None):
+                 weights = None,
+                 rbf_kernel_type='gaussian'):
         """
         Initialize the RBF Network.
 
@@ -46,6 +47,7 @@ class RBFNetworkQR:
         self.A = None
         self.apply_learning_rate = 0
         self.store_weights = weights
+        self.rbf_kernel_type = rbf_kernel_type
 
         # If sigma is not specified, calculate it based on the distances 
         # between centers
@@ -53,6 +55,7 @@ class RBFNetworkQR:
             dists = np.linalg.norm(self.centers[:, np.newaxis] 
                                    - self.centers, axis=2)
             self.sigma = np.mean(dists)
+            # self.sigma = 1/2*(np.mean(dists))**2
         else:
             self.sigma = sigma
         # print(f'sigma: {self.sigma}')
@@ -65,7 +68,30 @@ class RBFNetworkQR:
         :param center: Center of the RBF
         :return: RBF value
         """
-        return np.exp(-np.linalg.norm(x - center) ** 2 / (2 * self.sigma ** 2))
+        type = self.rbf_kernel_type
+        if type not in ['gaussian', 'multiquadric', 'inverse_multiquadric', 'thin_plate_spline']:
+            raise ValueError(f'Invalid RBF kernel type: {type}. '
+                             'Choose from "gaussian", "multiquadric", '
+                             '"inverse_multiquadric", or "thin_plate_spline".')
+        
+        if type == 'gaussian':
+            # Gaussian RBF
+            return np.exp(-np.linalg.norm(x - center) ** 2 / (2 * self.sigma ** 2))
+        
+        if type == 'multiquadric':
+            # Multiquadric RBF
+            return np.sqrt(np.linalg.norm(x - center) ** 2 + self.sigma ** 2)
+        
+        if type == 'inverse_multiquadric':
+            # Inverse Multiquadric RBF
+            return 1 / np.sqrt(np.linalg.norm(x - center) ** 2 + self.sigma ** 2)
+        
+        if type == 'thin_plate_spline':
+            # Thin Plate Spline RBF
+            r = np.linalg.norm(x - center)
+            return r ** 2 * np.log(r/ self.sigma) if r != 0 else 0
+        
+        
 
     def _calculate_A(self, X):
         """
@@ -389,7 +415,7 @@ if __name__ == "__main__":
     adaptation_rate= 0.00000 # Adaptation rate for online K-means
 
     # Read Data
-    df_wind = pd.read_csv('raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10.csv')
+    df_wind = pd.read_csv('raspberry/data/wind_data/december_2023/21-12-23--16-24/21-12-23--16-24_N_10.csv')
 
     x_wind = df_wind['U_axis'].values
     y_wind = df_wind['V_axis'].values
@@ -589,8 +615,10 @@ if __name__ == "__main__":
     
     # Initialize and train the RBF network using QR decomposition
     rbf_net = RBFNetworkQR(num_centers=num_centers, 
-                           centers=initial_centers)
-    rbf_net.fit(X_initial, y_initial)
+                           centers=centres,
+                           rbf_kernel_type= 'gaussian',
+                           weights=weights,)
+    # rbf_net.fit(X_initial, y_initial)
 
     # print(f'Weights: {rbf_net.weights}')
 
@@ -598,12 +626,12 @@ if __name__ == "__main__":
     y_pred = []
     # previous_error = 0
     for i in range(X_predict.shape[0]):
-        updated_centers = online_kmeans.update(X_predict[i])
-        last_split_cluster_idx = online_kmeans.last_split_cluster_idx
-        rbf_net.update(X_update[i], 
-                       y_update[i],
-                       updated_centers,
-                       last_split_cluster_idx)
+        # updated_centers = online_kmeans.update(X_predict[i])
+        # last_split_cluster_idx = online_kmeans.last_split_cluster_idx
+        # rbf_net.update(X_update[i], 
+        #                y_update[i],
+        #                updated_centers,
+        #                last_split_cluster_idx)
         temp_pred = rbf_net.predict(X_predict[i].reshape(1, -1))[0]
         # temp_pred = temp_pred + X_OG_predict[i][0] 
         # temp_pred = temp_pred + 0.1*previous_error
@@ -621,12 +649,23 @@ if __name__ == "__main__":
         #     previous_error = y_predict[i-prediction_horizon] - y_pred[-prediction_horizon]
         # if i == (1115-10):
         #     print(f'y_predict[i]: {y_predict[i]}')
+        
+    # # Convergence of RMSE
+    # rmse = []
+    # for i in range(1,y_predict.shape[0]):
+    #     error = math.sqrt(mean_squared_error(y_predict[:i], y_pred[:i]))
+    #     rmse.append(error)
+        
+    # plt.figure(figsize=(12, 6))
+    # plt.plot(rmse, label='RMSE Convergence', color='green', linewidth=4)
+        
+    
 
     erros = np.abs(y_predict - y_pred)
 
     # save the error to a csv file
-    erros_df = pd.DataFrame(erros, columns=['Error'])
-    erros_df.to_csv(f'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10_error.csv', index=False)
+    # erros_df = pd.DataFrame(erros, columns=['Error'])
+    # erros_df.to_csv(f'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10_error.csv', index=False)
 
     BenchmarkScore_U = math.sqrt(mean_squared_error(y_predict, y_pred))
     print('Benchmark_U Score: %.5f RMSE' % (BenchmarkScore_U))
@@ -636,8 +675,8 @@ if __name__ == "__main__":
     print(f'for window_size: {window_size} and num_centers: {num_centers} and adaptation_rate: {adaptation_rate}')
     print(f'X.shape: {X.shape}')
 
-    store_weights_df = pd.DataFrame(rbf_net.store_weights)
-    store_weights_df.to_csv(f'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10_weights.csv', index=False)
+    # store_weights_df = pd.DataFrame(rbf_net.store_weights)
+    # store_weights_df.to_csv(f'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10_weights.csv', index=False)
 
     # Generate implicit x-values
     t = np.arange(len(y_wind))
@@ -652,8 +691,8 @@ if __name__ == "__main__":
     plt.ylabel('Wind Speed (m/s)', fontsize=23)
     plt.legend(fontsize=20)
 
-    plt.figure(figsize=(12, 6))
-    plt.plot(store_weights_df)
+    # plt.figure(figsize=(12, 6))
+    # plt.plot(store_weights_df)
 
     plt.show()
 

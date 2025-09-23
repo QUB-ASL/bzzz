@@ -5,6 +5,7 @@ import seaborn as sns
 import csv
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from time import time
+from sklearn.metrics import mean_squared_error
 
 class ARIMA:
     def __init__(self, prediction_horizon, p, d, q, fix_params=None):
@@ -202,7 +203,7 @@ def run_arima_model(file_name,
                         writer.writerow([f'({str(p)},{str(d)},{str(q)})', combined_quantile_errors])
 
     if V is True:
-        df_wind = pd.read_csv(f'{file_name}.csv', usecols=[8])
+        df_wind = pd.read_csv(f'{file_name}.csv', usecols=[7])
         last_step_prediction = np.array([])
         combined_step_errors = pd.Series()
         x=0
@@ -223,11 +224,11 @@ def run_arima_model(file_name,
 
         # Make predictions
         for i in test_data[:-prediction_horizon]:
-            if (x+1) % update_every == 0:
-                start = time()
-                model.update_params(test_data[x+1-how_far_back:x+1])
-                print(f'update time = {time() - start}')
-                how_far_back = int(0.2*update_every)
+            # if (x+1) % update_every == 0:
+            #     start = time()
+            #     model.update_params(test_data[x+1-how_far_back:x+1])
+            #     print(f'update time = {time() - start}')
+            #     how_far_back = int(0.2*update_every)
                 # if x < 4000:
                 #     how_far_back = how_far_back + update_every
                 # print(f'how_far_back = {how_far_back}')
@@ -245,6 +246,9 @@ def run_arima_model(file_name,
     
         last_step_RMSE = np.sqrt(np.mean((test_data - last_step_prediction)**2))
         print(f'last_step_RMSE: {last_step_RMSE}')
+        last_step_error_2 = np.sqrt(mean_squared_error(test_data, last_step_prediction))
+        print(f'last_step_error_2: {last_step_error_2}')
+        
 
         last_step_error = np.sqrt((test_data - last_step_prediction)**2)
         print(f'last_step_error: {last_step_error}')
@@ -261,6 +265,11 @@ def run_arima_model(file_name,
         combined_RMSE = np.sqrt(sum_of_squares/(len(test_data)*prediction_horizon))
 
         combined_quantile_errors = np.quantile(combined_step_errors, 0.95)
+        
+        plt.figure(figsize=(10, 6))
+        plt.plot(test_data, label='Test Data')
+        plt.plot(last_step_prediction, label='Last Step Prediction')
+        
 
         plt.figure(figsize=(10,4))
         sns.distplot(last_step_error, hist=False, color='blue')
@@ -368,9 +377,9 @@ if __name__ == "__main__":
 
     # for i in range(11,21):
     #     for j in range(21):   
-            run_arima_model(file_name='raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10',
+            run_arima_model(file_name='raspberry/data/wind_data/december_2023/21-12-23--19-14/21-12-23--19-14_N_10',
                             train_end=400,
-                            test_end=39370,
+                            test_end=23990,
                             prediction_horizon=10,
                             p=9,
                             d=0,

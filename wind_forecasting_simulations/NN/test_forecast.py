@@ -979,6 +979,7 @@ if __name__ == "__main__":
 
 
     gp_parameters = GPParameterInterpolator(kernel_type='ornstein_uhlenbeck', gamma=0.00009, noise_var=0.0031)
+    cov_query = 50 * np.eye(2)  # Small location uncertainty
 
     weights_interp_gp = gp_parameters.interpolate(
         known_locs,
@@ -1209,12 +1210,14 @@ if __name__ == "__main__":
 
     # Kriging = Kriging(sigma2=1.0, zeta=10.0)
 
-    gp = GPInterpolator(kernel_type='ornstein_uhlenbeck', gamma=0.00009, noise_var=0.0031)
+    gp = GPInterpolator(kernel_type='squared_exponential', gamma=0.003, noise_var=0.00)
 
 
     # estimate_kriging = []
-    estimate_gp = []
-    
+    estimate_gp_stand = []
+    estimate_gp_taylor = []
+    estimate_gp_ut = [] 
+    estimate_gp_mc = []
     # Their known values
     for i in range(len(store_predictions_3864)):
         known_values = np.array([store_predictions_1115[i], 
@@ -1239,9 +1242,31 @@ if __name__ == "__main__":
                                 ])
         # Perform Kriging interpolation
         # estimate_kriging.append(Kriging.interpolate(known_locs, known_values, query_loc))
+        
+        print(f'Sigma, k_star: {gp._build_cov_matrix(known_locs, known_locs)}')
 
         # gp.fit(known_locs, known_values)
-        estimate_gp.append(gp.interpolate(known_locs, known_values, query_loc))
+        estimate_gp_stand.append(gp.interpolate(known_locs, 
+                                          known_values, 
+                                          query_loc))
+                                        #   method='standard',
+                                        #   input_cov=cov_query))
+        # estimate_gp_taylor.append(gp.interpolate(known_locs,
+        #                                   known_values, 
+        #                                   query_loc,
+        #                                   method='taylor',
+        #                                   input_cov=cov_query))
+        # estimate_gp_ut.append(gp.interpolate(known_locs,
+        #                                   known_values, 
+        #                                   query_loc,
+        #                                   method='ut',
+        #                                   input_cov=cov_query))
+        # estimate_gp_mc.append(gp.interpolate(known_locs,
+        #                                   known_values, 
+        #                                   query_loc,
+        #                                   method='monte_carlo',
+        #                                   n_samples=1000,
+        #                                   input_cov=cov_query))
         # print(f'gp: {estimate_gp}')
 
 
@@ -1265,7 +1290,10 @@ if __name__ == "__main__":
     error_20155 = mean_squared_error(y_predict, store_predictions_20155)
     error_20976 = mean_squared_error(y_predict, store_predictions_20976)
     # error_kriging = mean_squared_error(y_predict, estimate_kriging)
-    error_gp = mean_squared_error(y_predict, estimate_gp)
+    error_gp_stand = mean_squared_error(y_predict, estimate_gp_stand)
+    # error_gp_taylor = mean_squared_error(y_predict, estimate_gp_taylor)
+    # error_gp_ut = mean_squared_error(y_predict, estimate_gp_ut)
+    # error_gp_mc = mean_squared_error(y_predict, estimate_gp_mc)
     # error_interp_kriging = mean_squared_error(y_predict, store_predictions_interp_kriging)
     error_interp_gp = mean_squared_error(y_predict, store_predictions_interp_gp)
     # error_interp_kriging_2 = mean_squared_error(y_predict, store_predictions_interp_kriging_2)
@@ -1292,7 +1320,10 @@ if __name__ == "__main__":
     percentile_error_20155 = np.percentile(np.abs(y_predict - store_predictions_20155), 95)
     percentile_error_20976 = np.percentile(np.abs(y_predict - store_predictions_20976), 95)
     # percentile_error_kriging = np.percentile(np.abs(y_predict - estimate_kriging), 95)
-    percentile_error_gp = np.percentile(np.abs(y_predict - estimate_gp), 95)
+    percentile_error_gp_stand = np.percentile(np.abs(y_predict - estimate_gp_stand), 95)
+    # percentile_error_gp_taylor = np.percentile(np.abs(y_predict - estimate_gp_taylor), 95)
+    # percentile_error_gp_ut = np.percentile(np.abs(y_predict - estimate_gp_ut), 95)
+    # percentile_error_gp_mc = np.percentile(np.abs(y_predict - estimate_gp_mc), 95)
     # percentile_error_interp_kriging = np.percentile(np.abs(y_predict - store_predictions_interp_kriging), 95)
     percentile_error_interp_gp = np.percentile(np.abs(y_predict - store_predictions_interp_gp), 95)
     # percentile_error_interp_kriging_2 = np.percentile(np.abs(y_predict - store_predictions_interp_kriging_2), 95)
@@ -1319,7 +1350,10 @@ if __name__ == "__main__":
     # print(f'error_20155: {error_20155}')
     # print(f'error_20976: {error_20976}')
     # print(f'error_kriging: {error_kriging}')
-    print(f'error_gp: {error_gp}')
+    print(f'error_gp: {error_gp_stand}')
+    # print(f'error_gp_taylor: {error_gp_taylor}')
+    # print(f'error_gp_ut: {error_gp_ut}')
+    # print(f'error_gp_mc: {error_gp_mc}')
     # print(f'error_interp_kriging: {error_interp_kriging}')
     print(f'error_interp_gp: {error_interp_gp}')
     # print(f'error_interp_kriging_2: {error_interp_kriging_2}')
@@ -1346,22 +1380,41 @@ if __name__ == "__main__":
     # print(f'percentile_error_20155: {percentile_error_20155}')
     # print(f'percentile_error_20976: {percentile_error_20976}')
     # print(f'percentile_error_kriging: {percentile_error_kriging}')
-    print(f'percentile_error_gp: {percentile_error_gp}')
+    print(f'percentile_error_gp: {percentile_error_gp_stand}')
+    # print(f'percentile_error_gp_taylor: {percentile_error_gp_taylor}')
+    # print(f'percentile_error_gp_ut: {percentile_error_gp_ut}')
+    # print(f'percentile_error_gp_mc: {percentile_error_gp_mc}')
     # print(f'percentile_error_interp_kriging: {percentile_error_interp_kriging}')
     print(f'percentile_error_interp_gp: {percentile_error_interp_gp}')
     # print(f'percentile_error_interp_kriging_2: {percentile_error_interp_kriging_2}')
-    print(f'percentile_error_interp_gp_2: {percentile_error_interp_gp_2}')
-
+    print(f'percentile_error_interp_gp_2: {percentile_error_interp_gp_2}') 
 
 
     plt.figure(figsize=(10,4))
     plt.plot(y_predict, label='wind speed', color='black', linewidth=2)
     # plt.plot(store_predictions_init, label='RBFNN prediction', color='red', linestyle='--', linewidth=1)
-    plt.plot(store_predictions_3864, label='RBFNN prediction', color='blue', linestyle='--', linewidth=1)
-    plt.plot(store_predictions_15386, label='RBFNN prediction', color='green', linestyle='--', linewidth=1)
-    plt.plot(store_predictions_17396, label='RBFNN prediction', color='purple', linestyle='--', linewidth=1)
+    plt.plot(store_predictions_3864, label='RBFNN prediction', linestyle='--')
+    plt.plot(store_predictions_15386, label='RBFNN prediction', linestyle='--')
+    plt.plot(store_predictions_17396, label='RBFNN prediction', linestyle='--')
+    
+    plt.plot(store_predictions_1115, linestyle='--')
+    plt.plot(store_predictions_2255, linestyle='--')
+    plt.plot(store_predictions_5455, linestyle='--')
+    plt.plot(store_predictions_6755, linestyle='--')
+    plt.plot(store_predictions_7915, linestyle='--')
+    plt.plot(store_predictions_9435, linestyle='--')
+    plt.plot(store_predictions_10595, linestyle='--')
+    plt.plot(store_predictions_11595, linestyle='--')
+    plt.plot(store_predictions_12835, linestyle='--')
+    plt.plot(store_predictions_14615, linestyle='--')
+    plt.plot(store_predictions_16275, linestyle='--')
+    plt.plot(store_predictions_17115, linestyle='--')
+    plt.plot(store_predictions_18195, linestyle='--')
+    plt.plot(store_predictions_19195, linestyle='--')
+    plt.plot(store_predictions_20155, linestyle='--')
+    plt.plot(store_predictions_20976, linestyle='--')
     # plt.plot(estimate_kriging, label='Kriging prediction', color='red', linestyle='--', linewidth=1)
-    plt.plot(estimate_gp, label='Gaussian Process prediction', color='cyan', linestyle='--', linewidth=1)
+    plt.plot(estimate_gp_stand, label='Gaussian Process prediction', linewidth=2)
     # plt.plot(store_predictions_interp_kriging, label='Kriging interpolation prediction', color='brown', linestyle='--', linewidth=1)
     # plt.plot(store_predictions_interp_gp, label='Gaussian Process interpolation prediction', color='pink', linestyle='--', linewidth=1)
     plt.title('RBFNN prediction of wind speed over time', fontsize=32)

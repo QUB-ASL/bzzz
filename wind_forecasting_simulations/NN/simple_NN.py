@@ -94,7 +94,7 @@ def NN(file_name,
     if Layer_4 is True:
           model_V.add(Dense(nodes_4, activation='relu'))
     model_V.add(Dense(1))
-    model_V.compile(loss='mean_squared_error', optimizer='adam', metrics = ['acc'])
+    model_V.compile(loss='mean_squared_error', optimizer='adam', metrics = ['mae'])
 #     print(model_V.summary()) 
 
     model_V.fit(trainX_V, trainY_V, validation_data=(testX_V, testY_V),
@@ -372,7 +372,7 @@ def NN(file_name,
 
 NN(file_name = 'raspberry/data/wind_data/16-09-23--18-35/16-09-23--18-35_N_10',
     input_size = 10,
-    prediction_horizon = 10,
+    prediction_horizon = 40,
     no_of_epochs = 12,
     Layer_2 = True,
     Layer_3 = True,

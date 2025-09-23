@@ -41,7 +41,7 @@ dataset = df_wind.values.astype('float32')
 dataset = (dataset + max_wind_speed)/(2*max_wind_speed)
 
 seq_size = 10
-prediction_size = 10
+prediction_size = 40
 
 X, Y = to_sequences(dataset, seq_size)
 

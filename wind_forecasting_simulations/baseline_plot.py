@@ -36,6 +36,14 @@ def plot_persistence_method(file_name,
 #             t_minus_ph_2[df_wind.index[x+prediction_horizon_2]] = df_wind.V_axis[x]
 #             error_ph_2[df_wind.index[x]] = np.sqrt((df_wind.V_axis[x+prediction_horizon_2] - t_minus_ph_2[x])**2)
     print(file_name)
+    
+    # rmse = []
+    # for i in range(1,t_minus_ph_1.shape[0]):
+    #     error = np.sqrt(np.mean((df_wind.V_axis[:i] - t_minus_ph_1[:i])**2))
+    #     rmse.append(error)
+        
+    # plt.figure(figsize=(12, 6))
+    # plt.plot(rmse, label='RMSE Convergence', color='green', linewidth=4)
 
     #save error to csv
     error_ph_1.to_csv(f'{file_name.split(".")[0]}_error_ph_1.csv', index=False)
@@ -128,7 +136,7 @@ def assume_average_wind_speed(file_name):
 
 
 # plot_persistence_method('raspberry/data/wind_data/25-09-23--17-06/25-09-23--17-06_N_10.csv', 10)
-plot_persistence_method('raspberry/data/Anemometer-16-04-25--11-51_N_10.csv', 10)
+plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--20-18/21-12-23--20-18_N_10.csv', 10)
 # plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--15-30/21-12-23--15-30_N_10.csv', 10)
 # plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--16-24/21-12-23--16-24_N_10.csv', 10)
 # plot_persistence_method('raspberry/data/wind_data/december_2023/21-12-23--17-24/21-12-23--17-24_N_10.csv', 10)

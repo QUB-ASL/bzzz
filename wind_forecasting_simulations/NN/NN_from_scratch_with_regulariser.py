@@ -49,6 +49,7 @@ class RBFNetworkQR:
         self.A = None
         self.apply_learning_rate = 0
         self.store_weights = weights
+        # self.start_learning_rate = 0.5
 
         # If sigma is not specified, calculate it based on the distances 
         # between centers
@@ -125,6 +126,7 @@ class RBFNetworkQR:
             new_column_in_ATA = self.A.T @ new_column_in_A
             self.A = np.hstack((self.A, new_column_in_A))
             new_row_in_ATA = new_column_in_A.T @ self.A
+            # new_row_in_ATA[0, -1] = new_row_in_ATA[0, -1] *1.5
             new_row_in_ATA[0, -1] = new_row_in_ATA[0, -1] + self.regulariser 
 
             # Update the number of centers
@@ -139,7 +141,7 @@ class RBFNetworkQR:
 
             self.weights = np.append(self.weights, 0)
             self.store_weights = np.hstack((self.store_weights, np.zeros((self.store_weights.shape[0], 1))))
-            self.apply_learning_rate = 10
+            self.apply_learning_rate = 30
 
         else:
             self.centers = updated_centers
@@ -161,12 +163,15 @@ class RBFNetworkQR:
 
         # if self.apply_learning_rate > 0:
         #     learning_rate = np.ones(self.num_centers)
-        #     learning_rate = 0.5
+        #     learning_rate = 0.1
         #     self.weights = (1 - learning_rate) * self.weights + learning_rate * new_weights
         #     self.apply_learning_rate -= 1
         # else:
         self.weights = new_weights
         self.store_weights = np.vstack((self.store_weights, self.weights))
+        # if self.apply_learning_rate > 0:
+        #     print(f'weights: {self.weights}')
+        #     self.apply_learning_rate -= 1
 
         # Append lists
         self.X = np.vstack((self.X, new_X))
@@ -392,10 +397,10 @@ if __name__ == "__main__":
     # Parameters for training and testing
     window_size = 5
     prediction_horizon = 40
-    number_of_initial_points = 400
+    number_of_initial_points = 800
     num_centers = 15  # Number of RBF centers
-    adaptation_rate= 0.00000 # Adaptation rate for online K-means
-    regulariser = 0.000001 # Regularization parameter
+    adaptation_rate= 0.0000 # Adaptation rate for online K-means
+    regulariser = 0.0000008 # Regularization parameter
 
     # # Read Data
     # df_wind = pd.read_csv('raspberry/data/Anemometer-16-04-25--11-51_N_10.csv')
@@ -586,8 +591,8 @@ if __name__ == "__main__":
     print(f'Percentile Error: {percentile_error}')
     print(f'for window_size: {window_size} and num_centers: {num_centers} and adaptation_rate: {adaptation_rate} and regulariser: {regulariser}')
 
-    store_weights_df = pd.DataFrame(rbf_net.store_weights)
-    store_weights_df.to_csv(f'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10_weights.csv', index=False)
+    # store_weights_df = pd.DataFrame(rbf_net.store_weights)
+    # store_weights_df.to_csv(f'raspberry/data/wind_data/25-09-23--17-23/25-09-23--17-23_N_10_weights.csv', index=False)
 
     # Generate implicit x-values
     t = np.arange(len(y_wind))
@@ -602,8 +607,8 @@ if __name__ == "__main__":
     plt.ylabel('Wind Speed (m/s)', fontsize=23)
     plt.legend(fontsize=20)
 
-    plt.figure(figsize=(12, 6))
-    plt.plot(store_weights_df)
+    # plt.figure(figsize=(12, 6))
+    # plt.plot(store_weights_df)
 
     plt.show()
 

@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt 
 import pandas as pd
 
+plt.rc('pdf',fonttype = 42)
+plt.rc('font',family='Times New Roman')
+
 file = pd.read_csv("raspberry/data/GNSS-16-04-25--12-11.csv")
 
 # find the average latitude and longitude between the given number lines of csv file
@@ -56,7 +59,7 @@ plt.text(plot_latitude_model[7] - 0.5, plot_longitude_model[7] + 0.5, f"Model B"
 plt.text(plot_latitude_model[10] - 0.5, plot_longitude_model[10] - 0.5, f"Model C", fontsize=14, ha='right', va='top')
 plt.text(plot_latitude_new_model[-1] - 0.5, plot_longitude_new_model[-1] - 0.5, f"Model D", fontsize=14, ha='right', va='top')
 plt.grid(True)
-plt.legend(loc= (0.681, 0.648), fontsize=10)
+plt.legend(loc= (0.707, 0.648), fontsize=10)
 plt.xlabel(r'North ($m$)', fontsize=14)
 plt.ylabel(r'East ($m$)', fontsize=14)
 plt.xticks(fontsize=14)

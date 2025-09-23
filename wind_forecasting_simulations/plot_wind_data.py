@@ -171,10 +171,10 @@ def plot_wind_data(U: bool,
 #                data_freq_3=40,
 #                acf_pacf_3=False)
 
-plot_wind_data(U=True,
+plot_wind_data(U=False,
                V=True,
-               W=True,
-               file_name_1='raspberry/data/wind_data/december_2023/21-12-23--16-24/21-12-23--16-24_N_10.csv',
+               W=False,
+               file_name_1='raspberry/data/wind_data/december_2023/21-12-23--15-30/21-12-23--15-30_N_10.csv',
                data_freq_1=40,
                acf_pacf_1=False)
 
