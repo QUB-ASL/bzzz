@@ -2,6 +2,7 @@
 #include <math.h>
 #include "util.hpp"
 
+
 namespace bzzz
 {
 
@@ -33,6 +34,8 @@ namespace bzzz
         return max(lo, min(hi, x));
     }
 
+#if DRONE_TYPE == QUADCOPTER_TYPE
+
     void Controller::motorPwmSignals(
         Quaternion &attitudeError,
         const float *angularVelocity,
@@ -47,19 +50,78 @@ namespace bzzz
         int motorClipHigh)
     {
         float controls[3];
-        // compute control actions (LQR)
-        controlAction(attitudeError, angularVelocity, angularVelocityYawRef, controls);
-        // compute motor signals from control actions (and cast float as int)
+
+        controlAction(attitudeError,
+                      angularVelocity,
+                      angularVelocityYawRef,
+                      controls);
+
         int mFL = throttle + controlToPwmScaling * (controls[0] + controls[1] + controls[2]);
         int mFR = throttle + controlToPwmScaling * (-controls[0] + controls[1] - controls[2]);
         int mBL = throttle + controlToPwmScaling * (controls[0] - controls[1] - controls[2]);
         int mBR = throttle + controlToPwmScaling * (-controls[0] - controls[1] + controls[2]);
-        // clip motor signals between motorClipLow and motorClipHigh
+
         motorFL = clip(mFL, motorClipLow, motorClipHigh);
         motorFR = clip(mFR, motorClipLow, motorClipHigh);
         motorBL = clip(mBL, motorClipLow, motorClipHigh);
         motorBR = clip(mBR, motorClipLow, motorClipHigh);
     }
+
+#elif DRONE_TYPE == HEXACOPTER_TYPE
+
+    void Controller::motorPwmSignals(
+        Quaternion &attitudeError,
+        const float *angularVelocity,
+        float angularVelocityYawRef,
+        float throttle,
+        int &motorFL,
+        int &motorFR,
+        int &motorML,
+        int &motorMR,
+        int &motorBL,
+        int &motorBR,
+        float controlToPwmScaling,
+        int motorClipLow,
+        int motorClipHigh)
+    {
+        float controls[3];
+
+        controlAction(attitudeError,
+                      angularVelocity,
+                      angularVelocityYawRef,
+                      controls);
+
+        float ux = controls[0];
+        float uy = controls[1];
+        float uz = controls[2];
+
+        int mFR = throttle + controlToPwmScaling *
+            (0.5000f * ux - 0.1340f * uy + 0.1340f * uz);
+
+        int mFL = throttle + controlToPwmScaling *
+            (0.5000f * ux + 0.1340f * uy - 0.1340f * uz);
+
+        int mML = throttle + controlToPwmScaling *
+            (0.2679f * uy + 0.2321f * uz);
+
+        int mBL = throttle + controlToPwmScaling *
+            (-0.5000f * ux + 0.1340f * uy - 0.1340f * uz);
+
+        int mBR = throttle + controlToPwmScaling *
+            (-0.5000f * ux - 0.1340f * uy + 0.1340f * uz);
+
+        int mMR = throttle + controlToPwmScaling *
+            (-0.2679f * uy - 0.2321f * uz);
+
+        motorFL = clip(mFL, motorClipLow, motorClipHigh);
+        motorFR = clip(mFR, motorClipLow, motorClipHigh);
+        motorML = clip(mML, motorClipLow, motorClipHigh);
+        motorMR = clip(mMR, motorClipLow, motorClipHigh);
+        motorBL = clip(mBL, motorClipLow, motorClipHigh);
+        motorBR = clip(mBR, motorClipLow, motorClipHigh);
+    }
+
+#endif
 
 #ifdef BZZZ_DEBUG
     void Controller::setQuaternionGain(float gainXY)
