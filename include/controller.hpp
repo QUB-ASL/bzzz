@@ -3,6 +3,15 @@
 
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
+/*
+ * Aircraft type
+ */
+#define QUADCOPTER_TYPE 1
+#define HEXACOPTER_TYPE 2
+
+#ifndef DRONE_TYPE
+#define DRONE_TYPE HEXACOPTER_TYPE
+#endif
 
 namespace bzzz
 {
@@ -60,7 +69,9 @@ the RC.
          * Set the gains of the angular velocity
          */
         void setYawAngularVelocityGain(float gainOmegaZ);
-#endif /* BZZZ_DEBUG */
+#endif 
+
+/* BZZZ_DEBUG */
 
                 /**
          * @brief PWM signals to the four motors
@@ -77,6 +88,8 @@ the RC.
          * @param motorClipLow (optional) lowest value of motor signal [default: 1000]
          * @param motorClipHigh highest value of motor signal [default: 2000]
          */
+        #if DRONE_TYPE == QUADCOPTER_TYPE
+
         void motorPwmSignals(
             Quaternion &attitudeError,
             const float *angularVelocity,
@@ -84,6 +97,23 @@ the RC.
             float throttle,
             int &motorFL,
             int &motorFR,
+            int &motorBL,
+            int &motorBR,
+            float controlToPwmScaling = U_TO_PWM,
+            int motorClipLow = ZERO_ROTOR_SPEED,
+            int motorClipHigh = ABSOLUTE_MAX_PWM);
+
+#elif DRONE_TYPE == HEXACOPTER_TYPE
+
+        void motorPwmSignals(
+            Quaternion &attitudeError,
+            const float *angularVelocity,
+            float angularVelocityYawRef,
+            float throttle,
+            int &motorFL,
+            int &motorFR,
+            int &motorML,
+            int &motorMR,
             int &motorBL,
             int &motorBR,
             float controlToPwmScaling = U_TO_PWM,
