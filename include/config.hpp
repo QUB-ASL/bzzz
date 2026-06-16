@@ -37,12 +37,39 @@
 #define MAGNETOMETER_SCALE_Z 1.006
 
 /*
+ * Aircraft type
+ */
+#define QUADCOPTER_TYPE 1
+#define HEXACOPTER_TYPE 2
+
+#ifndef DRONE_TYPE
+#define DRONE_TYPE HEXACOPTER_TYPE
+#endif
+
+/*
  * Motors config
  */
+#if DRONE_TYPE == QUADCOPTER_TYPE
+
 #define FRONT_LEFT_ESC_PIN 25
 #define FRONT_RIGHT_ESC_PIN 33
 #define BACK_LEFT_ESC_PIN 27
 #define BACK_RIGHT_ESC_PIN 26
+
+#elif DRONE_TYPE == HEXACOPTER_TYPE
+
+#define FRONT_LEFT_ESC_PIN 33
+#define FRONT_RIGHT_ESC_PIN 14
+
+#define MID_LEFT_ESC_PIN 25
+#define MID_RIGHT_ESC_PIN 26
+
+#define BACK_LEFT_ESC_PIN 12
+#define BACK_RIGHT_ESC_PIN 27
+
+#else
+#error "Unsupported DRONE_TYPE"
+#endif
 
 #define ARM_ROTOR_SPEED 900
 #define ZERO_ROTOR_SPEED 1000
