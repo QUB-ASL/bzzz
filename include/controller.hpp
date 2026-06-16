@@ -3,15 +3,6 @@
 
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
-/*
- * Aircraft type
- */
-#define QUADCOPTER_TYPE 1
-#define HEXACOPTER_TYPE 2
-
-#ifndef DRONE_TYPE
-#define DRONE_TYPE HEXACOPTER_TYPE
-#endif
 
 namespace bzzz
 {
@@ -103,7 +94,7 @@ the RC.
             int motorClipLow = ZERO_ROTOR_SPEED,
             int motorClipHigh = ABSOLUTE_MAX_PWM);
 
-#elif DRONE_TYPE == HEXACOPTER_TYPE
+        #elif DRONE_TYPE == HEXACOPTER_TYPE
 
         void motorPwmSignals(
             Quaternion &attitudeError,
