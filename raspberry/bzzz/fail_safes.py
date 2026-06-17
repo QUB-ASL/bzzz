@@ -18,10 +18,10 @@ class FailSafes:
 
         self.__fail_safe_functions_dict[FailSafes._dummy_fail_safe] = {
             FailSafes._fail_safe_ID: self.__last_fail_safe_ID,
-            FailSafes._fail_safe_obj: lambda : print("Dummy fail safe"),
+            FailSafes._fail_safe_obj: lambda: print("Dummy fail safe"),
             FailSafes._fail_safe_status: FailSafes.FAILED
-            }
-        
+        }
+
     def add_fail_safe(self, fail_safe_name, fail_safe_obj):
         self.__last_fail_safe_ID += 1
         self.__added_fail_safes.append(fail_safe_name)
@@ -29,8 +29,8 @@ class FailSafes:
             FailSafes._fail_safe_ID: self.__last_fail_safe_ID,
             FailSafes._fail_safe_obj: fail_safe_obj,
             FailSafes._fail_safe_status: FailSafes.UNKNOWN
-            }
-        
+        }
+
     def fail_safe_obj(self, fail_safe_name):
         return self.__fail_safe_functions_dict.get(fail_safe_name, self.__fail_safe_functions_dict[FailSafes._dummy_fail_safe]).get(FailSafes._fail_safe_obj)
 
@@ -41,5 +41,6 @@ class FailSafes:
                 self.__fail_safe_functions_dict[fail_safe][FailSafes._fail_safe_status] = FailSafes.SUCCEEDED
             else:
                 self.__fail_safe_functions_dict[fail_safe][FailSafes._fail_safe_status] = FailSafes.FAILED
-                print(f"Fail safe check of {fail_safe} Failed!!!\n Taking action.....")
+                print(
+                    f"Fail safe check of {fail_safe} Failed!!!\n Taking action.....")
                 self.fail_safe_obj(fail_safe)(take_action=True)

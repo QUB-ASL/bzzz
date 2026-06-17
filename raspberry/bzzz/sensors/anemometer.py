@@ -27,9 +27,11 @@ class Anemometer:
         :param serial_path: serial path; defaults to /dev/ttyS0 on RPi
         :param baud: baud rate of serial communication; defaults to 115200
         :param window_length: length of window of measurements; default: 3
-        :param data_processor: data processor on buffer of measurements; default: MedianFilter()
+        :param data_processor: data processor on buffer of measurements; 
+                               default: MedianFilter()
         :param log_file: file name to log data; default: None 
-        :param max_samples: maximum number of samples to record; default: 100000
+        :param max_samples: maximum number of samples to record; 
+                            default: 100000
 
         If `log_file` is None, the data is not logged; otherwise, on exit, 
         the data are stored in a CSV file
@@ -76,11 +78,13 @@ class Anemometer:
                     dtype=np.float64)
                 with self.__lock:
                     self.__values_cache[self.__cursor, :] = split_data_float
-                    # If the caller wants to log (log_file specified) there is still space
-                    # in the log file, record data
-                    if self.__log_file is not None and self.__cursor < self.__max_samples:
+                    # If the caller wants to log (log_file specified) there is
+                    # still space in the log file, record data
+                    if (self.__log_file is not None and
+                            self.__cursor < self.__max_samples):
                         current_timestamp = datetime.datetime.now()
-                        self.__logger.record(current_timestamp, split_data_float)
+                        self.__logger.record(
+                            current_timestamp, split_data_float)
                     self.__cursor = (self.__cursor + 1) % self.__window_length
                 if not self.__keep_going:
                     ser.close()
@@ -101,8 +105,8 @@ class Anemometer:
         Returns all sensor data 
 
         This method returns all sensor data after the application of the data 
-        preprocessor specified in the construtor. The data is returned as a numpy 
-        array with the following data (in this order):
+        preprocessor specified in the construtor. The data is returned as a 
+        numpy array with the following data (in this order):
           - magnitude of wind speed in m/s
           - magnitude of 2D wind speed in m/s
           - horizontal direction in degrees
@@ -112,7 +116,8 @@ class Anemometer:
           - wind speed along w-axis in m/s
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, :], cursor=self.__cursor)
+            return self.__data_processor.process(self.__values_cache[:, :],
+                                                 cursor=self.__cursor)
 
     @property
     def wind_speed_3d(self):
@@ -120,7 +125,8 @@ class Anemometer:
         Returns the 3D wind speed magnitude in m/s (processed)
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 0], cursor=self.__cursor)
+            return self.__data_processor.process(self.__values_cache[:, 0],
+                                                 cursor=self.__cursor)
 
     @property
     def wind_speed_2d(self):
@@ -128,7 +134,8 @@ class Anemometer:
         Returns the 2D wind speed magnitude in m/s (processed)
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 1], cursor=self.__cursor)
+            return self.__data_processor.process(self.__values_cache[:, 1],
+                                                 cursor=self.__cursor)
 
     @property
     def horizontal_wind_direction(self):
@@ -136,7 +143,8 @@ class Anemometer:
         Returns the horizontal wind direction in degrees (processed)
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 2], cursor=self.__cursor)
+            return self.__data_processor.process(self.__values_cache[:, 2],
+                                                 cursor=self.__cursor)
 
     @property
     def vertical_wind_direction(self):
@@ -144,7 +152,8 @@ class Anemometer:
         Returns the vertical wind direction in degrees (processed)
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, 3], cursor=self.__cursor)
+            return self.__data_processor.process(self.__values_cache[:, 3],
+                                                 cursor=self.__cursor)
 
     @property
     def wind_velocities(self):
@@ -152,7 +161,8 @@ class Anemometer:
         Returns the horizontal wind velocity vector in m/s (processed)
         """
         with self.__lock:
-            return self.__data_processor.process(self.__values_cache[:, -3:], cursor=self.__cursor)
+            return self.__data_processor.process(self.__values_cache[:, -3:],
+                                                 cursor=self.__cursor)
 
 
 if __name__ == '__main__':
@@ -165,4 +175,3 @@ if __name__ == '__main__':
         for i in range(10000):
             # time.sleep(0.05)
             print(sensor.all_sensor_data)
-            

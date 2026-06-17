@@ -41,7 +41,8 @@ namespace bzzz
             int rotor_speed_front_left,
             int rotor_speed_front_right,
             int rotor_speed_back_left,
-            int rotor_speed_back_right);
+            int rotor_speed_back_right,
+            int minSpeed=IDLE_ROTOR_SPEED);
 
         /**
          * @brief disarm all motors
