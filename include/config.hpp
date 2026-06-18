@@ -3,6 +3,13 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+// UAV Type Selection
+#define UAV_TYPE_QUADCOPTER 1
+#define UAV_TYPE_HEXACOPTER 2
+
+// ACTIVE SELECTION (Set this to choose layout)
+#define UAV_TYPE UAV_TYPE_HEXACOPTER
+
 /**
  * Timer config
  */
@@ -39,10 +46,21 @@
 /*
  * Motors config
  */
+#if UAV_TYPE == UAV_TYPE_HEXACOPTER
+#define FRONT_LEFT_ESC_PIN 33
+#define FRONT_RIGHT_ESC_PIN 14
+
+#define MID_LEFT_ESC_PIN 25
+#define MID_RIGHT_ESC_PIN 26
+
+#define BACK_LEFT_ESC_PIN 12
+#define BACK_RIGHT_ESC_PIN 27
+#else
 #define FRONT_LEFT_ESC_PIN 25
 #define FRONT_RIGHT_ESC_PIN 33
 #define BACK_LEFT_ESC_PIN 27
 #define BACK_RIGHT_ESC_PIN 26
+#endif
 
 #define ARM_ROTOR_SPEED 900
 #define ZERO_ROTOR_SPEED 1000
@@ -75,6 +93,7 @@
 
 /** Trimmer A on RC - maximum quaternion XY gain */
 #define RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN 100.
+
 /** Tested attitude Quaternion roll-pitch axis control gain*/
 #define QUATERNION_XY_GAIN 0.5
 
@@ -83,11 +102,13 @@
 
 /** Trimmer C on RC - maximum omega xy gain */
 #define RADIO_TRIMMER_MAX_OMEGA_XY_GAIN 0.3
+
 /** Tested attitude angular velocity roll-pitch axis control gain*/
 #define OMEGA_XY_GAIN 0.30
 
 /** Trimmer E on RC - maximum omega z gain */
 #define RADIO_TRIMMER_MAX_OMEGA_Z_GAIN 4
+
 /** Tested attitude angular velocity yaw axis control gain*/
 #define OMEGA_Z_GAIN 0.125
 
@@ -98,7 +119,7 @@
 
 /**
  * Fail-safe config
-*/
+ */
 #define TX_CONNECTION_TIMEOUT_IN_uS 500000
 #define UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms 3000
 

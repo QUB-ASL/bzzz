@@ -19,18 +19,18 @@ void loop()
 
     //** UNCOMMENT THE TEST TO CARRY OUT **//
 
-    // // TEST TO CHECK EULER ANGLES
-    // // check for new measurements from the IMU
-    // if (ahrs.update()) 
-    // {
-    //     ahrs.eulerAngles(drone_euler);
-    //     const float rad2deg = 57.2957795;
-    //     sprintf(buffer, "%.2f\t%.2f\t%.2f",
-    //             rad2deg * drone_euler[0],
-    //             rad2deg * drone_euler[1],
-    //             rad2deg * drone_euler[2]);
-    //     Serial.println(buffer);
-    // }
+    // TEST TO CHECK EULER ANGLES
+    // check for new measurements from the IMU
+    if (ahrs.update()) 
+    {
+        ahrs.eulerAngles(drone_euler);
+        const float rad2deg = 57.2957795;
+        sprintf(buffer, "%.2f\t%.2f\t%.2f",
+                rad2deg * drone_euler[0],
+                rad2deg * drone_euler[1],
+                rad2deg * drone_euler[2]);
+        Serial.println(buffer);
+    }
 
     // // TEST TO CHECK QUATERNION
     // if (ahrs.update()) 

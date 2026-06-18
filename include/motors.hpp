@@ -17,6 +17,11 @@ namespace bzzz
         Servo m_frontRightEsc; // create servo object to control front right ESC
         Servo m_backLeftEsc;   // create servo object to control back left ESC
         Servo m_backRightEsc;  // create servo object to control back right ESC
+        
+#if UAV_TYPE == UAV_TYPE_HEXACOPTER
+        Servo m_midLeftEsc;    // create servo object to control middle left ESC
+        Servo m_midRightEsc;   // create servo object to control middle right ESC
+#endif
 
     public:
         /**
@@ -29,8 +34,9 @@ namespace bzzz
          */
         void attachEscToPwmPin(void);
 
+#if UAV_TYPE == UAV_TYPE_QUADCOPTER
         /**
-         * @brief Write the correct speed to correct motor(ESC_PIN)
+         * @brief Write the correct speed to correct motor(ESC_PIN) - Quadcopter Version
          *
          * @param rotor_speed_front_left set motor speed for FRONT_LEFT_ESC_PIN
          * @param rotor_speed_front_right set motor speed for FRONT_RIGHT_ESC_PIN
@@ -43,6 +49,26 @@ namespace bzzz
             int rotor_speed_back_left,
             int rotor_speed_back_right,
             int minSpeed=IDLE_ROTOR_SPEED);
+#elif UAV_TYPE == UAV_TYPE_HEXACOPTER
+        /**
+         * @brief Write the correct speed to correct motor(ESC_PIN) - Hexacopter Version
+         *
+         * @param rotor_speed_front_left set motor speed for FRONT_LEFT_ESC_PIN
+         * @param rotor_speed_front_right set motor speed for FRONT_RIGHT_ESC_PIN
+         * @param rotor_speed_back_left set motor speed for BACK_LEFT_ESC_PIN
+         * @param rotor_speed_back_right set motor speed for BACK_RIGHT_ESC_PIN
+         * @param rotor_speed_mid_left set motor speed for MID_LEFT_ESC_PIN
+         * @param rotor_speed_mid_right set motor speed for MID_RIGHT_ESC_PIN
+         */
+        void writeSpeedToEsc(
+            int rotor_speed_front_left,
+            int rotor_speed_front_right,
+            int rotor_speed_back_left,
+            int rotor_speed_back_right,
+            int rotor_speed_mid_left,
+            int rotor_speed_mid_right,
+            int minSpeed=IDLE_ROTOR_SPEED);
+#endif
 
         /**
          * @brief disarm all motors
@@ -67,7 +93,7 @@ namespace bzzz
          */
         void attachAndArm();
 
-    }; /* end of class TorqueSystem */
+    }; /* end of class MotorDriver */
 
 } /* end of namespace bzzz */
 

@@ -33,6 +33,11 @@ namespace bzzz
         return max(lo, min(hi, x));
     }
 
+#if UAV_TYPE == UAV_TYPE_QUADCOPTER
+    /**
+     * Compute PWM signals for motors (quadcopter version).
+     * Uses control outputs from controlAction() and maps them to 4 motors.
+     */
     void Controller::motorPwmSignals(
         Quaternion &attitudeError,
         const float *angularVelocity,
@@ -49,17 +54,60 @@ namespace bzzz
         float controls[3];
         // compute control actions (LQR)
         controlAction(attitudeError, angularVelocity, angularVelocityYawRef, controls);
+
         // compute motor signals from control actions (and cast float as int)
-        int mFL = throttle + controlToPwmScaling * (controls[0] + controls[1] + controls[2]);
+        int mFL = throttle + controlToPwmScaling * ( controls[0] + controls[1] + controls[2]);
         int mFR = throttle + controlToPwmScaling * (-controls[0] + controls[1] - controls[2]);
-        int mBL = throttle + controlToPwmScaling * (controls[0] - controls[1] - controls[2]);
+        int mBL = throttle + controlToPwmScaling * ( controls[0] - controls[1] - controls[2]);
         int mBR = throttle + controlToPwmScaling * (-controls[0] - controls[1] + controls[2]);
+
         // clip motor signals between motorClipLow and motorClipHigh
         motorFL = clip(mFL, motorClipLow, motorClipHigh);
         motorFR = clip(mFR, motorClipLow, motorClipHigh);
         motorBL = clip(mBL, motorClipLow, motorClipHigh);
         motorBR = clip(mBR, motorClipLow, motorClipHigh);
     }
+#elif UAV_TYPE == UAV_TYPE_HEXACOPTER
+    /**
+     * Compute PWM signals for motors (hexacopter version).
+     * Uses control outputs from controlAction() and maps them to 6 motors.
+     */
+    void Controller::motorPwmSignals(
+        Quaternion &attitudeError,
+        const float *angularVelocity,
+        float angularVelocityYawRef,
+        float throttle,
+        int &motorFL,
+        int &motorFR,
+        int &motorBL,
+        int &motorBR,
+        int &motorML,  // middle left
+        int &motorMR,  // middle right
+        float controlToPwmScaling,
+        int motorClipLow,
+        int motorClipHigh)
+    {
+        float controls[3];
+        // compute control actions (LQR)
+        controlAction(attitudeError, angularVelocity, angularVelocityYawRef, controls);
+
+        // compute motor signals from control actions (and cast float as int)
+        int mFR = throttle + controlToPwmScaling * ( 0.5f * controls[0] - 0.134f * controls[1] + 0.134f * controls[2]);
+        int mFL = throttle + controlToPwmScaling * ( 0.5f * controls[0] + 0.134f * controls[1] - 0.134f * controls[2]);
+        int mBL = throttle + controlToPwmScaling * (-0.5f * controls[0] + 0.134f * controls[1] - 0.134f * controls[2]);
+        int mBR = throttle + controlToPwmScaling * (-0.5f * controls[0] - 0.134f * controls[1] + 0.134f * controls[2]);
+        int mML = throttle + controlToPwmScaling * (                     0.2679f * controls[1] + 0.2321f * controls[2]);
+        int mMR = throttle + controlToPwmScaling * (                    -0.2679f * controls[1] - 0.2321f * controls[2]);
+
+        // clip motor signals between motorClipLow and motorClipHigh
+        motorFR = clip(mFR, motorClipLow, motorClipHigh);
+        motorFL = clip(mFL, motorClipLow, motorClipHigh);
+        motorML = clip(mML, motorClipLow, motorClipHigh);
+        motorBL = clip(mBL, motorClipLow, motorClipHigh);
+        motorBR = clip(mBR, motorClipLow, motorClipHigh);
+        motorMR = clip(mMR, motorClipLow, motorClipHigh);
+    }
+#endif
 
 #ifdef BZZZ_DEBUG
     void Controller::setQuaternionGain(float gainXY)
@@ -73,6 +121,7 @@ namespace bzzz
         m_angularVelocityGain[0] = gainOmegaXY;
         m_angularVelocityGain[1] = gainOmegaXY;
     }
+    
     void Controller::setYawAngularVelocityGain(float gainOmegaZ)
     {
         m_angularVelocityGain[2] = gainOmegaZ;
