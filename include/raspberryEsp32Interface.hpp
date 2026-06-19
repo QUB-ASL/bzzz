@@ -50,7 +50,7 @@ namespace bzzz
          * 4(MSB)     Switch B (Arm switch  ){1 if switch_is_on else 0}
          * 3          Switch A (Kill switch ){1 if switch_is_on else 0}
          * 2, 1       Switch C (3-way switch){00 for position DOWN, 01
-         *            for position MID, 10 for position UP}
+         * for position MID, 10 for position UP}
          * 0(LSB)     Switch D (2-way switch){1 if switch_is_on else 0}
          *
          * A substitute variable to load the encoded switch read data from Raspberry Pi.
@@ -164,19 +164,45 @@ namespace bzzz
 
         /**
          * @brief send flight data: IMU data quaternions, accelerometer values, and motor PWM values
-         * (q1, q2, q3, ax, ay, az, motorFL, motorFR, motorBL, motorBR) data to Pi.
-         * @param q1 1st element of the vector part of current attitude quaternion
-         * @param q2 2nd element of the vector part of current attitude quaternion
-         * @param q3 3rd element of the vector part of current attitude quaternion
-         * @param ax current accleration along x-axis
-         * @param ay current accleration along y-axis
-         * @param az current accleration along z-axis
+         * Conditional setup for Quadcopter layout (4 motors) vs Hexacopter layout (6 motors)
+         */
+        #if UAV_TYPE == UAV_TYPE_QUADCOPTER
+        /**
+         * @brief send flight data for Quadcopter layout
+         * @param q1 1st element of current attitude quaternion
+         * @param q2 2nd element of current attitude quaternion
+         * @param q3 3rd element of current attitude quaternion
+         * @param ax current acceleration along x-axis
+         * @param ay current acceleration along y-axis
+         * @param az current acceleration along z-axis
          * @param motorFL current Front-Left motor PWM control action
          * @param motorFR current Front-Right motor PWM control action
          * @param motorBL current Back-Left motor PWM control action
          * @param motorBR current Back-Right motor PWM control action
          */
-        void sendFlightDataToPi(float q1, float q2, float q3, float ax, float ay, float az, float motorFL, float motorFR, float motorBL, float motorBR);
+        void sendFlightDataToPi(float q1, float q2, float q3, float ax, float ay, float az, 
+                                float motorFL, float motorFR, float motorBL, float motorBR);
+
+        #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
+        /**
+         * @brief send flight data for Hexacopter layout
+         * @param q1 1st element of current attitude quaternion
+         * @param q2 2nd element of current attitude quaternion
+         * @param q3 3rd element of current attitude quaternion
+         * @param ax current acceleration along x-axis
+         * @param ay current acceleration along y-axis
+         * @param az current acceleration along z-axis
+         * @param motorFL current Front-Left motor PWM control action
+         * @param motorFR current Front-Right motor PWM control action
+         * @param motorBL current Back-Left motor PWM control action
+         * @param motorBR current Back-Right motor PWM control action
+         * @param motorML current Middle-Left motor PWM control action
+         * @param motorMR current Middle-Right motor PWM control action
+         */
+        void sendFlightDataToPi(float q1, float q2, float q3, float ax, float ay, float az, 
+                                float motorFL, float motorFR, float motorBL, float motorBR, 
+                                float motorML, float motorMR);
+        #endif
 
     }; /* end of class RaspberryEsp32Interface */
 

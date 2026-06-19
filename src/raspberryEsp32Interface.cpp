@@ -11,17 +11,17 @@
 /**
  * In the processed radio data sent from R-Pi, the last element sent is an
  * integer in which the switches' position data is encoded as follows
- *      For switches A, B, and D (since these are only two-way switches), each
- *      were assigned a single bit with 0 indicating that the switch is in off state
- *      and 1 otherwise. For switch C, as it is a three-way switch, it was assigned with
- *      two bits with 00 = DOWN, 01 = MID, and 10 = UP.
+ * For switches A, B, and D (since these are only two-way switches), each
+ * were assigned a single bit with 0 indicating that the switch is in off state
+ * and 1 otherwise. For switch C, as it is a three-way switch, it was assigned with
+ * two bits with 00 = DOWN, 01 = MID, and 10 = UP.
  * This encoded data is formated as follows
  *
- *      |0|0|0|B|A|C|c|D| this is the Least-significant byte of the received integer.
- *      In which bit |B| indicates switch B's position (This is given the first position because it is the arm switch)
- *               bit |A| indicates switch A's position (This is the kill switch)
- *               bits |C|c| together indicate switch C's position
- *               bit |D| indicates switch D's position
+ * |0|0|0|B|A|C|c|D| this is the Least-significant byte of the received integer.
+ * In which bit |B| indicates switch B's position (This is given the first position because it is the arm switch)
+ * bit |A| indicates switch A's position (This is the kill switch)
+ * bits |C|c| together indicate switch C's position
+ * bit |D| indicates switch D's position
  */
 #define RADIO_SWITCH_A_BIT 0b01000  // Bit position of switch A
 #define RADIO_SWITCH_B_BIT 0b10000  // Bit position of switch B
@@ -87,6 +87,7 @@ namespace bzzz
         return false;
     }
 
+    #if UAV_TYPE == UAV_TYPE_QUADCOPTER
     void RaspberryEsp32Interface::sendFlightDataToPi(
         float q1,
         float q2,
@@ -103,27 +104,52 @@ namespace bzzz
         {
             // if replyWithFlightData is enabled, send flight data to Pi
             Serial.print("FD: ");
-            Serial.print(q1);
-            Serial.print(' ');
-            Serial.print(q2);
-            Serial.print(' ');
-            Serial.print(q3);
-            Serial.print(' ');
-            Serial.print(ax);
-            Serial.print(' ');
-            Serial.print(ay);
-            Serial.print(' ');
-            Serial.print(az);
-            Serial.print(' ');
-            Serial.print(motorFL);
-            Serial.print(' ');
-            Serial.print(motorFR);
-            Serial.print(' ');
-            Serial.print(motorBL);
-            Serial.print(' ');
+            Serial.print(q1); Serial.print(' ');
+            Serial.print(q2); Serial.print(' ');
+            Serial.print(q3); Serial.print(' ');
+            Serial.print(ax); Serial.print(' ');
+            Serial.print(ay); Serial.print(' ');
+            Serial.print(az); Serial.print(' ');
+            Serial.print(motorFL); Serial.print(' ');
+            Serial.print(motorFR); Serial.print(' ');
+            Serial.print(motorBL); Serial.print(' ');
             Serial.println(motorBR);
         }
     }
+    #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
+    void RaspberryEsp32Interface::sendFlightDataToPi(
+        float q1,
+        float q2,
+        float q3,
+        float ax,
+        float ay,
+        float az,
+        float motorFL,
+        float motorFR,
+        float motorBL,
+        float motorBR,
+        float motorML,
+        float motorMR)
+    {
+        if (this->m_replyWithFlightData)
+        {
+            // If hexacopter, append the middle-left and middle-right motors to the data stream packet
+            Serial.print("FD: ");
+            Serial.print(q1); Serial.print(' ');
+            Serial.print(q2); Serial.print(' ');
+            Serial.print(q3); Serial.print(' ');
+            Serial.print(ax); Serial.print(' ');
+            Serial.print(ay); Serial.print(' ');
+            Serial.print(az); Serial.print(' ');
+            Serial.print(motorFL); Serial.print(' ');
+            Serial.print(motorFR); Serial.print(' ');
+            Serial.print(motorBL); Serial.print(' ');
+            Serial.print(motorBR); Serial.print(' ');
+            Serial.print(motorML); Serial.print(' ');
+            Serial.println(motorMR);
+        }
+    }
+    #endif
 
     float RaspberryEsp32Interface::pitchReferenceAngleRad()
     {
@@ -167,7 +193,7 @@ namespace bzzz
         bool isOnlyArmSwitchOn = m_encodedSwitchesData == RADIO_SWITCH_B_BIT;
         bool isThrottleDown = throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE;
 
-        return isOnlyArmSwitchOn && isThrottleDown;;
+        return isOnlyArmSwitchOn && isThrottleDown;
     }
 
     bool RaspberryEsp32Interface::kill()
@@ -219,12 +245,25 @@ namespace bzzz
     {
         float temp[6];
         readPiData();
+        
+        // Send initial dummy packets based on layout type
+        #if UAV_TYPE == UAV_TYPE_QUADCOPTER
         sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+        #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
+        sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+        #endif
+
         delay(20);
         while (!canArm())
         {
             readPiData();
+            
+            // Send waiting packets based on layout type
+            #if UAV_TYPE == UAV_TYPE_QUADCOPTER
             sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+            #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
+            sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+            #endif
         }
     }
 
