@@ -44,6 +44,8 @@ namespace bzzz
          */
         float &operator[](std::size_t idx);
 
+        const float &operator[](std::size_t idx) const;
+
         /**
          * @brief quaternion difference
          *

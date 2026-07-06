@@ -7,6 +7,7 @@
 #include "controller.hpp"
 #include "fail_safes.hpp"
 #include "util.hpp"
+#include "fdi.hpp"
 
 using namespace bzzz;
 
@@ -16,6 +17,7 @@ MotorDriver motorDriver;
 RaspberryEsp32Interface raspberryEsp32Interface(true);
 AHRS ahrs;
 Controller controller;
+ModelBasedBayesianFDI fdi;
 Quaternion initialQuaternion;
 FailSafes failSafes(TX_CONNECTION_TIMEOUT_IN_uS);
 float yawReferenceRad = 0.0;
@@ -133,6 +135,8 @@ void loop()
   float measuredAngularVelocity[3];
   float angularVelocityCorrected[3];
 
+  VehicleState currentState;
+
   if (!timerState) return;
   
   // if raspberryEsp32Interface data received update the last data read time.
@@ -187,11 +191,15 @@ void loop()
   setGainsFromRcTrimmers();
   ahrs.quaternion(quaternionImuData);
   ahrs.angularVelocity(measuredAngularVelocity);
+  currentState.attitude = Quaternion(quaternionImuData);
 
   // Determine correct angularVelocity
   angularVelocityCorrected[0] = measuredAngularVelocity[0] - initialAngularVelocity[0];
   angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
   angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
+  currentState.omega[0] = angularVelocityCorrected[0];
+currentState.omega[1] = angularVelocityCorrected[1];
+currentState.omega[2] = angularVelocityCorrected[2];
 
   float yawRateRC = raspberryEsp32Interface.yawRateReferenceRadSec();
   float deadZoneYawRate = 0.017;
@@ -242,6 +250,30 @@ void loop()
                              throttleRef,
                              motorFL, motorFR, motorBL, motorBR, motorML, motorMR);
   
+float motorCommand[6];
+
+motorCommand[0] = static_cast<float>(motorFR);
+motorCommand[1] = static_cast<float>(motorFL);
+motorCommand[2] = static_cast<float>(motorML);
+motorCommand[3] = static_cast<float>(motorBL);
+motorCommand[4] = static_cast<float>(motorBR);
+motorCommand[5] = static_cast<float>(motorMR);
+
+fdi.update(currentState, motorCommand);
+
+bool faultDetected = fdi.faultDetected();
+
+int failedMotor = fdi.failedMotor();
+
+float confidence = fdi.confidence();
+
+Serial.printf(
+    "FDI | Fault=%d | Motor=%d | Confidence=%.3f\n",
+    faultDetected,
+    failedMotor,
+    confidence);
+
+
   motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR, motorML, motorMR);
   #endif
 
