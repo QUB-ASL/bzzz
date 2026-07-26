@@ -32,6 +32,31 @@
 /** Sampling time */
 #define SAMPLING_TIME (0.008)
 
+/** ================================
+ *  Model-Based Bayesian FDI Config
+ *  ================================
+ */
+
+/** Sliding residual evaluation window */
+#define FDI_WINDOW_SIZE 20
+
+/** Residual decision threshold */
+#define FDI_THRESHOLD 15.0f
+
+#define FDI_CONFIDENCE_THRESHOLD 0.90f
+
+/** FDI sampling time (seconds) */
+#define FDI_SAMPLING_TIME SAMPLING_TIME
+
+/** Initial prior probability that the vehicle is healthy */
+#define FDI_PRIOR_HEALTHY 0.99f
+
+/** Initial prior probability for each motor fault */
+#define FDI_PRIOR_FAULT ((1.0f - FDI_PRIOR_HEALTHY)/6.0f)
+
+/** Standard deviation of residual noise used in likelihood calculation */
+#define FDI_RESIDUAL_SIGMA 1.0f
+
 /*
  * AHRS config
  */
