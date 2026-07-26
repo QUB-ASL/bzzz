@@ -38,53 +38,65 @@ namespace bzzz
         this->m_replyWithFlightData = replyWithFlightData;
     };
 
-    bool RaspberryEsp32Interface::readPiData()
-    {
-        String allDataFromPi;
-        int data_count = 0;
 
-        if (Serial.available() > 0)
+
+        bool RaspberryEsp32Interface::readPiData()
+    {
+        bool gotGoodPacket = false;
+
+        // Drain ALL complete lines currently buffered, keep only the newest
+        // valid one. Prevents backlog build-up and mid-line corruption when
+        // the loop falls behind the Pi's send rate.
+        while (Serial.available() > 0)
         {
-            allDataFromPi = Serial.readStringUntil('\n');
+            String allDataFromPi = Serial.readStringUntil('\n');
 
             if (allDataFromPi.substring(0, allDataFromPi.indexOf(",")) != "S")
-                return false;
-            // cut the channelData string after the first occurence of a comma
+                continue;
+
             allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
+
+            float candidate[NUM_RADIO_CHANNELS];
+            int data_count = 0;
 
             for (int i = 0; i < NUM_RADIO_CHANNELS && allDataFromPi != ""; i++, data_count++)
             {
-                // take the substring from the start to the first occurence of a comma,
-                // convert it to int and save it in the array
-                // save the data to a dummy array
-                m_rawRefData[i] = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toFloat();
-
-                // cut the channelData string after the first occurence of a comma
+                candidate[i] = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toFloat();
                 allDataFromPi = allDataFromPi.substring(allDataFromPi.indexOf(",") + 1);
             }
-            // Check if 8 data points are received and return false if not.
-            // if yes, copy the data to the actual array
-            // this helps to retain previous data if corrupted data is received
-            if (data_count != NUM_RADIO_CHANNELS)
-            {
-                return false;
-            }
-            for (int i = 0; i < NUM_RADIO_CHANNELS; i++)
-            {
-                m_refData[i] = m_rawRefData[i];
-            }
 
-            // get the encoded switches data
-            m_rawEncodedSwtchsData = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toInt();
-            // the max value possible for encoded switch data in binary is 0b{1 1 10 1} = 29
-            if (m_rawEncodedSwtchsData < 0 || m_rawEncodedSwtchsData > 29)
-            {
-                return false;
-            }
-            m_encodedSwitchesData = m_rawEncodedSwtchsData;
-            return true;
+            if (data_count != NUM_RADIO_CHANNELS)
+                continue;
+
+            // Per-channel sanity bounds — reject the whole packet if any
+            // channel is outside its physically possible range. Ranges
+            // padded slightly beyond the Pi's own mapped output.
+            bool sane = true;
+            sane &= (candidate[RADIO_CHANNEL_YAW_RATE] > -60.0f  && candidate[RADIO_CHANNEL_YAW_RATE] < 60.0f);
+            sane &= (candidate[RADIO_CHANNEL_PITCH]    > -0.60f  && candidate[RADIO_CHANNEL_PITCH]    < 0.60f);
+            sane &= (candidate[RADIO_CHANNEL_ROLL]     > -0.60f  && candidate[RADIO_CHANNEL_ROLL]     < 0.60f);
+            sane &= (candidate[RADIO_CHANNEL_THROTTLE] > 850.0f  && candidate[RADIO_CHANNEL_THROTTLE] < 2050.0f);
+            sane &= (candidate[RADIO_CHANNEL_VRA] > -0.1f && candidate[RADIO_CHANNEL_VRA] < 1.1f);
+            sane &= (candidate[RADIO_CHANNEL_VRB] > -0.1f && candidate[RADIO_CHANNEL_VRB] < 1.1f);
+            sane &= (candidate[RADIO_CHANNEL_VRC] > -0.1f && candidate[RADIO_CHANNEL_VRC] < 1.1f);
+            sane &= (candidate[RADIO_CHANNEL_VRE] > -0.1f && candidate[RADIO_CHANNEL_VRE] < 1.1f);
+
+            if (!sane)
+                continue;
+
+            int encoded = allDataFromPi.substring(0, allDataFromPi.indexOf(",")).toInt();
+            if (encoded < 0 || encoded > 29)
+                continue;
+
+            // this line passed every check — accept it, keep scanning for
+            // any newer line still sitting in the buffer
+            for (int i = 0; i < NUM_RADIO_CHANNELS; i++)
+                m_refData[i] = candidate[i];
+            m_encodedSwitchesData = encoded;
+            gotGoodPacket = true;
         }
-        return false;
+
+        return gotGoodPacket;
     }
 
     #if UAV_TYPE == UAV_TYPE_QUADCOPTER
@@ -104,20 +116,21 @@ namespace bzzz
         {
             // if replyWithFlightData is enabled, send flight data to Pi
             Serial.print("FD: ");
-            Serial.print(q1); Serial.print(' ');
-            Serial.print(q2); Serial.print(' ');
-            Serial.print(q3); Serial.print(' ');
-            Serial.print(ax); Serial.print(' ');
-            Serial.print(ay); Serial.print(' ');
-            Serial.print(az); Serial.print(' ');
-            Serial.print(motorFL); Serial.print(' ');
-            Serial.print(motorFR); Serial.print(' ');
-            Serial.print(motorBL); Serial.print(' ');
-            Serial.println(motorBR);
+            Serial.print(q1, 4); Serial.print(' ');
+            Serial.print(q2, 4); Serial.print(' ');
+            Serial.print(q3, 4); Serial.print(' ');
+            Serial.print(wx, 3); Serial.print(' ');
+            Serial.print(wy, 3); Serial.print(' ');
+            Serial.print(wz, 3); Serial.print(' ');
+            Serial.print(motorFL, 0); Serial.print(' ');
+            Serial.print(motorFR, 0); Serial.print(' ');
+            Serial.print(motorBL, 0); Serial.print(' ');
+            Serial.println(motorBR, 0);
         }
     }
     #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
     void RaspberryEsp32Interface::sendFlightDataToPi(
+        float q0,
         float q1,
         float q2,
         float q3,
@@ -129,24 +142,33 @@ namespace bzzz
         float motorBL,
         float motorBR,
         float motorML,
-        float motorMR)
+        float motorMR,
+        float q0p,
+        float q1p,
+        float q2p,
+        float q3p,
+        float wxp,
+        float wyp,
+        float wzp,
+        const float *J,
+        int nJ)   
+        
+    
+
     {
         if (this->m_replyWithFlightData)
         {
-            // If hexacopter, append the middle-left and middle-right motors to the data stream packet
-            Serial.print("FD: ");
-            Serial.print(q1); Serial.print(' ');
-            Serial.print(q2); Serial.print(' ');
-            Serial.print(q3); Serial.print(' ');
-            Serial.print(ax); Serial.print(' ');
-            Serial.print(ay); Serial.print(' ');
-            Serial.print(az); Serial.print(' ');
-            Serial.print(motorFL); Serial.print(' ');
-            Serial.print(motorFR); Serial.print(' ');
-            Serial.print(motorBL); Serial.print(' ');
-            Serial.print(motorBR); Serial.print(' ');
-            Serial.print(motorML); Serial.print(' ');
-            Serial.println(motorMR);
+            char buf[320];
+            int n = snprintf(buf, sizeof(buf),
+                "FD: %.4f %.4f %.4f %.4f %.3f %.3f %.3f "
+                "%.0f %.0f %.0f %.0f %.0f %.0f",
+                q0, q1, q2, q3, ax, ay, az,
+                motorFL, motorFR, motorBL, motorBR, motorML, motorMR);
+
+                for (int i = 0; i < nJ && n < (int)sizeof(buf) - 12; i++)
+                     n += snprintf(buf + n, sizeof(buf) - n, " %.3f", J[i]);
+
+            Serial.println(buf);
         }
     }
     #endif
@@ -243,6 +265,8 @@ namespace bzzz
 
     void RaspberryEsp32Interface::waitForArmCommand()
     {
+        Serial.println(" ENTERED waitForArmCommand()");
+
         float temp[6];
         readPiData();
         
@@ -250,19 +274,45 @@ namespace bzzz
         #if UAV_TYPE == UAV_TYPE_QUADCOPTER
         sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
         #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
-        sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+       static const float jDummy[7] = {-1,-1,-1,-1,-1,-1,-1};
+        sendFlightDataToPi(-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                           -1,-1,-1,-1,-1,-1,-1, jDummy, 7);
         #endif
 
         delay(20);
         while (!canArm())
         {
+            Serial.print("Encoded = ");
+            Serial.print(m_encodedSwitchesData);
+
+            Serial.print(" | Throttle = ");
+            Serial.print(throttleReferencePercentage());
+
+            Serial.print(" | A =");
+            Serial.print(switchA());
+
+            Serial.print(" | B =");
+            Serial.print((m_encodedSwitchesData & RADIO_SWITCH_B_BIT)!= 0);
+
+            Serial.print(" C =");
+            Serial.print((int)switchC());
+
+            Serial.print(" D =");
+            Serial.print(switchD());
+
+            Serial.print( " | canArm =");
+            Serial.print(canArm());
+
             readPiData();
+
             
             // Send waiting packets based on layout type
             #if UAV_TYPE == UAV_TYPE_QUADCOPTER
             sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
             #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
-            sendFlightDataToPi(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+           static const float jDummy[7] = {-1,-1,-1,-1,-1,-1,-1};
+           sendFlightDataToPi(-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                           -1,-1,-1,-1,-1,-1,-1, jDummy, 7);
             #endif
         }
     }

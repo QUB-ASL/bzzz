@@ -37,7 +37,10 @@ namespace bzzz
     {
         return m_quaternion[idx];
     }
-
+    const float &Quaternion::operator[](std::size_t idx) const
+{
+    return m_quaternion[idx];
+}
     Quaternion operator-(Quaternion &lhs, Quaternion &rhs)
     {
         Quaternion diff;
@@ -48,4 +51,4 @@ namespace bzzz
         return diff;
     }
 
-} /* end of namespace bzzz */
+} /* end of namespace bzzz */ 

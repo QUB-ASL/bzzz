@@ -93,6 +93,9 @@ namespace bzzz
          */
         void attachAndArm();
 
+        // MOTOR SEQUENCE TEST 
+        // void motorTestSequence();
+
     }; /* end of class MotorDriver */
 
 } /* end of namespace bzzz */

@@ -1,250 +1,509 @@
 #include <Arduino.h>
-#include "quaternion.hpp"
 #include "config.hpp"
-#include "motors.hpp"
-#include "raspberryEsp32Interface.hpp"
 #include "ahrs.hpp"
+#include "motors.hpp"
 #include "controller.hpp"
-#include "fail_safes.hpp"
+#include "quaternion.hpp"
 #include "util.hpp"
+#include "raspberryEsp32Interface.hpp"
+#include "prediction.hpp"
+#include "fdi.hpp"
+#include "reconfiguration.hpp"
+
+
+// ---- fault injection: which motor switch A kills ----
+#define FAULT_MOTOR  motorFL   // <-- change: motorFL, motorFR, motorML, motorMR, motorBL, motorBR
+ 
+
+
 
 using namespace bzzz;
 
-hw_timer_t *timer = NULL;
-portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
-MotorDriver motorDriver;
-RaspberryEsp32Interface raspberryEsp32Interface(true);
+//--------objects---------
+
 AHRS ahrs;
+MotorDriver motorDriver;
 Controller controller;
+Reconfiguration reconfiguration;
+RaspberryEsp32Interface raspberryEsp32Interface(true);
+static const int NUM_HYP = 7;
+Predictor    pred[NUM_HYP];
+ResidualCost cost[NUM_HYP];
+
+// which gamma index fails, per hypothesis;  -1 = healthy
+// predictor motor order: FR(0) FL(1) ML(2) BL(3) BR(4) MR(5)
+static const int FAIL_IDX[NUM_HYP] = { -1, 1, 0, 5, 4, 3, 2 };
+//                              J0  J1 J2 J3 J4 J5 J6
+//                            ok  FL FR MR BR BL ML
+
+
+//--------Variables----------
+
 Quaternion initialQuaternion;
-FailSafes failSafes(TX_CONNECTION_TIMEOUT_IN_uS);
-float yawReferenceRad = 0.0;
 float initialAngularVelocity[3];
-float IMUData[6];
 
-// Motor PWM variables declared conditionally based on drone type
-#if UAV_TYPE == UAV_TYPE_QUADCOPTER
-int motorFL, motorFR, motorBL, motorBR;
-#elif UAV_TYPE == UAV_TYPE_HEXACOPTER
-int motorFL, motorFR, motorBL, motorBR, motorML, motorMR;
-#endif
+float quaterninonData[4];
+float measuredOmega[3];
+float OmegaCorrected[3];
 
-bool wasKill=0;
-bool isKill=0;
-unsigned long timestampLastKill = 0;
-bool isThrottleStickDown = 0;
+float lastThrottle = 1000;
+float lastRoll = 0.0f;
+float lastPitch = 0.0f;
+float controlDebug[3] = {0.0f, 0.0f, 0.0f};
 
-/**
- * Here the timer state is declared as a global variable
- * so that it can be accessed by the loop function (and possibly
- * by other interrupts). When accessing `timerState` we should
- * be first acquiring its lock (i.e., the `timerMux`).
- */
-volatile bool timerState = true;
+int motorFL;
+int motorFR;
+int motorML;
+int motorMR;
+int motorBL;
+int motorBR;
 
-/**
- * Callback, attached to the timer interrupt
- * It is generally advisable to keep the implementation of this
- * function as lean as possible (it should just toggle a flag).
- * This function is executed only ONCE every period.
- */
-void IRAM_ATTR onTimer()
-{
-  taskENTER_CRITICAL_ISR(&timerMux);
-  timerState = !timerState;
-  taskEXIT_CRITICAL_ISR(&timerMux);
-}
+float pwmOffset = 800.0f;
 
-/**
- * Setup the timer for running the main loop at a fixed rate.
- * timerAlarmWrite is simply a counter; we count a number of
- * timer periods before calling the callback function (onTimer).
- * The second argument is the sampling period in micros.
- */
-void setupTimer()
-{
-  timer = timerBegin(TIMER_ID, TIMER_PRESCALER, true);
-  timerAttachInterrupt(timer, &onTimer, true);
-  timerAlarmWrite(timer, TIMER_INTERVAL_uS, true);
-  timerAlarmEnable(timer);
-}
+float resQ[4], resW[3], qPredOut[4], wPredOut[3];
+float J[NUM_HYP];
+int   bestHyp = 0;
+int   candidate = 0;
+int   streak = 0;
+int   lockedHyp = 0;
 
-/**
- * Setup the AHRS
- */
-void setupAHRS()
-{
-  ahrs.setup();
-  ahrs.preflightCalibrate(false);
-  ahrs.calibrateMagnetometer(MAGNETOMETER_BIAS_X, MAGNETOMETER_BIAS_Y, MAGNETOMETER_BIAS_Z,
-                             MAGNETOMETER_SCALE_X, MAGNETOMETER_SCALE_Y, MAGNETOMETER_SCALE_Z);
-}
+// trend tracking: short rolling history of J per hypothesis
+static const int TREND_LEN = 10;
+float Jhist[NUM_HYP][TREND_LEN];
+int   trendCount = 0;
 
-/**
- * Setup function
- */
+
+
+static const float EMA_ALPHA = 0.05f;   // weight on new sample; 0.9 stays on history
+
+
+// [qw qx qy qz wx wy wz], from healthy-log residual RMS (props off)
+  static const float SIGMA[7] = {1e6f, 1e6f, 1e6f, 1e6f, 9.30f, 5.14f, 4.48f};
+
+
 void setup()
 {
-  setupTimer();                                          // setup the main loop timer
-  setupBuzzer();                                         // setup the buzzer
-  Serial.begin(SERIAL_BAUD_RATE);                        // start the serial
-  setupAHRS();                                           // setup the IMU and AHRS
-  ahrs.averageQuaternion(initialQuaternion);             // determine initial attitude
-  ahrs.averageAngularVelocities(initialAngularVelocity); // determine initial attitude
-  buzz(2);                                               // 2 beeps => AHRS setup complete
-  logSerial(LogVerbosityLevel::Info, "waiting for PiSerial...");
-  waitForPiSerial(); // wait for the RPi and the RC to connect
-  buzz(4);           // 4 beeps => RPi+RC connected
-  logSerial(LogVerbosityLevel::Info, "waiting for arm...");
-  raspberryEsp32Interface.waitForArmCommand(); // wait for the RC to send an arming command
-  logSerial(LogVerbosityLevel::Info, "arming...");
-  buzz(2, 400);               // two long beeps => preparation for arming
-  motorDriver.attachAndArm(); // attach ESC and arm motors
-  buzz(6);                    // 6 beeps => motors armed; keep clear!
-}
 
-/**
- * Set controller gain values from RC trimmers
- *
- * Trimmer A - X/Y quaternion gain
- * Trimmer B - X/Y angular velocity gain
- * Trimmer C - Yaw angular velocity gain
- */
-void setGainsFromRcTrimmers()
-{
-  controller.setQuaternionGain(
-      -raspberryEsp32Interface.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN);
-  controller.setAngularVelocityXYGain(
-      -raspberryEsp32Interface.trimmerVRBPercentage() * RADIO_TRIMMER_MAX_OMEGA_XY_GAIN);
-  controller.setYawAngularVelocityGain(
-      -raspberryEsp32Interface.trimmerVRCPercentage() * RADIO_TRIMMER_MAX_OMEGA_Z_GAIN);
-}
 
-/**
- * Loop function
- */
-void loop()
-{  
-  taskENTER_CRITICAL_ISR(&timerMux);
-  timerState = !timerState;
-  taskEXIT_CRITICAL_ISR(&timerMux);
+    Serial.begin(SERIAL_BAUD_RATE);
+    Serial.setTimeout(5);
+    Serial.println("#BOOT v2 nJ=10");
 
-  float quaternionImuData[4];
-  float measuredAngularVelocity[3];
-  float angularVelocityCorrected[3];
 
-  if (!timerState) return;
-  
-  // if raspberryEsp32Interface data received update the last data read time.
-  if (raspberryEsp32Interface.readPiData())
-  {
-    #if UAV_TYPE == UAV_TYPE_QUADCOPTER
-    raspberryEsp32Interface.sendFlightDataToPi(
-        IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5],
-        motorFL, motorFR, motorBL, motorBR);
-    #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
-    // Adapts flight telemetry stream for 6 motor variables if hexacopter is active
-    raspberryEsp32Interface.sendFlightDataToPi(
-        IMUData[0], IMUData[1], IMUData[2], IMUData[3], IMUData[4], IMUData[5],
-        motorFL, motorFR, motorBL, motorBR, motorML, motorMR);
-    #endif
+    setupBuzzer();
 
-    failSafes.setLastRadioReceptionTime(micros());
+
+
+    if (! ahrs.setup())
+    {
+        Serial.println("IMU setup Failed!");
+        while(1);
+
+    }
+    ahrs.preflightCalibrate(false);
+
+    ahrs.calibrateMagnetometer(
+        MAGNETOMETER_BIAS_X,
+        MAGNETOMETER_BIAS_Y,
+        MAGNETOMETER_BIAS_Z,
+        MAGNETOMETER_SCALE_X,
+        MAGNETOMETER_SCALE_Y,
+        MAGNETOMETER_SCALE_Z);
+
+
+    ahrs.averageQuaternion(initialQuaternion);
+    ahrs.averageAngularVelocities(initialAngularVelocity);
+
+    buzz(2);
+
+
+    waitForPiSerial();
+   
+    raspberryEsp32Interface.waitForArmCommand();
     
-    wasKill = isKill;
-    isKill = raspberryEsp32Interface.kill();
-    isThrottleStickDown = raspberryEsp32Interface.throttleReferencePercentage() < MAX_ARMING_THROTTLE_PERCENTAGE;
-    logSerial(LogVerbosityLevel::Debug, ">> [%d, %d] >> %lu\n",
-            isKill, wasKill, timestampLastKill);
-  }
+    Serial.println("settling AHRS...");
+    uint32_t t0 = millis();
+    while (millis() - t0 < 4000) { ahrs.update(); }
+
+  static const float GAMMA[NUM_HYP][6] = {
+    //   FR    FL    ML    BL    BR    MR
+        {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},   // J0 healthy
+        {1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f},   // J1 FL failed
+        {0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},   // J2 FR failed
+        {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f},   // J3 MR failed
+        {1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f},   // J4 BR failed
+        {1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f},   // J5 BL failed
+        {1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f}    // J6 ML failed
+    };
+
+    for (int h = 0; h < NUM_HYP; h++)
+    {
+        pred[h].setGamma(GAMMA[h]);
+        pred[h].setPwmMapping(U_TO_PWM, ZERO_ROTOR_SPEED, ABSOLUTE_MAX_PWM);
+        J[h] = 0.0f;
+    }
+    motorDriver.attachAndArm();
   
-  // If you're attempting to resurrect it...
-  // K --> U
-  if (!isKill && wasKill){
-    // If you're too late, you need to pull the stick down
-    unsigned long timeElapsedSinceKill = millis() - timestampLastKill;
-    if (timeElapsedSinceKill >= UN_KILL_KILL_SWITCH_TIMEOUT_IN_ms) {
-        if (!isThrottleStickDown){
-          motorDriver.disarm();
-          isKill = 1;
-          return;
+  
+  
+    buzz(3);
+
+ 
+}
+ void setGainsFromRcTrimmers()
+{
+    
+    float qGain =
+        - raspberryEsp32Interface.trimmerVRAPercentage() * RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN;
+
+    
+    float omegaXYGain =
+        - raspberryEsp32Interface.trimmerVRBPercentage()*RADIO_TRIMMER_MAX_OMEGA_XY_GAIN;
+
+    
+    float omegaZGain =
+        -  raspberryEsp32Interface.trimmerVRCPercentage()*RADIO_TRIMMER_MAX_OMEGA_Z_GAIN;
+
+    controller.setQuaternionGain(qGain);
+    controller.setAngularVelocityXYGain(omegaXYGain);
+    controller.setYawAngularVelocityGain(omegaZGain);
+
+    reconfiguration.setQuaternionGain(qGain);
+    reconfiguration.setAngularVelocityXYGain(omegaXYGain);
+    reconfiguration.setYawAngularVelocityGain(omegaZGain);
+        
+    pwmOffset = 700.0f + raspberryEsp32Interface.trimmerVREPercentage() * 200.0f;  // sweeps 700-900
+
+ 
+}
+
+    static float yawOf(Quaternion &q)
+{
+    return atan2f(2.0f * (q[0]*q[3] + q[1]*q[2]),
+                  1.0f - 2.0f * (q[2]*q[2] + q[3]*q[3]));
+}
+
+
+
+
+
+void loop()
+{
+    
+    bool rcValid = raspberryEsp32Interface.readPiData();
+    bool injectFault = raspberryEsp32Interface.switchA();
+
+    if (rcValid)
+{
+    lastThrottle = raspberryEsp32Interface.throttleReferencePWM();
+    lastRoll = raspberryEsp32Interface.rollReferenceAngleRad();
+    lastPitch = raspberryEsp32Interface.pitchReferenceAngleRad();
+}
+
+   if (!ahrs.update())
+        return;
+
+    static uint8_t imuDiv = 0;
+    if (++imuDiv < 2) return;      // 250 Hz -> 125 Hz
+    imuDiv = 0;
+
+
+
+    setGainsFromRcTrimmers();
+
+
+
+    ahrs.quaternion(quaterninonData);
+
+    ahrs.angularVelocity(measuredOmega);
+
+    OmegaCorrected[0] = measuredOmega[0] - initialAngularVelocity[0];
+    OmegaCorrected[1] = measuredOmega[1] - initialAngularVelocity[1];
+    OmegaCorrected[2] = measuredOmega[2] - initialAngularVelocity[2];
+
+    
+
+    Quaternion currentQuaternion(quaterninonData);
+    Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
+
+
+ 
+    float yawReferenceQuaternion = yawOf(relativeQuaternion);
+
+
+    Quaternion referenceQuaternion(
+        yawReferenceQuaternion,
+        raspberryEsp32Interface.pitchReferenceAngleRad(),
+        raspberryEsp32Interface.rollReferenceAngleRad()
+    );
+
+    Quaternion attitudeError =
+        referenceQuaternion - relativeQuaternion;
+
+    
+
+    static uint32_t tPrevLoop = 0;
+    uint32_t tNowLoop = micros();
+    float dtActual = (tNowLoop - tPrevLoop) * 1e-6f;
+    bool dtOk = (tPrevLoop != 0) &&
+                (dtActual > 0.5f * SAMPLING_TIME) &&
+                (dtActual < 2.0f * SAMPLING_TIME);
+    tPrevLoop = tNowLoop;
+
+
+
+
+
+
+        
+    if (raspberryEsp32Interface.kill())
+    {
+        motorDriver.disarm();
+        // reset all fault-decision state on disarm — lock should never
+        // carry over from one flight to the next, only reboot did this before
+        lockedHyp = 0;
+        candidate = 0;
+        streak = 0;
+        return;
+    }
+
+// controller.motorPwmSignals(
+//         attitudeError,
+//         OmegaCorrected,
+//         raspberryEsp32Interface.yawRateReferenceRadSec(),
+//         raspberryEsp32Interface.throttleReferencePWM(),
+//         motorFL,
+//         motorFR,
+//         motorBL,
+//         motorBR,
+//         motorML,
+//         motorMR
+//     );
+// float controlDebug[3];
+// controller.getLastControl(controlDebug);
+
+if (lockedHyp == 0)
+{
+    // H0: healthy hexacopter
+    controller.motorPwmSignals(
+        attitudeError,
+        OmegaCorrected,
+        raspberryEsp32Interface.yawRateReferenceRadSec(),
+        raspberryEsp32Interface.throttleReferencePWM(),
+        motorFL,
+        motorFR,
+        motorBL,
+        motorBR,
+        motorML,
+        motorMR
+    );
+}
+else
+{
+    // H1-H6: fault-tolerant reconfiguration
+    reconfiguration.motorPwmSignals(
+        lockedHyp,
+        attitudeError,
+        OmegaCorrected,
+        raspberryEsp32Interface.yawRateReferenceRadSec(),
+        raspberryEsp32Interface.throttleReferencePWM(),
+        motorFL,
+        motorFR,
+        motorBL,
+        motorBR,
+        motorML,
+        motorMR
+    );
+}
+
+float controlDebug[3];
+controller.getLastControl(controlDebug);
+
+
+
+   if (injectFault)
+    FAULT_MOTOR = 905;
+
+    // predictor motor order: FR FL ML BL BR MR — same order as GAMMA/m_B
+    // predictor motor order: FR FL ML BL BR MR — same order as GAMMA/m_B
+    float pwmActual[6] = {
+        (float)motorFR, (float)motorFL, (float)motorML,
+        (float)motorBL, (float)motorBR, (float)motorMR
+    };
+
+    // write to ESCs FIRST — don't let FDI math delay motor response
+    motorDriver.writeSpeedToEsc(
+        motorFL,
+        motorFR,
+        motorBL,
+        motorBR,
+        motorML,
+        motorMR
+    );
+    for (int h = 0; h < NUM_HYP; h++)
+    {
+        pred[h].step(relativeQuaternion, OmegaCorrected, pwmActual, pwmOffset, SAMPLING_TIME);
+
+        float rq[4], rw[3];
+        if (pred[h].residual(rq, rw) && dtOk)
+            J[h] = cost[h].push(rq, rw, SIGMA);
+    }
+
+    if (!pred[0].residual(resQ, resW)) {
+        for (int i = 0; i < 4; i++) resQ[i] = 0.0f;
+        for (int i = 0; i < 3; i++) resW[i] = 0.0f;
+    }
+    pred[0].maturedPrediction(qPredOut, wPredOut);
+
+    // shift history, push newest J
+    for (int h = 0; h < NUM_HYP; h++)
+    {
+        for (int k = 0; k < TREND_LEN - 1; k++)
+            Jhist[h][k] = Jhist[h][k + 1];
+        Jhist[h][TREND_LEN - 1] = J[h];
+    }
+    if (trendCount < TREND_LEN) trendCount++;
+
+    // compute slope: newer-half average minus older-half average
+    float slope[NUM_HYP];
+    if (trendCount >= TREND_LEN)
+    {
+        for (int h = 0; h < NUM_HYP; h++)
+        {
+            float oldAvg = 0.0f, newAvg = 0.0f;
+            for (int k = 0; k < TREND_LEN / 2; k++) oldAvg += Jhist[h][k];
+            for (int k = TREND_LEN / 2; k < TREND_LEN; k++) newAvg += Jhist[h][k];
+            oldAvg /= (TREND_LEN / 2);
+            newAvg /= (TREND_LEN / 2);
+            slope[h] = newAvg - oldAvg;   // negative = sustained decline
         }
     }
-  } 
-
-  // one function to run all fail safe checks
-  if (isKill || failSafes.isSerialTimeout())
-  {
-    if (!wasKill) {
-      // U --> K
-      timestampLastKill = millis();
+    else
+    {
+        for (int h = 0; h < NUM_HYP; h++) slope[h] = 0.0f;   // not enough history yet
     }
-    motorDriver.disarm();
-    return; // exit the loop
-  }
 
-  ahrs.update();
-  setGainsFromRcTrimmers();
-  ahrs.quaternion(quaternionImuData);
-  ahrs.angularVelocity(measuredAngularVelocity);
+    // bestHyp = instantaneous raw argmin, no delay, but must be MEANINGFULLY
+    // lower than healthy — protects against ordinary maneuvers where model
+    // imperfection makes one hyp marginally, coincidentally beat J0.
+    int rawBest = 0;
+    for (int h = 1; h < NUM_HYP; h++)
+        if (J[h] < J[rawBest]) rawBest = h;
 
-  // Determine correct angularVelocity
-  angularVelocityCorrected[0] = measuredAngularVelocity[0] - initialAngularVelocity[0];
-  angularVelocityCorrected[1] = measuredAngularVelocity[1] - initialAngularVelocity[1];
-  angularVelocityCorrected[2] = measuredAngularVelocity[2] - initialAngularVelocity[2];
+        static const float MARGIN = 0.6f;
+        static const float J0_MIN = 0.50f;
 
-  float yawRateRC = raspberryEsp32Interface.yawRateReferenceRadSec();
-  float deadZoneYawRate = 0.017;
-  float yawRateReference = 0.;
-  if (yawRateRC >= deadZoneYawRate)
-  {
-    yawRateReference = yawRateRC - deadZoneYawRate;
-  }
-  else if (yawRateRC <= -deadZoneYawRate)
-  {
-    yawRateReference = yawRateRC + deadZoneYawRate;
-  }
+        bool windowFull = cost[0].count() >= 8;
 
-  // take the current Yaw angle as reference, this means that we are not correcting the Yaw.
-  yawReferenceRad = ahrs.currentYawRad();
+        bool faultCandidate =
+            windowFull &&
+            rawBest != 0 &&
+            J[0] > J0_MIN &&
+            J[rawBest] < MARGIN * J[0];
 
-  Quaternion referenceQuaternion(
-      yawReferenceRad,
-      raspberryEsp32Interface.pitchReferenceAngleRad(),
-      raspberryEsp32Interface.rollReferenceAngleRad());
+        bestHyp = faultCandidate ? rawBest : 0;
+    // streak tracks how long the SAME non-healthy hypothesis has kept
+    // winning, in a row. Switching between different wrong hypotheses is
+    // fine — it just resets the streak, never locks, no penalty. Going
+    // back to healthy (bestHyp==0) also resets it.
+    static const int LOCK_LEN = 15;
 
-  Quaternion currentQuaternion(quaternionImuData);
-  Quaternion relativeQuaternion = currentQuaternion - initialQuaternion;
-  Quaternion attitudeError = referenceQuaternion - relativeQuaternion; // e = set point - measured
+static float lastPwmFDI[6] = {
+    1000.0f, 1000.0f, 1000.0f,
+    1000.0f, 1000.0f, 1000.0f
+};
 
-  IMUData[0] = relativeQuaternion[1];
-  IMUData[1] = relativeQuaternion[2];
-  IMUData[2] = relativeQuaternion[3];
-  ahrs.getAccelerometerValues(IMUData + 3);
+float maxPwmStep = 0.0f;
 
-  // Throttle from RC to throttle reference
-  float throttleRef = raspberryEsp32Interface.throttleReferencePWM();
+for (int i = 0; i < 6; i++)
+{
+    float dPwm = fabsf(pwmActual[i] - lastPwmFDI[i]);
 
-  // Compute control actions and send them to the motors dynamically
-  #if UAV_TYPE == UAV_TYPE_QUADCOPTER
-  controller.motorPwmSignals(attitudeError,
-                             angularVelocityCorrected,
-                             yawRateReference,
-                             throttleRef,
-                             motorFL, motorFR, motorBL, motorBR);
-  
-  motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR);
+    if (dPwm > maxPwmStep)
+        maxPwmStep = dPwm;
 
-  #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
-  controller.motorPwmSignals(attitudeError,
-                             angularVelocityCorrected,
-                             yawRateReference,
-                             throttleRef,
-                             motorFL, motorFR, motorBL, motorBR, motorML, motorMR);
-  
-  motorDriver.writeSpeedToEsc(motorFL, motorFR, motorBL, motorBR, motorML, motorMR);
-  #endif
-
-  logSerial(LogVerbosityLevel::Debug, "PR: %f %f\n",
-            IMUData[1], IMUData[2]);
+    lastPwmFDI[i] = pwmActual[i];
 }
+
+const bool aggressiveManeuver = (maxPwmStep > 5.0f);
+
+    // if (!lockedHyp)
+    // {
+    //     if (bestHyp != 0)
+    //     {
+    //         if (bestHyp == candidate) streak++;
+    //         else { candidate = bestHyp; streak = 1; }
+
+    //         if (streak >= LOCK_LEN) lockedHyp = bestHyp;
+    //     }
+    //     else
+    //     {
+    //         streak = 0;
+    //     }
+    // }
+
+    if (!lockedHyp)
+{
+    if (aggressiveManeuver)
+    {
+        streak = 0;
+    }
+    else if (bestHyp != 0)
+    {
+        if (bestHyp == candidate) streak++;
+        else
+        {
+            candidate = bestHyp;
+            streak = 1;
+        }
+
+        if (streak >= LOCK_LEN)
+            lockedHyp = bestHyp;
+    }
+    else
+    {
+        streak = 0;
+    }
+}
+
+    else
+    {
+        bestHyp = lockedHyp;  // stay locked
+    }
+
+    // // TEMPORARY diagonal correction — front/back pairs only (FR<->BL, FL<->BR),
+    
+    float Jsend[NUM_HYP + 9];
+
+for (int h = 0; h < NUM_HYP; h++)
+    Jsend[h] = J[h];
+
+// Existing diagnostic values
+Jsend[NUM_HYP + 0] = (float)bestHyp;
+Jsend[NUM_HYP + 1] = injectFault ? 1.0f : 0.0f;
+Jsend[NUM_HYP + 2] = dtActual * 1000.0f;
+
+// Command references
+Jsend[NUM_HYP + 3] = lastPitch;
+Jsend[NUM_HYP + 4] = lastRoll;
+Jsend[NUM_HYP + 5] =
+    raspberryEsp32Interface.yawRateReferenceRadSec();
+
+// Controller outputs
+Jsend[NUM_HYP + 6] = controlDebug[0];   // uRoll
+Jsend[NUM_HYP + 7] = controlDebug[1];   // uPitch
+Jsend[NUM_HYP + 8] = controlDebug[2];   // uYaw
+
+    raspberryEsp32Interface.sendFlightDataToPi(
+    relativeQuaternion[0], relativeQuaternion[1],
+    relativeQuaternion[2], relativeQuaternion[3],
+    OmegaCorrected[0], OmegaCorrected[1], OmegaCorrected[2],
+    motorFL, motorFR, motorBL, motorBR, motorML, motorMR,
+    qPredOut[0], qPredOut[1], qPredOut[2], qPredOut[3],
+    wPredOut[0], wPredOut[1], wPredOut[2],
+    Jsend, NUM_HYP + 9);
+
+}
+
+
+

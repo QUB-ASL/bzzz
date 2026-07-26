@@ -1,0 +1,112 @@
+#include <Arduino.h>
+#include "controller.hpp"
+#include "controller.cpp"
+#include "quaternion.hpp"
+
+using namespace bzzz;
+
+Controller controller;
+Quaternion attitudeError;
+
+ 
+String packet ="";
+ void setup()
+ {
+    Serial.begin(115200);
+    
+    Serial.println();
+    Serial.println("--------controller input test----------");
+ }
+
+ void loop()
+ {
+    while (Serial.available())
+    {
+        char c = Serial.read();
+
+        if(c == '\n')
+        {
+
+            if (packet.startsWith("S, "))
+            {
+                int channels[8]; 
+
+                int start = 2;
+                
+                for(int i =0;i<8;i++)
+                {
+                    int comma = packet.indexOf(',', start);
+                    if(comma == -1) break;
+
+                    channels[i] = packet.substring(start,comma).toInt();
+                    
+                    start = comma + 1;    
+                }
+
+                float throttle = channels[2];
+
+                float gyro[3]=
+                {
+                    0.0f,
+                    0.0f,
+                    0.0f
+
+                };
+
+                float yawRateRef = 0.0f;
+
+                int motorFL;
+                int motorFR;
+                int motorBL;
+                int motorBR;
+                int motorML;
+                int motorMR;
+
+                controller.motorPwmSignals(
+                    attitudeError,
+                    gyro,
+                    yawRateRef,
+                    throttle,
+                    motorFL,
+                    motorFR,
+                    motorBL,
+                    motorBR,
+                    motorML,
+                    motorMR
+
+                );
+
+                Serial.println("-------------");
+
+                Serial.print("throttle : ");
+                Serial.println(throttle);
+
+                Serial.print("FL : ");
+                Serial.println(motorFL);
+
+                Serial.print("FR : ");
+                Serial.println(motorFR);
+
+                Serial.print("ML : ");
+                Serial.println(motorML);
+
+                Serial.print("MR : ");
+                Serial.println(motorMR);
+
+                Serial.print("BL : ");
+                Serial.println(motorBL);
+
+                Serial.print("BR : ");
+                Serial.println(motorBR);
+
+
+            }
+            packet = "";
+
+        }
+        else
+        {
+            packet += c;
+        }
+    }
+ }

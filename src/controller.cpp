@@ -13,6 +13,17 @@ namespace bzzz
         float angularVelocityYawRef,
         float *control)
     {
+//         Serial.printf(
+//     "attErr=[%.3f %.3f %.3f %.3f] | wx=%.3f wy=%.3f\n",
+//     attitudeError[0],
+//     attitudeError[1],
+//     attitudeError[2],
+//     attitudeError[3],
+//     angularVelocity[0],
+//     angularVelocity[1]
+
+ 
+// );
         /*
          * ux = Kqx * qx + Kwx * wx
          * uy = Kqy * qy + Kwy * wy
@@ -51,9 +62,13 @@ namespace bzzz
         int motorClipLow,
         int motorClipHigh)
     {
-        float controls[3];
+        float controls[3] = {0.0f, 0.0f, 0.0f};
         // compute control actions (LQR)
         controlAction(attitudeError, angularVelocity, angularVelocityYawRef, controls);
+        m_lastControl[0] = controls[0];   // roll
+        m_lastControl[1] = controls[1];   // pitch
+        m_lastControl[2] = controls[2];   // yaw
+  
 
         // compute motor signals from control actions (and cast float as int)
         int mFL = throttle + controlToPwmScaling * ( controls[0] + controls[1] + controls[2]);
@@ -68,6 +83,9 @@ namespace bzzz
         motorBR = clip(mBR, motorClipLow, motorClipHigh);
     }
 #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
+
+    
+
     /**
      * Compute PWM signals for motors (hexacopter version).
      * Uses control outputs from controlAction() and maps them to 6 motors.
@@ -87,17 +105,24 @@ namespace bzzz
         int motorClipLow,
         int motorClipHigh)
     {
-        float controls[3];
+        float controls[3] = {0.0f, 0.0f, 0.0f};
         // compute control actions (LQR)
         controlAction(attitudeError, angularVelocity, angularVelocityYawRef, controls);
 
-        // compute motor signals from control actions (and cast float as int)
-        int mFR = throttle + controlToPwmScaling * ( 0.5f * controls[0] - 0.134f * controls[1] + 0.134f * controls[2]);
-        int mFL = throttle + controlToPwmScaling * ( 0.5f * controls[0] + 0.134f * controls[1] - 0.134f * controls[2]);
-        int mBL = throttle + controlToPwmScaling * (-0.5f * controls[0] + 0.134f * controls[1] - 0.134f * controls[2]);
-        int mBR = throttle + controlToPwmScaling * (-0.5f * controls[0] - 0.134f * controls[1] + 0.134f * controls[2]);
-        int mML = throttle + controlToPwmScaling * (                     0.2679f * controls[1] + 0.2321f * controls[2]);
-        int mMR = throttle + controlToPwmScaling * (                    -0.2679f * controls[1] - 0.2321f * controls[2]);
+        m_lastControl[0] = controls[0];   // roll
+        m_lastControl[1] = controls[1];   // pitch
+        m_lastControl[2] = controls[2];   // yaw
+
+        int mFR = throttle + controlToPwmScaling * ( 0.5f * controls[1] - 0.134f * controls[0] - 0.134f * controls[2]);
+        int mFL = throttle + controlToPwmScaling * ( 0.5f * controls[1] + 0.134f * controls[0] + 0.134f * controls[2]);
+        int mBL = throttle + controlToPwmScaling * (-0.5f * controls[1] + 0.134f * controls[0] + 0.134f * controls[2]);
+        int mBR = throttle + controlToPwmScaling * (-0.5f * controls[1] - 0.134f * controls[0] - 0.134f * controls[2]);
+        int mML = throttle + controlToPwmScaling * (                     0.2679f * controls[0] - 0.2321f * controls[2]);
+        int mMR = throttle + controlToPwmScaling * (                    -0.2679f * controls[0] + 0.2321f * controls[2]);
+
+
+
+
 
         // clip motor signals between motorClipLow and motorClipHigh
         motorFR = clip(mFR, motorClipLow, motorClipHigh);
@@ -107,7 +132,16 @@ namespace bzzz
         motorBR = clip(mBR, motorClipLow, motorClipHigh);
         motorMR = clip(mMR, motorClipLow, motorClipHigh);
     }
+
+
 #endif
+
+ void Controller::getLastControl(float *control) const
+        {
+            control[0] = m_lastControl[0];
+            control[1] = m_lastControl[1];
+            control[2] = m_lastControl[2];
+        }    
 
 #ifdef BZZZ_DEBUG
     void Controller::setQuaternionGain(float gainXY)
@@ -126,6 +160,8 @@ namespace bzzz
     {
         m_angularVelocityGain[2] = gainOmegaZ;
     }
+
+   
 #endif /* BZZZ_DEBUG */
 
-} /* end of namespace bzzz */
+} /* end of namespace bzzz *//* end of namespace bzzz */

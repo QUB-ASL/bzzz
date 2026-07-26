@@ -10,6 +10,8 @@ namespace bzzz
     class Controller
     {
     private:
+
+        float m_lastControl[3] = {0.0f, 0.0f, 0.0f};
         /**
          * Gain values for the quaternion
          */
@@ -36,6 +38,8 @@ namespace bzzz
             float *control);
 
     public:
+
+        void getLastControl(float *control) const;
         /**
          * Constructs a new instance of Controller
          */
@@ -124,7 +128,6 @@ the RC.
             int motorClipLow = ZERO_ROTOR_SPEED,
             int motorClipHigh = ABSOLUTE_MAX_PWM);
 #endif
-
     }; /* end of class Controller */
 
 } /* end of namespace bzzz */

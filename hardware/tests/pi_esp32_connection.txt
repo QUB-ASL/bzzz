@@ -1,0 +1,54 @@
+#include <Arduino.h>
+ 
+String packet;
+ void setup()
+ {
+    Serial.begin(115200);
+    delay(1000);
+    
+    Serial.println();
+    Serial.println("--------ESP32 IS READY----------");
+ }
+
+ void loop()
+ {
+    while (Serial.available())
+    {
+        char c = Serial.read();
+
+        if(c == '\n')
+        {
+            Serial.print("Received: ");
+            Serial.println(packet);
+
+            if (packet.startsWith("S, "))
+            {
+                int start = packet.indexOf(',') + 1;
+
+                int throttle =0;
+                
+                for(int i =0;i<8;i++)
+                {
+                    int end = packet.indexOf(',', start);
+                    if(end == -1) break;
+
+                    int value = packet.substring(start, end).toInt();
+
+                    if(i==3)
+                        throttle =value;
+                    
+                    start = end + 1;    
+                }
+                Serial.print("Throttle =  ");
+                Serial.println(throttle);
+                Serial.println("----------------");
+            }
+            packet = "";
+
+        }
+        else
+        {
+            packet += c;
+        }
+    }
+ }

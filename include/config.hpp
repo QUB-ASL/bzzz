@@ -50,6 +50,7 @@
 #define FRONT_LEFT_ESC_PIN 33
 #define FRONT_RIGHT_ESC_PIN 14
 
+
 #define MID_LEFT_ESC_PIN 25
 #define MID_RIGHT_ESC_PIN 26
 
@@ -63,8 +64,8 @@
 #endif
 
 #define ARM_ROTOR_SPEED 900
-#define ZERO_ROTOR_SPEED 1000
-#define IDLE_ROTOR_SPEED 1060
+#define ZERO_ROTOR_SPEED 900
+#define IDLE_ROTOR_SPEED 900
 #define ABSOLUTE_MIN_PWM 800
 #define ABSOLUTE_MAX_PWM 2000
 
@@ -95,7 +96,9 @@
 #define RADIO_TRIMMER_MAX_QUATERNION_XY_GAIN 100.
 
 /** Tested attitude Quaternion roll-pitch axis control gain*/
-#define QUATERNION_XY_GAIN 0.5
+#define QUATERNION_XY_GAIN 0.47
+
+
 
 /** Trimmer B on RC - maximum quaternion Z gain */
 #define RADIO_TRIMMER_MAX_QUATERNION_Z_GAIN 100.

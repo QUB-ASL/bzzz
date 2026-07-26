@@ -33,18 +33,29 @@ namespace bzzz
                                       int rotorSpeedBackLeft, int rotorSpeedBackRight,
                                       int rotorSpeedMidLeft, int rotorSpeedMidRight,
                                       int minSpeed)
-    {   
+
+     
+
+    { 
+
+
+
         m_frontLeftEsc.writeMicroseconds(max(minSpeed, rotorSpeedFrontLeft));   // sets the ESC speed
         m_frontRightEsc.writeMicroseconds(max(minSpeed, rotorSpeedFrontRight)); // sets the ESC speed
         m_backLeftEsc.writeMicroseconds(max(minSpeed, rotorSpeedBackLeft));     // sets the ESC speed
         m_backRightEsc.writeMicroseconds(max(minSpeed, rotorSpeedBackRight));   // sets the ESC speed
         m_midLeftEsc.writeMicroseconds(max(minSpeed, rotorSpeedMidLeft));       // sets the ESC speed
         m_midRightEsc.writeMicroseconds(max(minSpeed, rotorSpeedMidRight));     // sets the ESC speed
+
+
     }
+
+   
 #endif
 
     void MotorDriver::disarm(void)
     {
+        // Serial.println("DISARM");
         m_armStatus = 0;
         m_frontLeftEsc.writeMicroseconds(ZERO_ROTOR_SPEED);  // stop the motors
         m_frontRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED); // stop the motors
@@ -56,6 +67,8 @@ namespace bzzz
         m_midRightEsc.writeMicroseconds(ZERO_ROTOR_SPEED);   // stop the motors
 #endif
     }
+    
+
 
     void MotorDriver::arm(void)
     {
@@ -80,7 +93,50 @@ namespace bzzz
     void MotorDriver::attachAndArm()
     {
         attachEscToPwmPin();
+        delay(3000);
         arm();
+        delay(3000);
+       
+        
     }
+
+    // void MotorDriver::motorTestSequence()
+    // {
+   
+
+    //     m_frontLeftEsc.writeMicroseconds(1350);
+    //     Serial.println("fml");
+    //     delay(3000);
+    //     m_frontLeftEsc.writeMicroseconds(900);
+    //     delay(3000);
+    //     m_frontRightEsc.writeMicroseconds(1350);
+    //     Serial.println("fmr");
+    //     delay(3000);
+    //     m_frontRightEsc.writeMicroseconds(900);
+    //     delay(3000);
+    //     m_midRightEsc.writeMicroseconds(1350);
+    //     Serial.println("mmr");
+    //     delay(3000);
+    //     m_midRightEsc.writeMicroseconds(900);
+    //     delay(3000);
+    //     m_backRightEsc.writeMicroseconds(1350);
+    //     Serial.println("bmr");
+    //     delay(3000);
+    //     m_backRightEsc.writeMicroseconds(900);
+    //     delay(3000);
+    //     m_backLeftEsc.writeMicroseconds(1350);
+    //     Serial.println("bml");
+    //     delay(3000);
+    //     m_backLeftEsc.writeMicroseconds(900);
+    //     delay(3000);
+    //     m_midLeftEsc.writeMicroseconds(1350);
+    //     Serial.println("mml");
+    //     delay(3000);
+    //     m_midLeftEsc.writeMicroseconds(900);
+    //     delay(900);
+
+
+
+    // }
 
 } /* end of namespace bzzz */

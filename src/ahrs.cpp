@@ -53,6 +53,21 @@ namespace bzzz
         q[1] = -m_imu.getQuaternionZ();
         q[2] = m_imu.getQuaternionW();
         q[3] = -m_imu.getQuaternionX();
+
+//         Serial.printf(
+// "RAW IMU q=[%.3f %.3f %.3f %.3f]\n",
+// m_imu.getQuaternionW(),
+// m_imu.getQuaternionX(),
+// m_imu.getQuaternionY(),
+// m_imu.getQuaternionZ());
+
+// Serial.printf(
+// "MAPPED q=[%.3f %.3f %.3f %.3f]\n",
+// q[0], q[1], q[2], q[3]);
+
+
+
+        
     }
 
     void AHRS::angularVelocity(float *w)
@@ -145,6 +160,8 @@ namespace bzzz
         float sinr_cosp = 2 * (q[0] * q[1] + q[2] * q[3]);
         float cosr_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
         return std::atan2(sinr_cosp, cosr_cosp);
+
+        
     }
     
     void AHRS::getAccelerometerValues(float *accValues)
@@ -173,7 +190,9 @@ namespace bzzz
         float siny_cosp = 2 * (q[0] * q[3] + q[1] * q[2]);
         float cosy_cosp = 1 - 2 * (q[2] * q[2] + q[3] * q[3]);
         euler[0] = std::atan2(siny_cosp, cosy_cosp);
+
+       
     }
 #endif /* BZZZ_DEBUG */
 
-} // namespace bzzz
+ } 

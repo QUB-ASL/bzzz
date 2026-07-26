@@ -29,17 +29,28 @@ class EspBridge:
         if self.ser is not None:
             self.ser.close()
 
-    def receive_from_esp(self):
-        """
-        Read data from ESP32 via UART.
 
-        :return: String if data is received, None otherwise.
-        """
-        while self.ser.inWaiting() > 0:
-            try:
-                line = self.ser.readline().decode('ascii').rstrip()
-                return line
-            except UnicodeDecodeError as e:
-                print(f"UnicodeDecodeError {e}, retrying....")
-        else:
-            return None
+    def receive_from_esp(self):
+        """Return all complete lines currently available."""
+        lines = []
+        if self.ser.in_waiting:
+            self._buf = getattr(self, '_buf', b'') + self.ser.read(self.ser.in_waiting)
+            while b'\n' in self._buf:
+                raw, self._buf = self._buf.split(b'\n', 1)
+                lines.append(raw.decode('ascii', errors='replace').strip())
+        return lines       
+
+    # def receive_from_esp(self):
+    #     """
+    #     Read data from ESP32 via UART.
+
+    #     :return: String if data is received, None otherwise.
+    #     """
+    #     while self.ser.inWaiting() > 0:
+    #         try:
+    #             line = self.ser.readline().decode('ascii').rstrip()
+    #             return line
+    #         except UnicodeDecodeError as e:
+    #             print(f"UnicodeDecodeError {e}, retrying....")
+    #     else:
+    #         return None

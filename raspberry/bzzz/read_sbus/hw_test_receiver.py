@@ -1,34 +1,52 @@
 import read_sbus_from_GPIO
+import serial
 import time
 
-SBUS_PIN = 25  # pin where sbus wire is plugged in
+SBUS_PIN = 25
+ESP32_PORT="/dev/ttyUSB0"
 
 reader = read_sbus_from_GPIO.SbusReader(SBUS_PIN)
 reader.begin_listen()
 
-# wait until connection is established
-while (not reader.is_connected()):
-    time.sleep(.2)
+print("waiting for  SBUS receiver...")
 
-# Note that there will be nonsense data for the first 10ms or so of connection
-# until the first packet comes in.
-time.sleep(.1)
+while not reader.is_connected():
+    print("not connected")
+    time.sleep(1)
+
+print("Receiver connecte!")
+
+time.sleep(0.1)
+
+ser = serial.Serial(ESP32_PORT,115200)
+time.sleep(2)
 
 while True:
     try:
-        is_connected = reader.is_connected()
-        packet_age = reader.get_latest_packet_age()  # milliseconds
+      channel_data = reader.translate_latest_packet()
+      print(channel_data)
+      
+      packet = "S,"
 
-        # returns list of length 16, so -1 from channel num to get index
-        channel_data = reader.translate_latest_packet()
+      for i in range(8):
+          packet += str(channel_data[i]) + ","
+      
+      packet += "16,\n"
+      
+      ser.write(packet.encode())
+    
+      print("sent: ", packet.strip())
 
-        print(channel_data)  # Prints 16 channels of data from receiver
+      time.sleep(0.02)
 
-    except KeyboardInterrupt:
-        # cleanup cleanly after ctrl-c
-        reader.end_listen()
-        exit()
-    except:
-        # cleanup cleanly after error
-        reader.end_listen()
-        raise
+    except keyboardInterrupt:
+      reader.end_listening()
+      ser.close()
+      break
+
+    except Exception as e:
+      print(e)
+      reader.end_listening()
+      ser.close()
+      raise
+

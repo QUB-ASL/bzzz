@@ -180,7 +180,7 @@ namespace bzzz
          * @param motorBL current Back-Left motor PWM control action
          * @param motorBR current Back-Right motor PWM control action
          */
-        void sendFlightDataToPi(float q1, float q2, float q3, float ax, float ay, float az, 
+        void sendFlightDataToPi( float q0,float q1, float q2, float q3, float ax, float ay, float az, 
                                 float motorFL, float motorFR, float motorBL, float motorBR);
 
         #elif UAV_TYPE == UAV_TYPE_HEXACOPTER
@@ -199,9 +199,13 @@ namespace bzzz
          * @param motorML current Middle-Left motor PWM control action
          * @param motorMR current Middle-Right motor PWM control action
          */
-        void sendFlightDataToPi(float q1, float q2, float q3, float ax, float ay, float az, 
-                                float motorFL, float motorFR, float motorBL, float motorBR, 
-                                float motorML, float motorMR);
+        void sendFlightDataToPi(float q0, float q1, float q2, float q3,
+                float ax, float ay, float az,
+                float motorFL, float motorFR, float motorBL, float motorBR,
+                float motorML, float motorMR,
+                float q0p, float q1p, float q2p, float q3p,
+                float wxp, float wyp, float wzp,
+                const float *J, int nJ);
         #endif
 
     }; /* end of class RaspberryEsp32Interface */
