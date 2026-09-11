@@ -167,25 +167,25 @@ namespace bzzz
                     +  0.7500f * controls[1]
                     +  0.0670f * controls[2]);
 
-                // MR
-                mMR = h1Throttle + controlToPwmScaling * (
+                // ML
+                mML = h1Throttle + controlToPwmScaling * (
                     0.3349f * controls[0]
                     + 0.2500f * controls[1]
-                    - 0.1651f * controls[2]);
+                    + 0.1651f * controls[2]);
 
                 // BL
                 mBL = h1Throttle + controlToPwmScaling * (
                     0.2010f * controls[0]
                     - 0.2500f * controls[1]
-                    + 0.2010f * controls[2]);
+                    - 0.2010f * controls[2]);
                 // BR
                 mBR = controlToPwmScaling * (
                         -0.2679f * controls[0]
                         -1.0000f * controls[1]
                         +0.2679f * controls[2]);
 
-                // ML
-                mML = h1Throttle + controlToPwmScaling * (
+                // MR
+                mMR = h1Throttle + controlToPwmScaling * (
                     -0.2010f * controls[0]
                     +  0.2500f * controls[1]
                     -  0.2990f * controls[2]);
@@ -217,12 +217,12 @@ namespace bzzz
                 mFL = h2Throttle + controlToPwmScaling * (
                       0.0670f * controls[0]
                      +0.7500f * controls[1]
-                     +0.0670f * controls[2]);
+                     -0.0670f * controls[2]);
 
                 mML = h2Throttle + controlToPwmScaling * (
                       0.2010f * controls[0]
                      +0.2500f * controls[1]
-                     -0.2990f * controls[2]);
+                     +0.2990f * controls[2]);
 
                 mBL = controlToPwmScaling * (
                       0.2679f * controls[0]
@@ -278,12 +278,12 @@ namespace bzzz
                 mBL = h3Throttle + controlToPwmScaling * (
                       0.0000f * controls[0]
                      -0.5000f * controls[1]
-                     +0.2500f * controls[2]);
+                     -0.2500f * controls[2]);
 
                 mBR = h3Throttle + controlToPwmScaling * (
                      -0.2679f * controls[0]
                      -0.5000f * controls[1]
-                     -0.0179f * controls[2]);
+                     +0.0179f * controls[2]);
 
                 break;
             }
@@ -319,12 +319,12 @@ namespace bzzz
                 mML = h4Throttle + controlToPwmScaling * (
                       0.2010f * controls[0]
                      -0.2500f * controls[1]
-                     -0.2990f * controls[2]);
+                     +0.2990f * controls[2]);
 
                 mBL = h4Throttle + controlToPwmScaling * (
                       0.0670f * controls[0]
                      -0.7500f * controls[1]
-                     +0.0670f * controls[2]);
+                     -0.0670f * controls[2]);
 
                 mMR = h4Throttle + controlToPwmScaling * (
                      -0.3349f * controls[0]
@@ -376,19 +376,19 @@ namespace bzzz
         -0.2010f * controls[2]);
 
     // ML: THRUST + CONTROL
-    mML = h5Throttle + controlToPwmScaling * (
+    mMR = h5Throttle + controlToPwmScaling * (
         -0.2010f * controls[0]
         -0.2500f * controls[1]
-        +0.2990f * controls[2]);
+        -0.2990f * controls[2]);
 
     // BR: THRUST + CONTROL
     mBR = h5Throttle + controlToPwmScaling * (
         -0.0670f * controls[0]
         -0.7500f * controls[1]
-        -0.0670f * controls[2]);
+        +0.0670f * controls[2]);
 
     // MR: THRUST + CONTROL
-    mMR = h5Throttle + controlToPwmScaling * (
+    mML = h5Throttle + controlToPwmScaling * (
          0.3349f * controls[0]
         -0.2500f * controls[1]
         +0.1651f * controls[2]);
@@ -418,12 +418,12 @@ namespace bzzz
                 mFR = h6Throttle + controlToPwmScaling * (
                       0.0000f * controls[0]
                      +0.5000f * controls[1]
-                     -0.2500f * controls[2]);
+                     +0.2500f * controls[2]);
 
                 mFL = h6Throttle + controlToPwmScaling * (
                       0.2679f * controls[0]
                      +0.5000f * controls[1]
-                     +0.0179f * controls[2]);
+                     -0.0179f * controls[2]);
 
                 mBL = h6Throttle + controlToPwmScaling * (
                       0.2679f * controls[0]
